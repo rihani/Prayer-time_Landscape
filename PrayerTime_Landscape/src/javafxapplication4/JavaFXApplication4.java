@@ -34,6 +34,11 @@ import com.pi4j.io.gpio.PinPullResistance;
 import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
+import com.pi4j.io.serial.Serial;
+import com.pi4j.io.serial.SerialDataEvent;
+import com.pi4j.io.serial.SerialDataListener;
+import com.pi4j.io.serial.SerialFactory;
+import com.pi4j.io.serial.SerialPortException;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.Facebook;
 import com.restfb.FacebookClient;
@@ -103,6 +108,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.VPos;
+import javafx.scene.Group;
+import javafx.scene.GroupBuilder;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
@@ -162,6 +169,9 @@ import org.joda.time.format.DateTimeFormatter;
     
         
         
+        ImageView cameraView;
+        Group myGroup;
+        
     private double ar_Marquee_Notification_Text_XPos, en_Marquee_Notification_Text_XPos;
     private double ar_Marquee_Notification_Text_YPos, en_Marquee_Notification_Text_YPos;
     private double ar_Marquee_Notification_Text_textSize, en_Marquee_Notification_Text_textSize;
@@ -190,6 +200,7 @@ import org.joda.time.format.DateTimeFormatter;
     
     final Timeline ar_timeline = new Timeline();
         final Timeline en_timeline = new Timeline();
+       final Timeline camera_Timeline = new Timeline();
             
     private Process p;
     static final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
@@ -275,9 +286,14 @@ import org.joda.time.format.DateTimeFormatter;
     String SQL;
     private String hour_in_hour_Label, minute_in_minute_Label;
     private String formattedDateTime;
+//    private String cameraSource = "http://192.168.0.6/cam_pic.php";
+    
+    private String cameraSource;
+            
     
     ResultSet rs;
     
+    private int sonar_distance;
     private int id, maghrib_adj;
     private int AsrJuristic,calcMethod;
     private int max_ar_hadith_len, max_en_hadith_len;
@@ -324,7 +340,11 @@ import org.joda.time.format.DateTimeFormatter;
     int dayofweek_int;
     
     
-    private long moonPhase_lastTimerCall,translate_lastTimerCall, clock_update_lastTimerCall ,sensor_lastTimerCall, debug_lastTimerCall, proximity_lastTimerCall;
+    private long moonPhase_lastTimerCall,translate_lastTimerCall, clock_update_lastTimerCall ,sensor_lastTimerCall,sonar_lastTimerCall, sensor1_lastTimerCall, debug_lastTimerCall, proximity_lastTimerCall;
+    
+    
+    public long delay_switch_to_cam = 10000000000L; // 10 seconds
+    public long delay_switch_back_to_App = 20000000000L; // 20 seconds
     public long delay_turnOnTV_after_Prayers = 135000000000L; // 2.25 minute
 //    public long delay_turnOnTV_after_Prayers = 60000000000L; // 1 minute
     public long delay_turnOnTV_after_Prayers_nightmode = 420000000000L; // 7 minutes
@@ -356,6 +376,7 @@ import org.joda.time.format.DateTimeFormatter;
     
     DatagramSocket socket, socket1;
     boolean send_Broadcast_msg = false;
+    boolean camera = false;
     String broadcast_msg;
     byte[] buf1 = new byte[256];
     InetAddress group;
@@ -380,7 +401,34 @@ import org.joda.time.format.DateTimeFormatter;
 //            logger.warn("Unexpected error", e);
 //        }
 //        System.out.println("Successfully updated the status to [" + status.getText() + "].");
+        try {
+                cameraSource = new File("/home/pi/prayertime/camera/cam2.jpg").toURI().toURL().toString();
+            } catch (MalformedURLException ex) {
+                java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        
+        Timeline camera_Timeline = new Timeline
+                (
+                    new KeyFrame(Duration.seconds(0), evt -> 
+                {
 
+                    
+                    Mainpane.getChildren().removeAll(myGroup);      
+                    cameraView = ImageViewBuilder.create()
+                        .image(new Image(cameraSource))
+                        .build();
+                    myGroup = GroupBuilder.create()
+                        .children(cameraView)
+                        .build();
+                    Mainpane.add(myGroup, 0, 0,30,26);
+
+//                    System.out.println("Changing Background...");
+
+                }),
+                new KeyFrame(Duration.seconds(0.1))
+            );
+            camera_Timeline.setCycleCount(Animation.INDEFINITE);    
+        
  
         
         logger.info("Starting prayer application....");
@@ -563,8 +611,11 @@ import org.joda.time.format.DateTimeFormatter;
         
         
         data = FXCollections.observableArrayList();
+        
+        
         Mainpane = new GridPane();
         Glasspane = new GridPane();
+        
         
         footer_Label = new Label();
         like_Label = new Label();
@@ -1892,7 +1943,87 @@ import org.joda.time.format.DateTimeFormatter;
         clock.setCycleCount(Animation.INDEFINITE);
         clock.play();
 
+ 
         
+// Sonar sensor thread to turn Camera ===============================================================        
+        new Thread(() -> 
+        {
+            // create an instance of the serial communications class
+            final Serial serial = SerialFactory.createInstance();
+            System.out.println(" ... Sonar Detection Starting.....");
+            // create and register the serial data listener
+            serial.addListener(new SerialDataListener() 
+            {
+                @Override
+                public void dataReceived(SerialDataEvent event) 
+                {
+                    String newString = event.getData().substring(1,5);
+                    try{ sonar_distance = Integer.parseInt(newString);}
+                    catch(Exception ex) {java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);}
+//                System.out.print(sonar_distance);
+
+                }            
+            });
+
+             // open the default serial port provided on the GPIO header
+            System.out.println(" ... Openning Serial connection");
+            try {serial.open(Serial.DEFAULT_COM_PORT, 9600);}
+            catch(SerialPortException ex) 
+                 {
+                     System.out.println(" ==>> SERIAL SETUP FAILED : " + ex.getMessage());  
+                     try {p.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
+                     Thread.currentThread().interrupt();
+                 }
+            System.out.println(" ... Serial connection Open");
+            
+             for (;;) 
+             {
+                 try 
+                 {
+                    Thread.sleep(500);
+                    if (sonar_distance>2000)
+                    {
+//                        System.out.println(sonar_distance);
+                        sonar_lastTimerCall = System.nanoTime();
+                    
+                    }
+                    
+                    if (System.nanoTime() > sonar_lastTimerCall + delay_switch_to_cam && sonar_distance<2000 && !camera) 
+                     {
+                         
+                        System.out.println("Switching to Camera...");
+                        ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+                        try {Process process = processBuilder_camera_on.start(); } 
+                        catch (IOException e) {logger.warn("Unexpected error", e);}
+                        sensor1_lastTimerCall = System.nanoTime();
+                        camera = true;
+                         
+                     }
+                    
+                    if (System.nanoTime() > sensor1_lastTimerCall + delay_switch_back_to_App && sonar_distance>2000 && camera) 
+                     {
+                         
+                        System.out.println("Switching back to App...");
+                        ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
+                        try {Process process = processBuilder_camera_off.start(); } 
+                        catch (IOException e) {logger.warn("Unexpected error", e);}
+                        camera = false;
+                         
+                     }
+                     
+                     
+                 }
+                 catch(SerialPortException ex) 
+                 {
+                     System.out.println(" ==>> SERIAL SETUP FAILED : " + ex.getMessage());  
+                     try {p.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
+                     Thread.currentThread().interrupt();
+                 } catch (InterruptedException ex) {
+                    java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
+                }
+             }
+
+         }).start();
 
 // PIR sensor thread to turn on/Off TV screen to save energy ===============================================================        
         new Thread(() -> 
@@ -2156,7 +2287,15 @@ import org.joda.time.format.DateTimeFormatter;
                     //        {directory = new File("/Users/samia/NetBeansProjects/prayertime_files/background/");}
                             //change on Pi
                             if (platform.equals("pi"))
-                            {directory = new File("/home/pi/prayertime/Images/");}
+                            {
+                                if (vertical)
+                                {
+                                    directory = new File("/home/pi/prayertime/Images/vertical");            
+                                }
+                                else {directory = new File("/home/pi/prayertime/Images/horizontal");}
+                            
+                            
+                            }
 
                             files = directory.listFiles();
                             for(File f : files) 
@@ -2176,7 +2315,7 @@ import org.joda.time.format.DateTimeFormatter;
                             Platform.runLater(new Runnable() {
                         @Override public void run() 
                         {
-                                Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 1080 1920;-fx-background-position: bottom left;");  
+                                Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 660 480;-fx-background-position: bottom left;");  
                        
  
                         }
@@ -2185,6 +2324,58 @@ import org.joda.time.format.DateTimeFormatter;
                             
                 
                         }
+                        
+                        
+                        else if(received.equals("video toggle")) 
+                        {
+
+                            if (!camera)
+                            {
+                                Platform.runLater(new Runnable() 
+                                {
+                                    @Override public void run() 
+                                    {
+//                                        Moonpane.setVisible(false);
+//                                        prayertime_pane.setVisible(false);
+//                                        hadithPane.setVisible(false);
+                                        camera = true;
+//                                        camera_Timeline.play();
+//                                        
+//                                        text_Box.setVisible(false);
+//                                        ar_Marquee_Notification_Text.setVisible(false);
+//                                        ar_timeline.stop();
+//                                        en_Marquee_Notification_Text.setVisible(false);
+//                                        en_timeline.stop();
+                                        
+                                        ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+                                        try {Process process = processBuilder_camera_on.start(); } 
+                                        catch (IOException e) {logger.warn("Unexpected error", e);}
+                                        
+                                        }
+                                }); 
+                
+                            }
+                            else
+                            {
+                                Platform.runLater(new Runnable() 
+                                {
+                                    @Override public void run() 
+                                    {
+                                        
+//                                        camera_Timeline.stop();
+//                                        Mainpane.getChildren().removeAll(myGroup); 
+//                                        Moonpane.setVisible(true);
+//                                        prayertime_pane.setVisible(true);
+//                                        hadithPane.setVisible(true);
+                                        ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
+                                        try {Process process = processBuilder_camera_off.start(); } 
+                                        catch (IOException e) {logger.warn("Unexpected error", e);}
+                                        camera = false;
+                                    }
+                                }); 
+                            }    
+                        }
+                        
                         
                         
                         else if(received.equals("refresh hadith")) 
@@ -2517,6 +2708,18 @@ import org.joda.time.format.DateTimeFormatter;
         Sunrisepane =   sunrise();
         Sunrisepane.setVisible(false);
         hadithPane = hadithPane();
+        
+        cameraView = ImageViewBuilder.create()
+                .image(new Image(cameraSource))
+                .build();
+         
+        myGroup = GroupBuilder.create()
+                .children(cameraView)
+                .build();
+         
+        
+        
+        
         clockPane =   clockPane();
         GridPane footerPane =   footerPane();
         
@@ -2547,6 +2750,7 @@ import org.joda.time.format.DateTimeFormatter;
         Mainpane.add(prayertime_pane, 16, 14,13,6);  
         Mainpane.add(hadithPane, 2,9,13,21);
         Mainpane.add(text_Box,0,0,30,1);
+//        Mainpane.add(myGroup, 0, 0,30,26);
         text_Box.setTranslateY(5);
 //        prayertime_pane.setTranslateX(-15);
         prayertime_pane.setTranslateY(20);
@@ -2597,6 +2801,7 @@ import org.joda.time.format.DateTimeFormatter;
         
         translate_timer.start(); 
         clock_update_timer.start();
+        
         
 //        For debuuging purposes only
 //                new Thread()
@@ -2828,6 +3033,7 @@ public void play_athan() throws Exception{
 //            Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 1080 1920;-fx-background-position: bottom left;");
 //            sensor_lastTimerCall = System.nanoTime();
 //            sensorLow = true;
+            
             try {Process process = processBuilder_Tvon.start(); hdmiOn = true;} 
             catch (IOException e) {logger.warn("Unexpected error", e);}
             TimeUnit.SECONDS.sleep(3);
@@ -3159,13 +3365,16 @@ public void update_labels() throws Exception{
             if (athan_Change_Label_visible | notification_Marquee_visible)
             {
                 
-                text_Box.setVisible(true);
-                ar_Marquee_Notification_Text.setVisible(false);
-                ar_timeline.stop();
-                en_Marquee_Notification_Text_XPos = 320;
-                
-                en_Animate();
-                en_Marquee_Notification_Text.setVisible(true);
+                if (!camera)
+                {
+                    text_Box.setVisible(true);
+                    ar_Marquee_Notification_Text.setVisible(false);
+                    ar_timeline.stop();
+                    en_Marquee_Notification_Text_XPos = 320;
+
+                    en_Animate();
+                    en_Marquee_Notification_Text.setVisible(true);
+                }
             
 //                facebook_Label.setVisible(false);
 //                facebook_Label.setText("");
@@ -3515,12 +3724,17 @@ public void update_labels() throws Exception{
             
             if (athan_Change_Label_visible | notification_Marquee_visible)
             {
-                text_Box.setVisible(true);
-                en_timeline.stop();
-                ar_Marquee_Notification_Text_XPos = -320;
-                ar_Animate();
-                ar_Marquee_Notification_Text.setVisible(true);
-                en_Marquee_Notification_Text.setVisible(false);
+                
+                if (!camera)
+                {
+                    text_Box.setVisible(true);
+                    en_timeline.stop();
+                    ar_Marquee_Notification_Text_XPos = -320;
+                    ar_Animate();
+                    ar_Marquee_Notification_Text.setVisible(true);
+                    en_Marquee_Notification_Text.setVisible(false);
+                }
+                
 //                athan_Change_Label_L1.setVisible(true);
 //                athan_Change_Label_L2.setVisible(true);
 //                athan_Change_Label_L1.setMaxHeight(200);
