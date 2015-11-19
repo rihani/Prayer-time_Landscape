@@ -149,6 +149,9 @@ import org.joda.time.Days;
 import org.joda.time.chrono.IslamicChronology;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import eu.hansolo.enzo.common.Section;
+import eu.hansolo.enzo.gauge.SimpleGauge;
+import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
 //import org.json.simple.JSONArray;
 //import org.json.simple.JSONObject;
 //import org.json.simple.parser.JSONParser;
@@ -167,8 +170,9 @@ import org.joda.time.format.DateTimeFormatter;
     public class JavaFXApplication4 extends Application {
     
     
-        
-        
+    
+    
+     private SimpleGauge thermoMeter;   
         ImageView cameraView;
         Group myGroup;
         
@@ -271,6 +275,10 @@ import org.joda.time.format.DateTimeFormatter;
     private boolean isha_prayer_In_Progress_notification = false;
     private boolean count_down = false;
     private boolean count_down_disable  = false;
+    private boolean sonar_active = false;
+    private boolean manual_Camera = false;
+    boolean send_Broadcast_msg = false;
+    boolean camera = false;
             
     private String hadith, translated_hadith, ar_full_moon_hadith, en_full_moon_hadith, ar_moon_notification, en_moon_notification, announcement, en_notification_Msg, ar_notification_Msg, device_name, device_location;
     private String ar_notification_Msg_Lines[], en_notification_Msg_Lines[], notification_Msg, facebook_moon_notification_Msg;    
@@ -293,7 +301,9 @@ import org.joda.time.format.DateTimeFormatter;
     
     ResultSet rs;
     
-    private int sonar_distance;
+    private int sonar_distance =0;
+    private int sonar_active_distance;
+    
     private int id, maghrib_adj;
     private int AsrJuristic,calcMethod;
     private int max_ar_hadith_len, max_en_hadith_len;
@@ -320,6 +330,8 @@ import org.joda.time.format.DateTimeFormatter;
     DateTime DateTime_now;    
     Calendar Calendar_now, Calendar_now_hourpane;
     
+    private LocalTime now1;
+    
     private Label fajr_hourLeft, fajr_hourRight, fajr_minLeft, fajr_minRight, fajr_jamma_hourLeft, fajr_jamma_hourRight, fajr_jamma_minLeft, fajr_jamma_minRight, footer_Label, like_Label;
     private Label sunrise_hourLeft, sunrise_hourRight, sunrise_minLeft, sunrise_minRight;
     private Label time_Separator1, time_Separator2, time_Separator3, time_Separator4, time_Separator5, time_Separator6,time_Separator8, time_jamma_Separator1, time_jamma_Separator2, time_jamma_Separator3, time_jamma_Separator4 ,time_jamma_Separator5; 
@@ -340,9 +352,10 @@ import org.joda.time.format.DateTimeFormatter;
     int dayofweek_int;
     
     
-    private long moonPhase_lastTimerCall,translate_lastTimerCall, clock_update_lastTimerCall ,sensor_lastTimerCall,sonar_lastTimerCall, sensor1_lastTimerCall, debug_lastTimerCall, proximity_lastTimerCall;
-    
-    
+    private long moonPhase_lastTimerCall,translate_lastTimerCall, clock_update_lastTimerCall ,sensor_lastTimerCall,sonar_lastTimerCall, sensor1_lastTimerCall, debug_lastTimerCall, proximity_lastTimerCall, radarwidget_lastTimerCall, delay_Manual_switch_to_cam_lastTimerCall;
+                       
+                                    
+    public long delay_Manual_switch_to_cam = 30000000000L; // 30 seconds                                
     public long delay_switch_to_cam = 10000000000L; // 10 seconds
     public long delay_switch_back_to_App = 20000000000L; // 20 seconds
     public long delay_turnOnTV_after_Prayers = 135000000000L; // 2.25 minute
@@ -351,7 +364,8 @@ import org.joda.time.format.DateTimeFormatter;
     
     public long delay_turnOffTV_after_inactivity = 1500000000000L; // 25minutes
 //    public long delay_turnOffTV_after_inactivity = 280000000000L; // 1minutes
-    private AnimationTimer moonPhase_timer, translate_timer, clock_update_timer ,debug_timer ;
+    private AnimationTimer moonPhase_timer, translate_timer, clock_update_timer ,debug_timer, radar_gauge_anninmation ;
+    
         
     DateFormat dateFormat = new SimpleDateFormat("hh:mm");
     
@@ -375,8 +389,6 @@ import org.joda.time.format.DateTimeFormatter;
     private ServerSocket server;
     
     DatagramSocket socket, socket1;
-    boolean send_Broadcast_msg = false;
-    boolean camera = false;
     String broadcast_msg;
     byte[] buf1 = new byte[256];
     InetAddress group;
@@ -406,6 +418,16 @@ import org.joda.time.format.DateTimeFormatter;
             } catch (MalformedURLException ex) {
                 java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
             }
+        now1 = LocalTime.now();
+        radar_gauge_anninmation = new AnimationTimer() {
+            @Override public void handle(long now1) {
+                if (now1 > radarwidget_lastTimerCall + 200_000_000l) {
+
+                    thermoMeter.setValue(sonar_distance);
+                    radarwidget_lastTimerCall = now1;
+                }
+            }
+        };
         
         Timeline camera_Timeline = new Timeline
                 (
@@ -471,6 +493,8 @@ import org.joda.time.format.DateTimeFormatter;
                     device_name =                   rs.getString("device_name");
                     device_location =               rs.getString("device_location");
                     pir_sensor =                    rs.getBoolean("pir_sensor");
+                    sonar_active =                  rs.getBoolean("sonar_active");
+                    sonar_active_distance =         rs.getInt("sonar_active_distance");
                     calcMethod =                    rs.getInt("calcMethod");
                     AsrJuristic =                   rs.getInt("AsrJuristic");
                     fb_Access_token =               rs.getString("fb_Access_token");
@@ -478,6 +502,7 @@ import org.joda.time.format.DateTimeFormatter;
                     maghrib_adj =                   rs.getInt("maghrib_adj");
                     max_ar_hadith_len =             rs.getInt("max_ar_hadith_len");
                     max_en_hadith_len =             rs.getInt("max_en_hadith_len");
+                    
                     
                     
                 }
@@ -547,13 +572,14 @@ import org.joda.time.format.DateTimeFormatter;
                 directory = new File("/home/pi/prayertime/Images/vertical");            
             }
             else {directory = new File("/home/pi/prayertime/Images/horizontal");}
-        
+            
+            
         }
         
         files = directory.listFiles();
         for(File f : files) 
         {
-            images.add(f.getName());
+            if(!f.getName().startsWith(".")){images.add(f.getName());}
         }   
         System.out.println(images);
         countImages = images.size();
@@ -790,7 +816,32 @@ import org.joda.time.format.DateTimeFormatter;
         fajr_Label_eng.setText("Fajr");
         GridPane.setHalignment(fajr_Label_eng,HPos.CENTER);
 
+        thermoMeter = SimpleGaugeBuilder.create()
+                                        .minSize(250, 250)
+                                        .prefSize(250, 250)
+                                        .sections(new Section(0, 500, "0"),
+                                                  new Section(500, 1000),
+                                                  new Section(1000, 1500),
+                                                  new Section(1500, 2000),
+                                                  new Section(2000, 2500),
+                                                  new Section(2500, 3000),
+                                                  new Section(3000, 3500),
+                                                  new Section(3500, 4000),
+                                                  new Section(4000, 4500),
+                                                  new Section(4500, 5000))
+                                        .sectionTextVisible(true)
+                                        .title("Distance")
+//                                        .unit("$")
+                                        .maxValue(5000)
+                                        .value(0)
+                                        .animationDuration(200)
+                                        .animated(true)
+                                        .styleClass(SimpleGauge.STYLE_CLASS_RED_TO_GREEN_10)
+                                        .build();
 
+        radarwidget_lastTimerCall = System.nanoTime() + 2_000_000_000l;
+        
+        
        
         Timer prayerCalcTimer = new Timer();
         prayerCalcTimer.scheduleAtFixedRate(new TimerTask() 
@@ -1099,7 +1150,6 @@ import org.joda.time.format.DateTimeFormatter;
                                 en_Marquee_Notification_string = "Prayer Time Change from " + new SimpleDateFormat("EEEE").format(notification_Date) +":   " + en_notification_Msg_Lines[1];
                                 ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(notification_Date) + "ستتغير اوقات الصلاة كالتالي   " + ar_notification_Msg_Lines[1];
 
-                                System.out.format("1**************************");
                                 System.out.format(en_Marquee_Notification_string);
                                 System.out.format(ar_Marquee_Notification_string);
 
@@ -1355,6 +1405,8 @@ import org.joda.time.format.DateTimeFormatter;
                                     c = DBConnect.connect();
 
                                     SQL = "select hadith, translated_hadith from hadith WHERE (translated_hadith LIKE '%Ashura%') and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";
+                                    
+//                                    SQL = "select hadith, translated_hadith from hadith WHERE ID = 1";
                                     rs = c.createStatement().executeQuery(SQL);
                                     while (rs.next()) 
                                     {
@@ -1368,6 +1420,7 @@ import org.joda.time.format.DateTimeFormatter;
                                 
                                 }  
                                 catch (Exception e){logger.warn("Unexpected error", e);}
+                                                                
                                 ashura.setTime(fullMoon.getTime() - 4 * 24 * 60 * 60 * 1000);
                                 String Ashura_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(ashura);
                                 String Ashura_dow_en = new SimpleDateFormat("EEEE").format(ashura);
@@ -1409,7 +1462,7 @@ import org.joda.time.format.DateTimeFormatter;
                             }
                             
                             
-                            if (dtIslamic.getMonthOfYear()!=9 && days_Between_Now_Fullmoon <= 5 && days_Between_Now_Fullmoon >= 2)
+                            if (dtIslamic.getMonthOfYear()!=9 && days_Between_Now_Fullmoon <= 5 && days_Between_Now_Fullmoon >= 2 || debug)
                             {                                
                                 //hide hadith label boolean
                                 getHadith = false;
@@ -1417,33 +1470,35 @@ import org.joda.time.format.DateTimeFormatter;
                                 hadith_Label_visible = false;
                                 //show moon notification label boolean
                                 moon_hadith_Label_visible = true;
-                                try
-                                {
-                                    c = DBConnect.connect();
-                                    SQL = "select hadith, translated_hadith from hadith WHERE day = '15' ORDER BY RAND( ) LIMIT 1";
-                                    rs = c.createStatement().executeQuery(SQL);
-                                    while (rs.next()) 
-                                    {
-                                        ar_full_moon_hadith = rs.getString("hadith");
-                                        en_full_moon_hadith = rs.getString("translated_hadith");
-                                    }
-                                    c.close();
-                                    System.out.format("Full Moon arabic hadith: %s\n", ar_full_moon_hadith );
-                                    System.out.format("Full Moon english hadith: %s\n", en_full_moon_hadith );
-                                }
-                                catch (Exception e){logger.warn("Unexpected error", e);}
+//                                try
+//                                {
+//                                    c = DBConnect.connect();
+//                                    SQL = "select hadith, translated_hadith from hadith WHERE day = '15' ORDER BY RAND( ) LIMIT 1";
+//                                    rs = c.createStatement().executeQuery(SQL);
+//                                    while (rs.next()) 
+//                                    {
+//                                        ar_full_moon_hadith = rs.getString("hadith");
+//                                        en_full_moon_hadith = rs.getString("translated_hadith");
+//                                    }
+//                                    c.close();
+//                                    System.out.format("Full Moon arabic hadith: %s\n", ar_full_moon_hadith );
+//                                    System.out.format("Full Moon english hadith: %s\n", en_full_moon_hadith );
+//                                }
+//                                catch (Exception e){logger.warn("Unexpected error", e);}
+                                
+                                ar_full_moon_hadith = " عَنْ جَرِيرِ بْنِ عَبْدِ اللَّهِ عَنْ النَّبِيِّ ﷺ قَالَ : صِيَامُ ثَلاثَةِ أَيَّامٍ مِنْ كُلِّ شَهْرٍ صِيَامُ الدَّهْرِ وَأَيَّامُ الْبِيضِ صَبِيحَةَ ثَلاثَ عَشْرَةَ وَأَرْبَعَ عَشْرَةَ وَخَمْسَ عَشْرَةَ ";
+                                en_full_moon_hadith = "The prophet -Pbuh- said \"Fasting three days of every month (13th, 14th & 15th) is equal to Fasting the life time” ";
                                 
                                 
-                                
-                                if ( days_Between_Now_Fullmoon == 5 && comparator.compare(fullMoon, maghrib_cal)<0)
+                                if ( days_Between_Now_Fullmoon == 5 && comparator.compare(fullMoon, maghrib_cal)<0 )
                                 {
                                     fullMoon_plus1.setTime(fullMoon.getTime() - 2 * 24 * 60 * 60 * 1000);
                                     String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
                                     String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
                                     String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
-                                    String temp_ar_text2 = " إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم لاعلى ملاحظات رؤية الهلال";
+                                    String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
                                     ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
-                                    en_moon_notification = "We would like to remind our dear brothers & sisters that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. Pls note that this is based on calendar calculations not moon sighting observations";
+                                    en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. (This is based on calendar calculations)";
                                     facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
 //                                    try
 //                                    {
@@ -1463,9 +1518,9 @@ import org.joda.time.format.DateTimeFormatter;
                                         String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
                                         String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
                                         String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
-                                        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم لاعلى ملاحظات رؤية الهلال";
+                                        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
                                         ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
-                                        en_moon_notification = "We would like to remind our dear brothers & sisters that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. Pls note that this is based on calendar calculations not moon sighting observations";
+                                        en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. (This is based on calendar calculations)";
                                         facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;    
                                         if (facebook_notification_enable)
                                         {
@@ -1488,9 +1543,9 @@ import org.joda.time.format.DateTimeFormatter;
                                         String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
                                         String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
                                         String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
-                                        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم لاعلى ملاحظات رؤية الهلال";
+                                        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
                                         ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
-                                        en_moon_notification = "We would like to remind our dear brothers & sisters that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. Pls note that this is based on calendar calculations not moon sighting observations";
+                                        en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. (This is based on calendar calculations)";
                                         facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;                          
                                         System.out.println("Full Moon Notification:" );
                                         System.out.println(facebook_moon_notification_Msg);
@@ -1505,18 +1560,18 @@ import org.joda.time.format.DateTimeFormatter;
                                         String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
                                         String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
                                         String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
-                                        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم لاعلى ملاحظات رؤية الهلال";
+                                        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
                                         ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
-                                        en_moon_notification = "We would like to remind our dear brothers & sisters that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. Pls note that this is based on calendar calculations not moon sighting observations";
+                                        en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. (This is based on calendar calculations)";
                                         facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;    
                                     }
                                     
                                     else
                                     {
                                         String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ غدا ";
-                                        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم لاعلى ملاحظات رؤية الهلال";
+                                        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
                                         ar_moon_notification = temp_ar_text1 +  temp_ar_text2;
-                                        en_moon_notification = "We would like to remind our dear brothers & sisters that this month's \"White days\" will start tomorrow, it is recommended to fast these days. Pls note that this is based on calendar calculations not moon sighting observations";
+                                        en_moon_notification = "We would like to remind you that this month's \"White days\" will start tomorrow, it is recommended to fast these days. (This is based on calendar calculations)";
                                         facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;   
                                         if (facebook_notification_enable)
                                         {
@@ -1533,13 +1588,13 @@ import org.joda.time.format.DateTimeFormatter;
                                     }
                                 }
 
-                                else if ( days_Between_Now_Fullmoon == 2 && comparator.compare(fullMoon, maghrib_cal)>0)
+                                else if ( days_Between_Now_Fullmoon == 2 && comparator.compare(fullMoon, maghrib_cal)>0 || debug)
                                 {
                                         String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ غدا ";
-                                        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم لاعلى ملاحظات رؤية الهلال";
+                                        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
                                         ar_moon_notification = temp_ar_text1 +  temp_ar_text2;
                                         System.out.println(ar_moon_notification);
-                                        en_moon_notification = "We would like to remind our dear brothers & sisters that this month's \"White days\" will start tomorrow, it is recommended to fast these days. Pls note that this is based on calendar calculations not moon sighting observations";
+                                        en_moon_notification = "We would like to remind you that this month's \"White days\" will start tomorrow, it is recommended to fast these days. (This is based on calendar calculations)";
                                         System.out.println(en_moon_notification);
                                         facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;    
                                         if (facebook_notification_enable)
@@ -1946,287 +2001,375 @@ import org.joda.time.format.DateTimeFormatter;
  
         
 // Sonar sensor thread to turn Camera ===============================================================        
-        new Thread(() -> 
+        if (platform.equals("pi"))
         {
-            // create an instance of the serial communications class
-            final Serial serial = SerialFactory.createInstance();
-            System.out.println(" ... Sonar Detection Starting.....");
-            // create and register the serial data listener
-            serial.addListener(new SerialDataListener() 
+            new Thread(() -> 
             {
-                @Override
-                public void dataReceived(SerialDataEvent event) 
+                // create an instance of the serial communications class
+                final Serial serial = SerialFactory.createInstance();
+                System.out.println(" ... Sonar Detection Starting.....");
+                // create and register the serial data listener
+                serial.addListener(new SerialDataListener() 
                 {
-                    String newString = event.getData().substring(1,5);
-                    try{ sonar_distance = Integer.parseInt(newString);}
-                    catch(Exception ex) {java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);}
-//                System.out.print(sonar_distance);
-
-                }            
-            });
-
-             // open the default serial port provided on the GPIO header
-            System.out.println(" ... Openning Serial connection");
-            try {serial.open(Serial.DEFAULT_COM_PORT, 9600);}
-            catch(SerialPortException ex) 
-                 {
-                     System.out.println(" ==>> SERIAL SETUP FAILED : " + ex.getMessage());  
-                     try {p.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
-                     Thread.currentThread().interrupt();
-                 }
-            System.out.println(" ... Serial connection Open");
-            
-             for (;;) 
-             {
-                 try 
-                 {
-                    Thread.sleep(500);
-                    if (sonar_distance>2000)
+                    @Override
+                    public void dataReceived(SerialDataEvent event) 
                     {
-//                        System.out.println(sonar_distance);
-                        sonar_lastTimerCall = System.nanoTime();
-                    
-                    }
-                    
-                    if (System.nanoTime() > sonar_lastTimerCall + delay_switch_to_cam && sonar_distance<2000 && !camera) 
+                        try
+                        { 
+                            String newString = event.getData().substring(1,5);
+                            sonar_distance = Integer.parseInt(newString);
+                        }
+                        catch(Exception ex) {System.out.println("=====Sonar string out of bound====");}
+    //                System.out.print(sonar_distance);
+
+                    }            
+                });
+
+                 // open the default serial port provided on the GPIO header
+                System.out.println(" ... Openning Serial connection");
+                try {serial.open(Serial.DEFAULT_COM_PORT, 9600);}
+                catch(SerialPortException ex) 
                      {
-                         
-                        System.out.println("Switching to Camera...");
-                        ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
-                        try {Process process = processBuilder_camera_on.start(); } 
-                        catch (IOException e) {logger.warn("Unexpected error", e);}
-                        sensor1_lastTimerCall = System.nanoTime();
-                        camera = true;
-                         
+                         System.out.println(" ==>> SERIAL SETUP FAILED : " + ex.getMessage());  
+                         try {p.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
+                         Thread.currentThread().interrupt();
                      }
-                    
-                    if (System.nanoTime() > sensor1_lastTimerCall + delay_switch_back_to_App && sonar_distance>2000 && camera) 
-                     {
-                         
-                        System.out.println("Switching back to App...");
-                        ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
-                        try {Process process = processBuilder_camera_off.start(); } 
-                        catch (IOException e) {logger.warn("Unexpected error", e);}
-                        camera = false;
-                         
-                     }
-                     
-                     
-                 }
-                 catch(SerialPortException ex) 
+                System.out.println(" ... Serial connection Open");
+
+                 for (;;) 
                  {
-                     System.out.println(" ==>> SERIAL SETUP FAILED : " + ex.getMessage());  
-                     try {p.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
-                     Thread.currentThread().interrupt();
-                 } catch (InterruptedException ex) {
-                    java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
-                }
-             }
-
-         }).start();
-
-// PIR sensor thread to turn on/Off TV screen to save energy ===============================================================        
-        new Thread(() -> 
-        {
-//            try {
-//                Thread.sleep(1000);
-//            } catch (InterruptedException ex) {
-//                java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-            final GpioController gpioSensor = GpioFactory.getInstance();
-             sensor_lastTimerCall =  System.nanoTime(); 
-             final GpioPinDigitalInput sensor = gpioSensor.provisionDigitalInputPin(RaspiPin.GPIO_02, PinPullResistance.PULL_DOWN);
-             
-             sensor.addListener(new GpioPinListenerDigital() 
-             {
-                 @Override
-                 public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) 
-                 {
-
-                     if (event.getState().isHigh()) 
+                     try 
                      {
-                         sensor_lastTimerCall = System.nanoTime(); 
-                         if(!hdmiOn && !pir_disactive_startup)
-                         {
-                             if (!prayer_In_Progress)
+                        Thread.sleep(500);
+                        if(sonar_active)
+                        {
+                            if (sonar_distance>sonar_active_distance)
+                            {
+        //                        System.out.println(sonar_distance);
+                                sonar_lastTimerCall = System.nanoTime();
+
+                            }
+
+                            if (sonar_distance<sonar_active_distance)
+                            {
+        //                        System.out.println(sonar_distance);
+                                sensor1_lastTimerCall = System.nanoTime();
+
+                            }
+
+                            if (System.nanoTime() > sonar_lastTimerCall + delay_switch_to_cam && sonar_distance<sonar_active_distance && !camera) 
                              {
-                                ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
-                                hdmiOn = true;
-                                startup = false;
-                                System.out.println("Tv turned on");
-                                try 
-                                        {
-                                            Thread.sleep(2500);                 
-                                            processBuilder1.start();                                      
-                                            Thread.sleep(2500); 
-                                            processBuilder1.start();
-                                        }
-                                        catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
-                                            java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
-                                        }
+
+                                System.out.println("Switching to Camera...");
+                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+                                try {Process process = processBuilder_camera_on.start(); } 
+                                catch (IOException e) {logger.warn("Unexpected error", e);}
+                                sensor1_lastTimerCall = System.nanoTime();
+                                camera = true;
 
                              }
 
-                             if (prayer_In_Progress)
+                            if (System.nanoTime() > sensor1_lastTimerCall + delay_switch_back_to_App && sonar_distance>sonar_active_distance && camera && !manual_Camera) 
                              {
-                                
-                                Calendar cal = Calendar.getInstance();
-                                int hour_Now_int = cal.get(Calendar.HOUR_OF_DAY); 
-                                int hourbefore_fajr_int = fajr_cal.get(Calendar.HOUR_OF_DAY) -1; 
-                                hourbefore_fajr_int = hourbefore_fajr_int -1; 
-//                                System.out.println("hour now is" + hour_Now_int);
-//                                System.out.println("fajr hour -1 hour is" + hourbefore_fajr_int);
-                                
-                                
-                                
-                                if(hour_Now_int >=0 && hour_Now_int<=hourbefore_fajr_int)
-                                {
-                                    
-                                    
-                                    System.out.println("prayer detected in after hours");
-                                    if (System.nanoTime() > proximity_lastTimerCall + delay_turnOnTV_after_Prayers_nightmode )
+
+                                System.out.println("Switching back to App...");
+                                ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
+                                try {Process process = processBuilder_camera_off.start(); } 
+                                catch (IOException e) {logger.warn("Unexpected error", e);}
+                                camera = false;
+
+                             }
+                        }
+
+
+                     }
+                     catch(SerialPortException ex) 
+                     {
+                         System.out.println(" ==>> SERIAL SETUP FAILED : " + ex.getMessage());  
+                         try {p.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
+                         Thread.currentThread().interrupt();
+                     } catch (InterruptedException ex) {
+                        java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
+
+                    }
+                 }
+
+             }).start();
+        }
+
+        
+// Button for manual camera switching
+        if (platform.equals("pi"))
+        {
+            new Thread(() -> 
+            {
+
+                final GpioController gpioSensor = GpioFactory.getInstance();   
+
+
+                final GpioPinDigitalInput button = gpioSensor.provisionDigitalInputPin(RaspiPin.GPIO_01, PinPullResistance.PULL_UP);
+
+    //             final GpioPinDigitalInput button = gpioSensor.provisionDigitalInputPin(RaspiPin.GPIO_01, PinPullResistance.PULL_UP);
+                 System.out.println(" ... Button press function Starting.....");
+                 button.addListener(new GpioPinListenerDigital() 
+                 {
+                     @Override
+                     public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event1) 
+                     {
+
+                        if (event1.getState().isHigh()) 
+                        {
+
+                        }
+
+                        if(event1.getState().isLow())
+                        {
+                            if(!manual_Camera)
+                            {
+                                System.out.println("button pressed ");
+                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+                                try {Process process = processBuilder_camera_on.start(); System.out.println("Manually Switching to Camera...");} 
+                                catch (IOException e) {logger.warn("Unexpected error", e);}
+                                delay_Manual_switch_to_cam_lastTimerCall = System.nanoTime();
+                                camera = true;
+                                manual_Camera = true;
+                            } 
+                        }
+                     }
+                 });
+
+
+                 for (;;) 
+                 {
+                     try 
+                     {
+                         if (System.nanoTime() > delay_Manual_switch_to_cam_lastTimerCall + delay_Manual_switch_to_cam && sonar_distance>sonar_active_distance && camera && manual_Camera) 
+                            {
+                                camera = false;
+                                manual_Camera = false;
+                                System.out.println("Manually Switching back to App...");
+                                ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
+                                try {Process process = processBuilder_camera_off.start(); } 
+                                catch (IOException e) {logger.warn("Unexpected error", e);}
+                            }
+
+                         Thread.sleep(1000);
+                     }
+                     catch(InterruptedException e) 
+                     {
+                         gpioSensor.shutdown();
+                         Thread.currentThread().interrupt();
+                     }
+                 }
+
+             }).start();
+        
+        }
+        
+// PIR sensor thread to turn on/Off TV screen to save energy ===============================================================        
+        if (platform.equals("pi"))
+        {
+            new Thread(() -> 
+            {
+    //            try {
+    //                Thread.sleep(1000);
+    //            } catch (InterruptedException ex) {
+    //                java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
+    //            }
+                final GpioController gpioSensor = GpioFactory.getInstance();   
+                 sensor_lastTimerCall =  System.nanoTime(); 
+                 final GpioPinDigitalInput sensor = gpioSensor.provisionDigitalInputPin(RaspiPin.GPIO_02, PinPullResistance.PULL_DOWN);
+                 sensor.addListener(new GpioPinListenerDigital() 
+                 {
+                     @Override
+                     public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) 
+                     {
+
+                         if (event.getState().isHigh()) 
+                         {
+                             sensor_lastTimerCall = System.nanoTime(); 
+                             if(!hdmiOn && !pir_disactive_startup)
+                             {
+                                 if (!prayer_In_Progress)
+                                 {
+                                    ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
+                                    hdmiOn = true;
+                                    startup = false;
+                                    System.out.println("Tv turned on");
+                                    try 
+                                            {
+                                                Thread.sleep(2500);                 
+                                                processBuilder1.start();                                      
+                                                Thread.sleep(2500); 
+                                                processBuilder1.start();
+                                            }
+                                            catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
+                                                java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
+                                            }
+
+                                 }
+
+                                 if (prayer_In_Progress)
+                                 {
+
+                                    Calendar cal = Calendar.getInstance();
+                                    int hour_Now_int = cal.get(Calendar.HOUR_OF_DAY); 
+                                    int hourbefore_fajr_int = fajr_cal.get(Calendar.HOUR_OF_DAY) -1; 
+                                    hourbefore_fajr_int = hourbefore_fajr_int -1; 
+    //                                System.out.println("hour now is" + hour_Now_int);
+    //                                System.out.println("fajr hour -1 hour is" + hourbefore_fajr_int);
+
+
+
+                                    if(hour_Now_int >=0 && hour_Now_int<=hourbefore_fajr_int)
                                     {
-    //                                    System.out.println(proximity_lastTimerCall + delay_turnOnTV_after_Prayers_nightmode);
-    //                                    System.out.println(System.nanoTime());
-                                        ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
-                                        hdmiOn = true;
-                                        prayer_In_Progress = false;
-                                        System.out.println("Tv turned on");
-                                        try 
+
+
+                                        System.out.println("prayer detected in after hours");
+                                        if (System.nanoTime() > proximity_lastTimerCall + delay_turnOnTV_after_Prayers_nightmode )
                                         {
-                                            Thread.sleep(2500);                 
-                                            processBuilder1.start();                                      
-                                            Thread.sleep(2500); 
-                                            processBuilder1.start();
+        //                                    System.out.println(proximity_lastTimerCall + delay_turnOnTV_after_Prayers_nightmode);
+        //                                    System.out.println(System.nanoTime());
+                                            ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
+                                            hdmiOn = true;
+                                            prayer_In_Progress = false;
+                                            System.out.println("Tv turned on");
+                                            try 
+                                            {
+                                                Thread.sleep(2500);                 
+                                                processBuilder1.start();                                      
+                                                Thread.sleep(2500); 
+                                                processBuilder1.start();
+                                            }
+                                            catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
+                                                java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
+                                            } 
                                         }
-                                        catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
-                                            java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
-                                        } 
-                                    }
-                                }
-                                
-                                else
-                                {
-                                    System.out.println("prayer detected during normal hours");
-                                    
-                                    if (fajr_prayer_In_Progress_notification && cal.after(fajr_jamaat_cal) && cal.before(fajr_jamaat_update_cal))
-                                    {
-                                        fajr_prayer_In_Progress_notification = false;
-                                        Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
-                                        try {p.sendMessage("Fajr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
-                                        send_Broadcast_msg = true;
-                                        broadcast_msg = "Fajr Jamaa at Daar Ibn Abass has just started";
-                                    }
-                                    if (zuhr_prayer_In_Progress_notification && cal.after(zuhr_jamaat_cal) && cal.before(zuhr_plus15_cal))
-                                    {
-                                        zuhr_prayer_In_Progress_notification = false;
-                                        Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
-                                        try {p.sendMessage("Zuhr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
-                                        send_Broadcast_msg = true;
-                                        broadcast_msg = "Zuhr Jamaa at Daar Ibn Abass has just started";
-                                    }
-                                    if (asr_prayer_In_Progress_notification && cal.after(asr_jamaat_cal) && cal.before(asr_jamaat_update_cal))
-                                    {
-                                        asr_prayer_In_Progress_notification = false;
-                                        Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
-                                        try {p.sendMessage("Asr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
-                                        send_Broadcast_msg = true;
-                                        broadcast_msg = "Asr Jamaa at Daar Ibn Abass has just started";
-                                    }
-                                    
-                                    
-                                    if (maghrib_prayer_In_Progress_notification && cal.after(maghrib_cal) && cal.before(maghrib_plus15_cal))
-                                    {
-                                        maghrib_prayer_In_Progress_notification = false;
-                                        Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
-                                        try {p.sendMessage("Maghrib Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
-                                        send_Broadcast_msg = true;
-                                        broadcast_msg = "Maghrib Jamaa at Daar Ibn Abass has just started";
-                                    }
-                                    
-                                    if (isha_prayer_In_Progress_notification && cal.after(isha_jamaat_cal) && cal.before(isha_jamaat_update_cal))
-                                    {
-                                        isha_prayer_In_Progress_notification = false;
-                                        Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
-                                        try {p.sendMessage("Isha Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
-                                        send_Broadcast_msg = true;
-                                        broadcast_msg = "Isha Jamaa at Daar Ibn Abass has just started";
                                     }
 
-                                    if (System.nanoTime() > proximity_lastTimerCall + delay_turnOnTV_after_Prayers )
+                                    else
                                     {
-    //                                    System.out.println(proximity_lastTimerCall + delay_turnOnTV_after_Prayers);
-    //                                    System.out.println(System.nanoTime());
-                                        ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
-                                        hdmiOn = true;
-                                        prayer_In_Progress = false;
-                                        System.out.println("Tv turned on");
-                                        try 
+                                        System.out.println("prayer detected during normal hours");
+
+                                        if (fajr_prayer_In_Progress_notification && cal.after(fajr_jamaat_cal) && cal.before(fajr_jamaat_update_cal))
                                         {
-                                            Thread.sleep(2500);                 
-                                            processBuilder1.start();                                      
-                                            Thread.sleep(2500); 
-                                            processBuilder1.start();
+                                            fajr_prayer_In_Progress_notification = false;
+                                            Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
+                                            try {p.sendMessage("Fajr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
+                                            send_Broadcast_msg = true;
+                                            broadcast_msg = "Fajr Jamaa at Daar Ibn Abass has just started";
                                         }
-                                        catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
-                                            java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
-                                        } 
-                                    }
-                                    
-                                    if(send_Broadcast_msg)
-                                    {
-                                        try
+                                        if (zuhr_prayer_In_Progress_notification && cal.after(zuhr_jamaat_cal) && cal.before(zuhr_plus15_cal))
                                         {
-                                            send_Broadcast_msg = false;
-                                            socket1 = new DatagramSocket(null);
-                                            socket1.setBroadcast(true);
-                                            buf1 = broadcast_msg.getBytes();
-                                            group = InetAddress.getByName("255.255.255.255");
-                                            packet1 = new DatagramPacket(buf1, buf1.length, group, 8888);
-                                            socket1.send(packet1);
+                                            zuhr_prayer_In_Progress_notification = false;
+                                            Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
+                                            try {p.sendMessage("Zuhr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
+                                            send_Broadcast_msg = true;
+                                            broadcast_msg = "Zuhr Jamaa at Daar Ibn Abass has just started";
                                         }
-                                        catch(Exception e){logger.warn("Unexpected error", e);}
+                                        if (asr_prayer_In_Progress_notification && cal.after(asr_jamaat_cal) && cal.before(asr_jamaat_update_cal))
+                                        {
+                                            asr_prayer_In_Progress_notification = false;
+                                            Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
+                                            try {p.sendMessage("Asr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
+                                            send_Broadcast_msg = true;
+                                            broadcast_msg = "Asr Jamaa at Daar Ibn Abass has just started";
+                                        }
+
+
+                                        if (maghrib_prayer_In_Progress_notification && cal.after(maghrib_cal) && cal.before(maghrib_plus15_cal))
+                                        {
+                                            maghrib_prayer_In_Progress_notification = false;
+                                            Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
+                                            try {p.sendMessage("Maghrib Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
+                                            send_Broadcast_msg = true;
+                                            broadcast_msg = "Maghrib Jamaa at Daar Ibn Abass has just started";
+                                        }
+
+                                        if (isha_prayer_In_Progress_notification && cal.after(isha_jamaat_cal) && cal.before(isha_jamaat_update_cal))
+                                        {
+                                            isha_prayer_In_Progress_notification = false;
+                                            Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
+                                            try {p.sendMessage("Isha Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
+                                            send_Broadcast_msg = true;
+                                            broadcast_msg = "Isha Jamaa at Daar Ibn Abass has just started";
+                                        }
+
+                                        if (System.nanoTime() > proximity_lastTimerCall + delay_turnOnTV_after_Prayers )
+                                        {
+        //                                    System.out.println(proximity_lastTimerCall + delay_turnOnTV_after_Prayers);
+        //                                    System.out.println(System.nanoTime());
+                                            ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
+                                            hdmiOn = true;
+                                            prayer_In_Progress = false;
+                                            System.out.println("Tv turned on");
+                                            try 
+                                            {
+                                                Thread.sleep(2500);                 
+                                                processBuilder1.start();                                      
+                                                Thread.sleep(2500); 
+                                                processBuilder1.start();
+                                            }
+                                            catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
+                                                java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
+                                            } 
+                                        }
+
+                                        if(send_Broadcast_msg)
+                                        {
+                                            try
+                                            {
+                                                send_Broadcast_msg = false;
+                                                socket1 = new DatagramSocket(null);
+                                                socket1.setBroadcast(true);
+                                                buf1 = broadcast_msg.getBytes();
+                                                group = InetAddress.getByName("255.255.255.255");
+                                                packet1 = new DatagramPacket(buf1, buf1.length, group, 8888);
+                                                socket1.send(packet1);
+                                            }
+                                            catch(Exception e){logger.warn("Unexpected error", e);}
+                                        }
+
+
                                     }
-                                
-                                
-                                }
- 
+
+                                 }
                              }
                          }
-                     }
-                     
-                     if(event.getState().isLow()){sensorLow = true;}
-                 }
-             });
-             
-             System.out.println(" ... Motion Detection Starting.....");
 
-             for (;;) 
-             {
-                 try 
+                         if(event.getState().isLow()){sensorLow = true;}
+                     }
+                 });
+
+                 System.out.println(" ... Motion Detection Starting.....");
+
+                 for (;;) 
                  {
-                     
-                     if (System.nanoTime() > sensor_lastTimerCall + delay_turnOffTV_after_inactivity && sensorLow && hdmiOn || startup) 
+                     try 
                      {
-                         startup = false;
-                         System.out.println("All is quiet...");
-                         ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
-                         hdmiOn = false;
-                         try {Process process2 = processBuilder2.start();}
-                         catch (IOException e) {logger.warn("Unexpected error", e);}
-                         sensor_lastTimerCall = System.nanoTime();
-                         sensorLow = false;
-                     }
-                     Thread.sleep(1000);
-                 }
-                 catch(InterruptedException e) 
-                 {
-                     gpioSensor.shutdown();
-                     Thread.currentThread().interrupt();
-                 }
-             }
 
-         }).start();
+                         if (System.nanoTime() > sensor_lastTimerCall + delay_turnOffTV_after_inactivity && sensorLow && hdmiOn || startup) 
+                         {
+                             startup = false;
+                             System.out.println("All is quiet...");
+                             ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
+                             hdmiOn = false;
+                             try {Process process2 = processBuilder2.start();}
+                             catch (IOException e) {logger.warn("Unexpected error", e);}
+                             sensor_lastTimerCall = System.nanoTime();
+                             sensorLow = false;
+                         }
+                         Thread.sleep(1000);
+                     }
+                     catch(InterruptedException e) 
+                     {
+                         gpioSensor.shutdown();
+                         Thread.currentThread().interrupt();
+                     }
+                 }
+
+             }).start();
+        }
 
         
         
@@ -2300,7 +2443,8 @@ import org.joda.time.format.DateTimeFormatter;
                             files = directory.listFiles();
                             for(File f : files) 
                             {
-                                images.add(f.getName());
+                                if(!f.getName().startsWith(".")){images.add(f.getName());}
+                                
                             }   
                             System.out.println(images);
                             countImages = images.size();
@@ -2326,6 +2470,70 @@ import org.joda.time.format.DateTimeFormatter;
                         }
                         
                         
+                        
+                                
+                        else if(received.equals("show radar")) 
+                        {
+                            Platform.runLater(new Runnable() 
+                                {
+                                    @Override public void run() 
+                                    {
+                                        
+//                                        thermoMeter.setTranslateX(300);
+//                                        thermoMeter.setTranslateY(100);
+                                        Mainpane.add(thermoMeter, 13, 4,2,2);
+                                        radar_gauge_anninmation.start();
+                                        }
+                                }); 
+                            
+                            
+                            
+                        }
+                        
+                        
+                        else if(received.equals("update sonar settings")) 
+                        {
+                            try
+                            {
+                            c = DBConnect.connect();
+                            SQL = "Select sonar_active,sonar_active_distance  from settings";
+                            rs = c.createStatement().executeQuery(SQL);
+                            while (rs.next()) 
+                            {
+                                
+                                sonar_active =                  rs.getBoolean("sonar_active");
+                                sonar_active_distance =         rs.getInt("sonar_active_distance");
+                                
+
+                            }
+                            c.close();
+                            
+
+
+                        }
+                    catch (Exception e){logger.warn("Unexpected error", e);}
+   
+                        }
+                        
+                        
+                        
+                                
+                        else if(received.equals("hide radar")) 
+                        {
+                            
+                             Platform.runLater(new Runnable() 
+                                {
+                                    @Override public void run() 
+                                    {
+                                      Mainpane.getChildren().remove(thermoMeter);
+                                        radar_gauge_anninmation.stop();
+                                        }
+                                }); 
+                            
+                            
+                            
+                        }
+                                         
                         else if(received.equals("video toggle")) 
                         {
 
@@ -2727,7 +2935,7 @@ import org.joda.time.format.DateTimeFormatter;
         ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
         en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);
         
-        System.out.format("3******8****************");
+//        System.out.format("3******8****************");
 //                                System.out.format(en_Marquee_Notification_string);
 //                                System.out.format(ar_Marquee_Notification_string);
 
@@ -3327,11 +3535,11 @@ public void update_labels() throws Exception{
 
                 en_moon_hadith_Label_L1.setVisible(true);
                 en_moon_hadith_Label_L1.setText(en_full_moon_hadith);
-                en_moon_hadith_Label_L1.setId("hadith-text-english");
+                en_moon_hadith_Label_L1.setId("en_moon-notification-text1");
                 
                 en_moon_hadith_Label_L2.setVisible(true);
                 en_moon_hadith_Label_L2.setText(en_moon_notification);
-                en_moon_hadith_Label_L2.setId("en_moon-notification-text");
+                en_moon_hadith_Label_L2.setId("en_moon-notification-text2");
                 hadithPane.setHalignment(en_moon_hadith_Label_L2,HPos.LEFT);
 //                facebook_Label.setVisible(false);
 //                facebook_Label.setText("");
@@ -3345,7 +3553,7 @@ public void update_labels() throws Exception{
                 hadith_Label.setMinHeight(0);
                 hadith_Label.setText("");
                 ar_moon_hadith_Label_L2.setVisible(false);
-                divider1_Label.setMinHeight(50);
+//                divider1_Label.setMinHeight(50);
             }
             
             if (!athan_Change_Label_visible | !notification_Marquee_visible)
@@ -3685,11 +3893,11 @@ public void update_labels() throws Exception{
             {
                 ar_moon_hadith_Label_L1.setVisible(true);
                 ar_moon_hadith_Label_L1.setText(ar_full_moon_hadith);
-                ar_moon_hadith_Label_L1.setId("hadith-text-arabic");
+                ar_moon_hadith_Label_L1.setId("ar_moon-notification-text1");
                 
                 ar_moon_hadith_Label_L2.setVisible(true);
                 ar_moon_hadith_Label_L2.setText(ar_moon_notification);
-                ar_moon_hadith_Label_L2.setId("ar_moon-notification-text");
+                ar_moon_hadith_Label_L2.setId("ar_moon-notification-text2");
                 hadithPane.setHalignment(ar_moon_hadith_Label_L2,HPos.RIGHT);
                 
 //                facebook_Label.setVisible(false);
@@ -3703,7 +3911,7 @@ public void update_labels() throws Exception{
                 hadith_Label.setMinHeight(0);
                 hadith_Label.setText("");
                 en_moon_hadith_Label_L2.setVisible(false);
-                divider1_Label.setMinHeight(50);
+//                divider1_Label.setMinHeight(50);
             }
             
             
@@ -5058,7 +5266,7 @@ public void update_labels() throws Exception{
         hadithPane.getChildren().add(hadith_Label);
         
         
-        en_moon_hadith_Label_L1.setId("hadith-text-english");
+        en_moon_hadith_Label_L1.setId("en_moon-notification-text1");
         en_moon_hadith_Label_L1.setWrapText(true);
         en_moon_hadith_Label_L1.setText("Loading.....");
         en_moon_hadith_Label_L1.setMinHeight(0);
@@ -5070,7 +5278,7 @@ public void update_labels() throws Exception{
         hadithPane.setConstraints(en_moon_hadith_Label_L2, 0, 1);
         hadithPane.getChildren().add(en_moon_hadith_Label_L2);
         
-        ar_moon_hadith_Label_L1.setId("hadith-text-arabic");
+        ar_moon_hadith_Label_L1.setId("ar_moon-notification-text1");
         ar_moon_hadith_Label_L1.setWrapText(true);
         ar_moon_hadith_Label_L1.setMinHeight(0);
         hadithPane.setConstraints(ar_moon_hadith_Label_L1, 0, 0);

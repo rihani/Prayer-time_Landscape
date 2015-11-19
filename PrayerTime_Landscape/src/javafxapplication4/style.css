@@ -258,9 +258,26 @@ and open the template in the editor.
         -fx-background-color: whitesmoke;
         
    }
-   #en_moon-notification-text{
+   
+   #en_moon-notification-text1{
         
-        -fx-font-size: 23px;
+        -fx-font-size: 21px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        -fx-text-fill:goldenrod;
+        
+   }
+   
+   #en_moon-notification-text2{
+        
+        -fx-font-size: 21px;
         /*-fx-font-family: 'B Majid Shadow';*/
 /*        -fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/
@@ -273,8 +290,22 @@ and open the template in the editor.
         -fx-text-fill:whitesmoke;
         
    }
-   
-   #ar_moon-notification-text{
+   #ar_moon-notification-text1{
+        
+        -fx-font-size: 23px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: right;
+        -fx-text-fill:goldenrod;
+        
+   }
+   #ar_moon-notification-text2{
         
         -fx-font-size: 23px;
         /*-fx-font-family: 'B Majid Shadow';*/
