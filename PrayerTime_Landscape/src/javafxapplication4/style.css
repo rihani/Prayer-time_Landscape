@@ -261,7 +261,7 @@ and open the template in the editor.
    
    #en_moon-notification-text1{
         
-        -fx-font-size: 21px;
+        -fx-font-size: 23px;
         /*-fx-font-family: 'B Majid Shadow';*/
 /*        -fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/
@@ -277,7 +277,7 @@ and open the template in the editor.
    
    #en_moon-notification-text2{
         
-        -fx-font-size: 21px;
+        -fx-font-size: 22px;
         /*-fx-font-family: 'B Majid Shadow';*/
 /*        -fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/

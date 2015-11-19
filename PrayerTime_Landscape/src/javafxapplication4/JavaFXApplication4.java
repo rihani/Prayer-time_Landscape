@@ -195,7 +195,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
     private StringProperty       day_date = new SimpleStringProperty();
     
     
-    private final Boolean debug    = true;  //  <<========================== Debuger  
+    private final Boolean debug    = false;  //  <<========================== Debuger  
     private final Logger logger = Logger.getLogger(JavaFXApplication4.class.getName());
     private Date fullMoon= null; //  <<========================== might fix errors at startup
     private Date newMoon= null; //  <<========================== might fix errors at startup
@@ -397,7 +397,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
     Scene scene;
     File file = new File("/home/pi/prayertime/Images/");
     private Text newsFeedText;
-    
+    Pushover push = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
     
     @Override public void init() throws IOException {
         
@@ -529,9 +529,9 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
 // Pushover ==========================================================================        
         
         //https://github.com/nicatronTg/jPushover
-        Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
+        
         String temp_msg = device_name + " at "+ device_location + " is starting";
-        try {p.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
+        try {push.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
         
         
 //        test
@@ -1340,9 +1340,8 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                             en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);
                             ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
                             
-                            System.out.format("2******8****************");
-                                System.out.format(en_Marquee_Notification_string);
-                                System.out.format(ar_Marquee_Notification_string);
+//                                System.out.format(en_Marquee_Notification_string);
+//                                System.out.format(ar_Marquee_Notification_string);
                             
                             
                             
@@ -1362,7 +1361,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                                 catch (Exception e){logger.warn("Unexpected error", e);}
                             }
                             
-                            try {p.sendMessage(en_notification_Msg);} 
+                            try {push.sendMessage(en_notification_Msg);} 
                             catch (Exception e){{logger.warn("Unexpected error", e);}}
                         } 
                         
@@ -2031,7 +2030,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                 catch(SerialPortException ex) 
                      {
                          System.out.println(" ==>> SERIAL SETUP FAILED : " + ex.getMessage());  
-                         try {p.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
+                         try {push.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
                          Thread.currentThread().interrupt();
                      }
                 System.out.println(" ... Serial connection Open");
@@ -2065,9 +2064,78 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                                 try {Process process = processBuilder_camera_on.start(); } 
                                 catch (IOException e) {logger.warn("Unexpected error", e);}
                                 sensor1_lastTimerCall = System.nanoTime();
-                                camera = true;
+                                camera = true;                              
+                            }
+                            
+                            if(sonar_distance<sonar_active_distance)
+                            {
+                                Calendar cal = Calendar.getInstance();
+                                int hour_Now_int = cal.get(Calendar.HOUR_OF_DAY); 
+                                int hourbefore_fajr_int = fajr_cal.get(Calendar.HOUR_OF_DAY) -1; 
+                                hourbefore_fajr_int = hourbefore_fajr_int -1; 
+    //                                System.out.println("hour now is" + hour_Now_int);
+    //                                System.out.println("fajr hour -1 hour is" + hourbefore_fajr_int);
 
-                             }
+
+//                                System.out.println("prayer detected during normal hours");
+
+                                if (fajr_prayer_In_Progress_notification && cal.after(fajr_jamaat_cal) && cal.before(fajr_jamaat_update_cal))
+                                {
+                                    fajr_prayer_In_Progress_notification = false;
+                                    try {push.sendMessage("Fajr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
+                                    send_Broadcast_msg = true;
+                                    broadcast_msg = "Fajr Jamaa at Daar Ibn Abass has just started";
+                                }
+                                if (zuhr_prayer_In_Progress_notification && cal.after(zuhr_jamaat_cal) && cal.before(zuhr_plus15_cal))
+                                {
+                                    zuhr_prayer_In_Progress_notification = false;
+                                    try {push.sendMessage("Zuhr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
+                                    send_Broadcast_msg = true;
+                                    broadcast_msg = "Zuhr Jamaa at Daar Ibn Abass has just started";
+                                }
+                                if (asr_prayer_In_Progress_notification && cal.after(asr_jamaat_cal) && cal.before(asr_jamaat_update_cal))
+                                {
+                                    asr_prayer_In_Progress_notification = false;
+                                    try {push.sendMessage("Asr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
+                                    send_Broadcast_msg = true;
+                                    broadcast_msg = "Asr Jamaa at Daar Ibn Abass has just started";
+                                }
+
+
+                                if (maghrib_prayer_In_Progress_notification && cal.after(maghrib_cal) && cal.before(maghrib_plus15_cal))
+                                {
+                                    maghrib_prayer_In_Progress_notification = false;
+                                    try {push.sendMessage("Maghrib Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
+                                    send_Broadcast_msg = true;
+                                    broadcast_msg = "Maghrib Jamaa at Daar Ibn Abass has just started";
+                                }
+
+                                if (isha_prayer_In_Progress_notification && cal.after(isha_jamaat_cal) && cal.before(isha_jamaat_update_cal))
+                                {
+                                    isha_prayer_In_Progress_notification = false;
+                                    try {push.sendMessage("Isha Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
+                                    send_Broadcast_msg = true;
+                                    broadcast_msg = "Isha Jamaa at Daar Ibn Abass has just started";
+                                }
+
+
+                                if(send_Broadcast_msg)
+                                {
+                                    try
+                                    {
+                                        send_Broadcast_msg = false;
+                                        socket1 = new DatagramSocket(null);
+                                        socket1.setBroadcast(true);
+                                        buf1 = broadcast_msg.getBytes();
+                                        group = InetAddress.getByName("255.255.255.255");
+                                        packet1 = new DatagramPacket(buf1, buf1.length, group, 8888);
+                                        socket1.send(packet1);
+                                    }
+                                    catch(Exception e){logger.warn("Unexpected error", e);}
+                                }
+                            }
+
+                             
 
                             if (System.nanoTime() > sensor1_lastTimerCall + delay_switch_back_to_App && sonar_distance>sonar_active_distance && camera && !manual_Camera) 
                              {
@@ -2086,7 +2154,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                      catch(SerialPortException ex) 
                      {
                          System.out.println(" ==>> SERIAL SETUP FAILED : " + ex.getMessage());  
-                         try {p.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
+                         try {push.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
                          Thread.currentThread().interrupt();
                      } catch (InterruptedException ex) {
                         java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
@@ -2151,7 +2219,9 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                                 ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
                                 try {Process process = processBuilder_camera_off.start(); } 
                                 catch (IOException e) {logger.warn("Unexpected error", e);}
-                            }
+                                
+                                }
+                            
 
                          Thread.sleep(1000);
                      }
@@ -2190,8 +2260,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                              sensor_lastTimerCall = System.nanoTime(); 
                              if(!hdmiOn && !pir_disactive_startup)
                              {
-                                 if (!prayer_In_Progress)
-                                 {
+                                 
                                     ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
                                     hdmiOn = true;
                                     startup = false;
@@ -2206,136 +2275,9 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                                             catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
                                                 java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
                                             }
-
-                                 }
-
-                                 if (prayer_In_Progress)
-                                 {
-
-                                    Calendar cal = Calendar.getInstance();
-                                    int hour_Now_int = cal.get(Calendar.HOUR_OF_DAY); 
-                                    int hourbefore_fajr_int = fajr_cal.get(Calendar.HOUR_OF_DAY) -1; 
-                                    hourbefore_fajr_int = hourbefore_fajr_int -1; 
-    //                                System.out.println("hour now is" + hour_Now_int);
-    //                                System.out.println("fajr hour -1 hour is" + hourbefore_fajr_int);
-
-
-
-                                    if(hour_Now_int >=0 && hour_Now_int<=hourbefore_fajr_int)
-                                    {
-
-
-                                        System.out.println("prayer detected in after hours");
-                                        if (System.nanoTime() > proximity_lastTimerCall + delay_turnOnTV_after_Prayers_nightmode )
-                                        {
-        //                                    System.out.println(proximity_lastTimerCall + delay_turnOnTV_after_Prayers_nightmode);
-        //                                    System.out.println(System.nanoTime());
-                                            ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
-                                            hdmiOn = true;
-                                            prayer_In_Progress = false;
-                                            System.out.println("Tv turned on");
-                                            try 
-                                            {
-                                                Thread.sleep(2500);                 
-                                                processBuilder1.start();                                      
-                                                Thread.sleep(2500); 
-                                                processBuilder1.start();
-                                            }
-                                            catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
-                                                java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
-                                            } 
-                                        }
-                                    }
-
-                                    else
-                                    {
-                                        System.out.println("prayer detected during normal hours");
-
-                                        if (fajr_prayer_In_Progress_notification && cal.after(fajr_jamaat_cal) && cal.before(fajr_jamaat_update_cal))
-                                        {
-                                            fajr_prayer_In_Progress_notification = false;
-                                            Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
-                                            try {p.sendMessage("Fajr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
-                                            send_Broadcast_msg = true;
-                                            broadcast_msg = "Fajr Jamaa at Daar Ibn Abass has just started";
-                                        }
-                                        if (zuhr_prayer_In_Progress_notification && cal.after(zuhr_jamaat_cal) && cal.before(zuhr_plus15_cal))
-                                        {
-                                            zuhr_prayer_In_Progress_notification = false;
-                                            Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
-                                            try {p.sendMessage("Zuhr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
-                                            send_Broadcast_msg = true;
-                                            broadcast_msg = "Zuhr Jamaa at Daar Ibn Abass has just started";
-                                        }
-                                        if (asr_prayer_In_Progress_notification && cal.after(asr_jamaat_cal) && cal.before(asr_jamaat_update_cal))
-                                        {
-                                            asr_prayer_In_Progress_notification = false;
-                                            Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
-                                            try {p.sendMessage("Asr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
-                                            send_Broadcast_msg = true;
-                                            broadcast_msg = "Asr Jamaa at Daar Ibn Abass has just started";
-                                        }
-
-
-                                        if (maghrib_prayer_In_Progress_notification && cal.after(maghrib_cal) && cal.before(maghrib_plus15_cal))
-                                        {
-                                            maghrib_prayer_In_Progress_notification = false;
-                                            Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
-                                            try {p.sendMessage("Maghrib Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
-                                            send_Broadcast_msg = true;
-                                            broadcast_msg = "Maghrib Jamaa at Daar Ibn Abass has just started";
-                                        }
-
-                                        if (isha_prayer_In_Progress_notification && cal.after(isha_jamaat_cal) && cal.before(isha_jamaat_update_cal))
-                                        {
-                                            isha_prayer_In_Progress_notification = false;
-                                            Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
-                                            try {p.sendMessage("Isha Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
-                                            send_Broadcast_msg = true;
-                                            broadcast_msg = "Isha Jamaa at Daar Ibn Abass has just started";
-                                        }
-
-                                        if (System.nanoTime() > proximity_lastTimerCall + delay_turnOnTV_after_Prayers )
-                                        {
-        //                                    System.out.println(proximity_lastTimerCall + delay_turnOnTV_after_Prayers);
-        //                                    System.out.println(System.nanoTime());
-                                            ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
-                                            hdmiOn = true;
-                                            prayer_In_Progress = false;
-                                            System.out.println("Tv turned on");
-                                            try 
-                                            {
-                                                Thread.sleep(2500);                 
-                                                processBuilder1.start();                                      
-                                                Thread.sleep(2500); 
-                                                processBuilder1.start();
-                                            }
-                                            catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
-                                                java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
-                                            } 
-                                        }
-
-                                        if(send_Broadcast_msg)
-                                        {
-                                            try
-                                            {
-                                                send_Broadcast_msg = false;
-                                                socket1 = new DatagramSocket(null);
-                                                socket1.setBroadcast(true);
-                                                buf1 = broadcast_msg.getBytes();
-                                                group = InetAddress.getByName("255.255.255.255");
-                                                packet1 = new DatagramPacket(buf1, buf1.length, group, 8888);
-                                                socket1.send(packet1);
-                                            }
-                                            catch(Exception e){logger.warn("Unexpected error", e);}
-                                        }
-
-
-                                    }
-
-                                 }
-                             }
-                         }
+      
+                             
+                         }}
 
                          if(event.getState().isLow()){sensorLow = true;}
                      }
@@ -3536,6 +3478,7 @@ public void update_labels() throws Exception{
                 en_moon_hadith_Label_L1.setVisible(true);
                 en_moon_hadith_Label_L1.setText(en_full_moon_hadith);
                 en_moon_hadith_Label_L1.setId("en_moon-notification-text1");
+                en_moon_hadith_Label_L1.setTranslateY(5);
                 
                 en_moon_hadith_Label_L2.setVisible(true);
                 en_moon_hadith_Label_L2.setText(en_moon_notification);
@@ -3894,6 +3837,7 @@ public void update_labels() throws Exception{
                 ar_moon_hadith_Label_L1.setVisible(true);
                 ar_moon_hadith_Label_L1.setText(ar_full_moon_hadith);
                 ar_moon_hadith_Label_L1.setId("ar_moon-notification-text1");
+                ar_moon_hadith_Label_L1.setTranslateY(5);
                 
                 ar_moon_hadith_Label_L2.setVisible(true);
                 ar_moon_hadith_Label_L2.setText(ar_moon_notification);
