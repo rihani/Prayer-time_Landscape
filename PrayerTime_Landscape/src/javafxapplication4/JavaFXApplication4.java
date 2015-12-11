@@ -196,7 +196,8 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
     
     
     private final Boolean debug    = false;  //  <<========================== Debuger 
-    private final Boolean facebook_image_debug = true; //  <<========================== Debuger 
+    private final Boolean facebook_image_debug = false; //  <<========================== Debuger 
+    private final Boolean auto_friday_cam_debug = false; //  <<========================== Debuger 
     private final Logger logger = Logger.getLogger(JavaFXApplication4.class.getName());
     private Date fullMoon= null; //  <<========================== might fix errors at startup
     private Date newMoon= null; //  <<========================== might fix errors at startup
@@ -282,6 +283,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
     boolean camera = false;
     boolean radar_displayed = false;
     boolean facebook_turn = false;
+    boolean zuhr_jamaat_cam_activated = false;
             
     private String hadith, translated_hadith, ar_full_moon_hadith, en_full_moon_hadith, ar_moon_notification, en_moon_notification, announcement, en_notification_Msg, ar_notification_Msg, device_name, device_location;
     private String ar_notification_Msg_Lines[], en_notification_Msg_Lines[], notification_Msg, facebook_moon_notification_Msg;    
@@ -299,7 +301,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
     private String formattedDateTime;
 //    private String cameraSource = "http://192.168.0.6/cam_pic.php";
     
-    private String cameraSource;
+//    private String cameraSource;
             
     
     ResultSet rs;
@@ -318,7 +320,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
     private Calendar fajr_cal, sunrise_cal, duha_cal, zuhr_cal, asr_cal, maghrib_cal, isha_cal,old_today;
     private Calendar fajr_jamaat_cal, duha_jamaat_cal, zuhr_jamaat_cal, asr_jamaat_cal, maghrib_jamaat_cal, isha_jamaat_cal;
     private Calendar fajr_jamaat_update_cal, duha_jamaat_update_cal, zuhr_jamaat_update_cal, asr_jamaat_update_cal, maghrib_jamaat_update_cal, isha_jamaat_update_cal;
-    private Calendar future_fajr_jamaat_cal, future_zuhr_jamaat_cal, future_asr_jamaat_cal, future_maghrib_jamaat_cal, future_isha_jamaat_cal, maghrib_plus15_cal, zuhr_plus15_cal;
+    private Calendar future_fajr_jamaat_cal, future_zuhr_jamaat_cal, future_asr_jamaat_cal, future_maghrib_jamaat_cal, future_isha_jamaat_cal, maghrib_plus15_cal, zuhr_plus15_cal, zuhr_plus30_cal;
     private Calendar notification_Date_cal, hadith_notification_Date_cal;
     
     private Date fajr_begins_time,fajr_jamaat_time, sunrise_time, duha_time, zuhr_begins_time, zuhr_jamaat_time, asr_begins_time, asr_jamaat_time, maghrib_begins_time, maghrib_jamaat_time,isha_begins_time, isha_jamaat_time;
@@ -358,9 +360,15 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
     private long moonPhase_lastTimerCall,translate_lastTimerCall, clock_update_lastTimerCall ,sensor_lastTimerCall,sonar_lastTimerCall, sensor1_lastTimerCall, debug_lastTimerCall, proximity_lastTimerCall, radarwidget_lastTimerCall, delay_Manual_switch_to_cam_lastTimerCall;
                        
                                     
-    public long delay_Manual_switch_to_cam = 30000000000L; // 30 seconds                                
-    public long delay_switch_to_cam = 10000000000L; // 10 seconds
+//    public long delay_Manual_switch_to_cam = 30000000000L; // 30 seconds  
+    public long delay_Manual_switch_to_cam = 1200000000000L; // 20 minutes
+    
+//    public long delay_switch_to_cam = 10000000000L; // 10 seconds
+    public long delay_switch_to_cam = 8000000000L; // 8 seconds
+    
     public long delay_switch_back_to_App = 20000000000L; // 20 seconds
+//    public long delay_switch_back_to_App = 15000000000L; // 15 seconds
+    
     public long delay_turnOnTV_after_Prayers = 135000000000L; // 2.25 minute
 //    public long delay_turnOnTV_after_Prayers = 60000000000L; // 1 minute
     public long delay_turnOnTV_after_Prayers_nightmode = 420000000000L; // 7 minutes
@@ -416,11 +424,11 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
 //            logger.warn("Unexpected error", e);
 //        }
 //        System.out.println("Successfully updated the status to [" + status.getText() + "].");
-        try {
-                cameraSource = new File("/home/pi/prayertime/camera/cam2.jpg").toURI().toURL().toString();
-            } catch (MalformedURLException ex) {
-                java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
-            }
+//        try {
+//                cameraSource = new File("/home/pi/prayertime/camera/cam2.jpg").toURI().toURL().toString();
+//            } catch (MalformedURLException ex) {
+//                java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
+//            }
         now1 = LocalTime.now();
         radar_gauge_anninmation = new AnimationTimer() {
             @Override public void handle(long now1) {
@@ -432,28 +440,28 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
             }
         };
         
-        Timeline camera_Timeline = new Timeline
-                (
-                    new KeyFrame(Duration.seconds(0), evt -> 
-                {
-
-                    
-                    Mainpane.getChildren().removeAll(myGroup);      
-                    cameraView = ImageViewBuilder.create()
-                        .image(new Image(cameraSource))
-                        .build();
-                    myGroup = GroupBuilder.create()
-                        .children(cameraView)
-                        .build();
-                    Mainpane.add(myGroup, 0, 0,30,26);
-
-//                    System.out.println("Changing Background...");
-
-                }),
-                new KeyFrame(Duration.seconds(0.1))
-            );
-            camera_Timeline.setCycleCount(Animation.INDEFINITE);    
-        
+//        Timeline camera_Timeline = new Timeline
+//                (
+//                    new KeyFrame(Duration.seconds(0), evt -> 
+//                {
+//
+//                    
+//                    Mainpane.getChildren().removeAll(myGroup);      
+//                    cameraView = ImageViewBuilder.create()
+//                        .image(new Image(cameraSource))
+//                        .build();
+//                    myGroup = GroupBuilder.create()
+//                        .children(cameraView)
+//                        .build();
+//                    Mainpane.add(myGroup, 0, 0,30,26);
+//
+////                    System.out.println("Changing Background...");
+//
+//                }),
+//                new KeyFrame(Duration.seconds(0.1))
+//            );
+//            camera_Timeline.setCycleCount(Animation.INDEFINITE);    
+//        
  
         
         logger.info("Starting prayer application....");
@@ -466,6 +474,10 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                 logger.info("Exiting application....");
                 ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
                 try {Process process2 = processBuilder2.start();}
+                catch (IOException e) {logger.warn("Unexpected error", e);}
+                System.out.println("Switching back to App...");
+                ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
+                try {Process process = processBuilder_camera_off.start(); } 
                 catch (IOException e) {logger.warn("Unexpected error", e);}
                 
                 Platform.exit();
@@ -1081,6 +1093,27 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                             
                             zuhr_plus15_cal = (Calendar)zuhr_jamaat_cal.clone();
                             zuhr_plus15_cal.add(Calendar.MINUTE, +15);
+                            
+                            zuhr_plus30_cal = (Calendar)zuhr_jamaat_cal.clone();
+                            zuhr_plus30_cal.add(Calendar.MINUTE, +30);
+                            
+                            
+                            if(auto_friday_cam_debug)
+                            {
+                                zuhr_jamaat_cal = Calendar.getInstance();
+                                zuhr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                zuhr_jamaat_cal.set(Calendar.SECOND, 0);
+                                zuhr_jamaat_cal.add(Calendar.MINUTE, +1);
+//                                zuhr_jamaat_cal.set(Calendar.HOUR_OF_DAY, 11);
+
+                                zuhr_plus30_cal = (Calendar)zuhr_jamaat_cal.clone();
+                                zuhr_plus30_cal.add(Calendar.MINUTE, +1);
+                            
+                            
+                            
+                            
+                            
+                            }
                             
                             Date asr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + asr_jamaat);
                             cal.setTime(asr_jamaat_temp);
@@ -1771,7 +1804,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                                 if (facebook_image_debug)
                                 {
 //                                    facebook_Post_Url = "https://fbcdn-sphotos-d-a.akamaihd.net/hphotos-ak-xfp1/t31.0-8/s720x720/12247799_1094917007209864_6927654842411922722_o.jpg";
-                                    facebook_Post_Url = "https://scontent-syd1-1.xx.fbcdn.net/hphotos-xpa1/t31.0-8/12182685_1088442871190611_4413338620194631669_o.png";
+                                    facebook_Post_Url = "https://fbcdn-sphotos-d-a.akamaihd.net/hphotos-ak-xpf1/v/t1.0-9/11429818_1016762725025293_7919066187654522176_n.png?oh=3b38ae20db78e48fc1772d45a12a60ef&oe=56E2542D&__gda__=1457667602_8ded0d24fc8943fab85f024b99fe8ac5";
                                     facebook_Picture_Post = true;
                                     facebook_Label_visible = true;
                                     facebook_Label_visible_set_once = true;
@@ -2106,19 +2139,16 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
 
                             }
 
-                            if (System.nanoTime() > sonar_lastTimerCall + delay_switch_to_cam && sonar_distance<sonar_active_distance && !camera) 
+                            if (System.nanoTime() > sonar_lastTimerCall + delay_switch_to_cam && sonar_distance<sonar_active_distance && !camera && !zuhr_jamaat_cam_activated) 
                              {
 
                                 System.out.println("Switching to Camera...");
-                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -hf  -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
                                 try {Process process = processBuilder_camera_on.start(); } 
                                 catch (IOException e) {logger.warn("Unexpected error", e);}
                                 sensor1_lastTimerCall = System.nanoTime();
                                 camera = true;                              
-                            }
                             
-                            if(sonar_distance<sonar_active_distance)
-                            {
                                 Calendar cal = Calendar.getInstance();
                                 int hour_Now_int = cal.get(Calendar.HOUR_OF_DAY); 
                                 int hourbefore_fajr_int = fajr_cal.get(Calendar.HOUR_OF_DAY) -1; 
@@ -2134,21 +2164,21 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                                     fajr_prayer_In_Progress_notification = false;
                                     try {push.sendMessage("Fajr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
                                     send_Broadcast_msg = true;
-                                    broadcast_msg = "Fajr Jamaa at Daar Ibn Abass has just started";
+                                    broadcast_msg = "Prayer in progress";
                                 }
                                 if (zuhr_prayer_In_Progress_notification && cal.after(zuhr_jamaat_cal) && cal.before(zuhr_plus15_cal))
                                 {
                                     zuhr_prayer_In_Progress_notification = false;
                                     try {push.sendMessage("Zuhr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
                                     send_Broadcast_msg = true;
-                                    broadcast_msg = "Zuhr Jamaa at Daar Ibn Abass has just started";
+                                    broadcast_msg = "Prayer in progress";
                                 }
                                 if (asr_prayer_In_Progress_notification && cal.after(asr_jamaat_cal) && cal.before(asr_jamaat_update_cal))
                                 {
                                     asr_prayer_In_Progress_notification = false;
                                     try {push.sendMessage("Asr Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
                                     send_Broadcast_msg = true;
-                                    broadcast_msg = "Asr Jamaa at Daar Ibn Abass has just started";
+                                    broadcast_msg = "Prayer in progress";
                                 }
 
 
@@ -2157,7 +2187,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                                     maghrib_prayer_In_Progress_notification = false;
                                     try {push.sendMessage("Maghrib Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
                                     send_Broadcast_msg = true;
-                                    broadcast_msg = "Maghrib Jamaa at Daar Ibn Abass has just started";
+                                    broadcast_msg = "Prayer in progress";
                                 }
 
                                 if (isha_prayer_In_Progress_notification && cal.after(isha_jamaat_cal) && cal.before(isha_jamaat_update_cal))
@@ -2165,7 +2195,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                                     isha_prayer_In_Progress_notification = false;
                                     try {push.sendMessage("Isha Jamaa at Daar Ibn Abass has just started"); System.out.println("Prayer in progress notification sent");} catch (IOException e){e.printStackTrace();}
                                     send_Broadcast_msg = true;
-                                    broadcast_msg = "Isha Jamaa at Daar Ibn Abass has just started";
+                                    broadcast_msg = "Prayer in progress";
                                 }
 
 
@@ -2187,7 +2217,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
 
                              
 
-                            if (System.nanoTime() > sensor1_lastTimerCall + delay_switch_back_to_App && sonar_distance>sonar_active_distance && camera && !manual_Camera) 
+                            if (System.nanoTime() > sensor1_lastTimerCall + delay_switch_back_to_App && sonar_distance>sonar_active_distance && camera && !manual_Camera && !zuhr_jamaat_cam_activated) 
                              {
 
                                 System.out.println("Switching back to App...");
@@ -2245,7 +2275,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                             if(!manual_Camera)
                             {
                                 System.out.println("button pressed ");
-                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -hf  -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
                                 try {Process process = processBuilder_camera_on.start(); System.out.println("Manually Switching to Camera...");} 
                                 catch (IOException e) {logger.warn("Unexpected error", e);}
                                 delay_Manual_switch_to_cam_lastTimerCall = System.nanoTime();
@@ -2528,7 +2558,6 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
                                          
                         else if(received.equals("video toggle")) 
                         {
-
                             if (!camera)
                             {
                                 Platform.runLater(new Runnable() 
@@ -2539,6 +2568,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
 //                                        prayertime_pane.setVisible(false);
 //                                        hadithPane.setVisible(false);
                                         camera = true;
+                                        sensor1_lastTimerCall = System.nanoTime();
 //                                        camera_Timeline.play();
 //                                        
 //                                        text_Box.setVisible(false);
@@ -2547,7 +2577,7 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
 //                                        en_Marquee_Notification_Text.setVisible(false);
 //                                        en_timeline.stop();
                                         
-                                        ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+                                        ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -hf  -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
                                         try {Process process = processBuilder_camera_on.start(); } 
                                         catch (IOException e) {logger.warn("Unexpected error", e);}
                                         
@@ -2909,13 +2939,13 @@ import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
         Sunrisepane.setVisible(false);
         hadithPane = hadithPane();
         
-        cameraView = ImageViewBuilder.create()
-                .image(new Image(cameraSource))
-                .build();
-         
-        myGroup = GroupBuilder.create()
-                .children(cameraView)
-                .build();
+//        cameraView = ImageViewBuilder.create()
+//                .image(new Image(cameraSource))
+//                .build();
+//         
+//        myGroup = GroupBuilder.create()
+//                .children(cameraView)
+//                .build();
          
         
         
@@ -3261,6 +3291,34 @@ public void play_athan() throws Exception{
             catch (IOException e) {logger.warn("Unexpected error", e);}
         }
         
+        
+         else if (zuhr_jamaat_cal.equals(Calendar_now) && !zuhr_jamaat_cam_activated && dayofweek_int == 6 ) 
+        {
+            zuhr_jamaat_cam_activated = true;
+            System.out.println("Switching to Camera...");
+            ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -hf  -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+            try {Process process = processBuilder_camera_on.start(); } 
+            catch (IOException e) {logger.warn("Unexpected error", e);}
+            camera = true;                              
+                 
+                 
+                 
+        }    
+         
+         else if (zuhr_plus30_cal.equals(Calendar_now) && zuhr_jamaat_cam_activated && dayofweek_int == 6) 
+        {
+            zuhr_jamaat_cam_activated = false;
+            sensor1_lastTimerCall = System.nanoTime();
+//            camera = false;
+//            System.out.println("Manually Switching back to App...");
+//            ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
+//            try {Process process = processBuilder_camera_off.start(); } 
+//            catch (IOException e) {logger.warn("Unexpected error", e);}                             
+                 
+                 
+                 
+        }    
+                
         else if (zuhr_cal.equals(Calendar_now) && zuhr_athan_enable) 
         {
             zuhr_prayer_In_Progress_notification = true;
@@ -3378,10 +3436,12 @@ public void update_labels() throws Exception{
             {
                 
 //                System.out.println("en hadith_Label_visible");
+
+                
                 hadith_Label.setVisible(true);
                 hadith_Label.setText(translated_hadith);
                 hadith_Label.setId("hadith-text-english");
-//                hadithPane.setValignment(hadith_Label,VPos.TOP);
+                hadithPane.setValignment(hadith_Label,VPos.TOP);
                 ar_moon_hadith_Label_L1.setVisible(false);
                 ar_moon_hadith_Label_L2.setVisible(false);
                 en_moon_hadith_Label_L1.setVisible(false);
@@ -3778,6 +3838,7 @@ public void update_labels() throws Exception{
             {
 //                System.out.println("ar hadith_Label_visible");
                 hadith_Label.setVisible(true);
+                hadith_Label.setText("");
                 hadith_Label.setMinHeight(0);
                 hadith_Label.setText(hadith);
                 hadith_Label.setId("hadith-text-arabic");
