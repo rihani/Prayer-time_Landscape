@@ -1,0 +1,625 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 22/08/2013, 4:29:37 PM
+    Author     : rihanio
+*/
+
+    .separator:horizontal .line {
+    -fx-padding: 0.043333em 0.0em 0.0em 0.0em; /* 1 0 0 0 */
+    -fx-border-color: derive(whitesmoke,-60%) transparent transparent transparent;
+}
+
+
+/*    #Mainpane{
+        -fx-background-image: url("background_image.png");
+        -fx-background-image: url("moon_background.jpg");
+        -fx-background-image: url("../Images/wallpaper4.jpg");
+        -fx-background-repeat: stretch;   
+        -fx-background-size: 650 1180;
+        -fx-background-position: top left;
+        -fx-effect: dropshadow(three-pass-box, black, 30, 0.5, 0, 0); */
+/*        
+    }*/
+
+
+
+    #prayer-text-arabic {
+        
+        -fx-font-size: 40px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        -fx-font-family: 'B Jadid';
+        /*-fx-font-family: 'Arial Bold';*/
+        -fx-fill: white;
+        /*-fx-effect: innershadow( three-pass-box , rgba(255,255,255,0.8) , 4, 0.0 , 0 , 2 );*/
+        /*-fx-text-outline: 2px 2px #ffffff;*/
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment:right;
+        
+   }
+   
+    #prayer-text-english {
+        
+        -fx-font-size: 42px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Arial Black';
+        /*-fx-font-family: 'WLM Carton';*/
+        -fx-fill: white;
+        -fx-effect: innershadow( three-pass-box , rgba(255,255,255,0.8) , 4, 0.0 , 0 , 2 );
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.8) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        
+   }
+ 
+   
+       #prayer-label-arabic {
+        
+        -fx-font-size: 48px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+        -fx-font-family: 'Old Antic Outline Shaded';
+        /*-fx-font-family: 'B Jadid';*/
+        /*-fx-font-family: 'Arial Bold';*/
+        -fx-text-fill: white;
+        
+        /*-fx-effect: innershadow( three-pass-box , rgba(255,255,255,0.8) , 4, 0.0 , 0 , 2 );*/
+        /*-fx-text-outline: 2px 2px #ffffff;*/
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        /*-fx-text-alignment:top;*/
+        
+   }
+   
+    #prayer-label-english {
+        
+        -fx-font-size: 37px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Arial Black';
+        /*-fx-font-family: 'WLM Carton';*/
+        -fx-text-fill: white;
+        /*-fx-text-alignment: left;*/
+        
+   }
+   #moon-text-english{
+        
+        -fx-font-size: 31px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Arial';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        -fx-text-fill:whitesmoke;
+        
+   }
+
+      #moon-text-arabic{
+        
+        -fx-font-size: 36px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+        /*-fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Arial Bold';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: right;
+        -fx-text-fill:whitesmoke;
+        
+   }
+   
+   
+   
+   
+   
+   
+   
+   
+   #sunrise-text-english{
+        
+        -fx-font-size: 31px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Arial';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: right;
+        -fx-text-fill:whitesmoke;
+        
+   }
+
+      #sunrise-text-arabic{
+        
+        -fx-font-size: 36px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+        /*-fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Arial Bold';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: right;
+        -fx-text-fill:whitesmoke;
+        
+   }
+   
+   #facebook-text{
+        
+        -fx-font-size: 65px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+        /*-fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Arial';
+        
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        -fx-line-spacing: 0.5em;
+        -fx-text-fill:whitesmoke;
+        
+   }
+   
+   #footer-text{
+        
+        -fx-font-size: 13px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+        /*-fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Arial';
+        
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        -fx-line-spacing: 0.5em;
+        -fx-text-fill:whitesmoke;
+        
+   }
+  
+      
+      #en_athan-change-text{
+        
+        -fx-font-size: 62px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        -fx-text-fill:white;
+        
+   }
+   #ar_athan-change-text{
+        
+        -fx-font-size: 62px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: right;
+        -fx-text-fill:white;
+        
+   }
+   #en_athan-change-textL2{
+        
+        -fx-font-size: 63px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        -fx-text-fill:red;
+        -fx-background-color: whitesmoke;
+        
+   }
+   
+   #ar_athan-change-textL2{
+        
+        -fx-font-size: 63px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: right;
+        -fx-text-fill:red;
+        -fx-background-color: whitesmoke;
+        
+   }
+   
+   #en_moon-notification-text1{
+        
+        -fx-font-size: 63px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        -fx-text-fill:goldenrod;
+        
+   }
+   
+   #en_moon-notification-text2{
+        
+        -fx-font-size: 62px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        -fx-text-fill:whitesmoke;
+        
+   }
+   #ar_moon-notification-text1{
+        
+        -fx-font-size: 59px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: right;
+        -fx-text-fill:goldenrod;
+        
+   }
+   #ar_moon-notification-text2{
+        
+        -fx-font-size: 59px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: right;
+        -fx-text-fill:whitesmoke;
+        
+   }
+   
+      #hadith-text-arabic{
+        
+        -fx-font-size: 63px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+        /*-fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-font-family: 'PT Bold Arch';*/
+        /*-fx-font-family: 'Arial Bold';*/
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: right;
+        -fx-text-origin:top;
+        /*-fx-line-spacing: 0.1em;*/
+        -fx-text-fill:goldenrod;
+        
+   }
+   
+   
+   #hadith-text-english{
+        
+        -fx-font-size: 63px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+        /*-fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Lateef';
+        /*-fx-font-family: 'PT Bold Arch';*/
+        /*-fx-font-family: 'Arial Bold';*/
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        -fx-text-origin:top;
+        -fx-line-spacing: 1px;
+        -fx-text-fill:goldenrod;
+        
+   }
+   
+    #moonpane{
+	 
+/*         -fx-background-color: rgba(0, 0, 0, 0.30); 
+	 -fx-border-color: black;
+	 -fx-border-radius: 20;
+	 -fx-padding: -35 0 -35 35;
+	 -fx-background-radius: 20;*/
+	}
+    
+    #glass{
+            
+                 -fx-background-color: rgba(0, 0, 0, 0.35); 
+	 /*-fx-border-color: black;*/
+	 /*-fx-border-radius: 20;*/
+	 -fx-padding: 15 15 15 15;
+	 /*-fx-background-radius: 20;*/    
+            
+            
+            
+        }
+        
+        
+        #notification{
+            
+                 -fx-background-color: rgba(0, 0, 0, 1); 
+	 -fx-border-color: black;
+         
+
+         
+         
+         
+/*    -fx-background-color: linear-gradient(#ff5400, #be1d00);
+    -fx-font-weight: bold;*/
+    
+//red
+/*    -fx-background-color: 
+        #ff5400,
+        linear-gradient(#ff5400 50%, white 100%),
+        radial-gradient(center 50% -40%, radius 200%, #be1d00 45%, rgba(230,230,230,0) 50%);
+    -fx-background-radius: 30;
+    -fx-background-insets: 0,1,1;
+    -fx-text-fill: black;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 3, 0.0 , 0 , 1 );*/
+         
+//grey ipad    
+/*    -fx-background-color: 
+        linear-gradient(#686868 0%, #232723 25%, #373837 75%, #757575 100%),
+        linear-gradient(#020b02, #3a3a3a),
+        linear-gradient(#b9b9b9 0%, #c2c2c2 20%, #afafaf 80%, #c8c8c8 100%),
+        linear-gradient(#f5f5f5 0%, #dbdbdb 50%, #cacaca 51%, #d7d7d7 100%);
+    -fx-background-insets: 1,1,14,3;
+    -fx-background-radius: 9,8,5,4;
+    -fx-padding: 15 30 15 30;
+    -fx-font-family: "Helvetica";
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+    -fx-effect: dropshadow( three-pass-box , rgba(255,255,255,0.2) , 1, 0.0 , 0 , 1);*/
+
+//ipad dark
+/*-fx-background-color: 
+        linear-gradient(#686868 0%, #232723 25%, #373837 75%, #757575 100%),
+        linear-gradient(#020b02, #3a3a3a),
+        linear-gradient(#9d9e9d 0%, #6b6a6b 20%, #343534 80%, #242424 100%),
+        linear-gradient(#8a8a8a 0%, #6b6a6b 20%, #343534 80%, #262626 100%),
+        linear-gradient(#777777 0%, #606060 50%, #505250 51%, #2a2b2a 100%);
+    -fx-background-insets: 0,1,4,5,6;
+    -fx-background-radius: 9,8,5,4,3;
+    -fx-padding: 15 30 15 30;
+    -fx-font-family: "Helvetica";
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;*/
+    /*-fx-effect: dropshadow( three-pass-box , rgba(255,255,255,0.2) , 1, 0.0 , 0 , 1);*/
+            
+            
+        }
+        
+        #hadithpane{
+	 
+         /*-fx-background-color: rgba(0, 0, 0, 0.30);*/ 
+         -fx-background-color: rgba(0, 0, 0, 0.35); 
+	 /*-fx-border-color: black;*/
+	 /*-fx-border-radius: 20;*/
+         
+	 -fx-padding: 5 50 5 50;
+	 /*-fx-background-radius: 20;*/
+	}
+        
+        #clockPane{
+	 
+         /*-fx-background-color: rgba(0, 0, 0, 0.30);*/ 
+	 /*-fx-border-color: black;*/
+	 /*-fx-border-radius: 20;*/
+	 -fx-padding: 10 10 0 10;
+         
+	 /*-fx-background-radius: 20;*/
+	}        
+    #prayertime_pane{
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+/*        -fx-effect: dropshadow( one-pass-box , black , 8 , 0.2 , 2 , 0 );*/
+/*         -fx-background-color: rgba(0, 0, 0, 0.30); 
+         -fx-border-color: black;*/
+	 /*-fx-border-color: rgba(0,0,0,0.15);*/
+	 /*-fx-border-radius: 20;*/
+	 /*-fx-padding: 20 0 20 10;*/
+	 /*-fx-background-radius: 20;*/
+         /*-fx-border-width: 15 15 15 15;*/
+/*         -fx-border-image-source: url("../Images/Islamic.png");
+         -fx-border-image-slice: 20 20 20 20 repeat;
+         -fx-border-image-width: 20 20 20 20;
+         -fx-border-image-repeat: round;*/
+/*-fx-border-color: black;*/
+	 /*-fx-border-radius: 20;*/
+	 -fx-padding: 5 5 5 5;
+	 /*-fx-background-radius: 20;*/
+         -fx-background-color: rgba(0, 0, 0, 0.35); 
+    }
+    
+    #hourLeft{
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+/*        -fx-effect: dropshadow( one-pass-box , black , 8 , 0.2 , 2 , 0 );*/
+        
+         -fx-background-color: whitesmoke; 
+         -fx-border-width:0.5;
+         -fx-border-color: black;
+	 /*-fx-border-color: rgba(0,0,0,0.15);*/
+	 -fx-border-radius: 5;
+	 -fx-padding: 2 2 2 2;
+	 -fx-background-radius: 5;
+         
+         -fx-font-size: 61px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+        /*-fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        /*-fx-font-family: 'PT Bold Arch';*/
+        -fx-font-family: 'Arial Bold';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        /*-fx-text-alignment: right;*/
+        -fx-text-fill:black;
+/*        -fx-shape: "M 0,1 L 1,1";
+        -fx-stroke: #ff5700;
+        -fx-background-color: skyblue;*/
+    /*-fx-background-insets: 0, 10;*/
+
+    
+    }
+    
+    #hourLeft-countdown{
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+/*        -fx-effect: dropshadow( one-pass-box , black , 8 , 0.2 , 2 , 0 );*/
+        
+         -fx-background-color: whitesmoke; 
+         -fx-border-color: black;
+	 /*-fx-border-color: rgba(0,0,0,0.15);*/
+	 -fx-border-radius: 5;
+	 -fx-padding: 2 2 2 2;
+	 -fx-background-radius: 5;
+         
+         -fx-font-size: 61px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+        /*-fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        /*-fx-font-family: 'PT Bold Arch';*/
+        -fx-font-family: 'Arial Bold';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        /*-fx-text-alignment: right;*/
+        -fx-text-fill:red;
+/*        -fx-shape: "M 0,1 L 1,1";
+        -fx-stroke: #ff5700;
+        -fx-background-color: skyblue;*/
+    /*-fx-background-insets: 0, 10;*/
+
+    
+    }
+    
+
+        #hour {
+        
+        -fx-font-size: 125px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Arial Black';
+        /*-fx-font-family: 'WLM Carton';*/
+        -fx-text-fill:whitesmoke;
+        -fx-effect: innershadow( three-pass-box , rgba(255,255,255,0.8) , 4, 0.0 , 0 , 2 );
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.8) , 0,0,0,1 );*/ 
+        -fx-text-alignment: center;
+        
+   }
+   
+   #minute {
+        
+        -fx-font-size: 125px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Pinstrip Limo';
+        /*-fx-font-family: 'WLM Carton';*/
+        -fx-text-fill:whitesmoke;
+        -fx-effect: innershadow( three-pass-box , rgba(255,255,255,0.8) , 4, 0.0 , 0 , 2 );
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.8) , 0,0,0,1 );*/ 
+        -fx-text-alignment: center;
+        
+   }
+   
+   #second {
+        
+        -fx-font-size: 65px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Pinstrip Limo';
+        /*-fx-font-family: 'WLM Carton';*/
+        -fx-text-fill:whitesmoke;
+        -fx-effect: innershadow( three-pass-box , rgba(255,255,255,0.8) , 4, 0.0 , 0 , 2 );
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.8) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        
+   }
+   
+   #clock_separator{
+        
+        -fx-font-size: 60px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Pinstrip Limo';
+        /*-fx-font-family: 'WLM Carton';*/
+        -fx-text-fill:whitesmoke;
+        -fx-effect: innershadow( three-pass-box , rgba(255,255,255,0.8) , 4, 0.0 , 0 , 2 );
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.8) , 0,0,0,1 );*/ 
+        -fx-text-alignment: center;
+        
+   }
+   #date {
+        
+        -fx-font-size: 35px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'arial';
+        /*-fx-font-family: 'WLM Carton';*/
+        -fx-text-fill:whitesmoke;
+        /*-fx-effect: innershadow( three-pass-box , rgba(255,255,255,0.8) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.8) , 0,0,0,1 );*/ 
+        -fx-text-alignment: left;
+        
+   }
