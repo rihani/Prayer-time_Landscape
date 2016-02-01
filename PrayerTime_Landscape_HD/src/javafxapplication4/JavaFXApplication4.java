@@ -208,6 +208,7 @@ import javafx.stage.StageStyle;
     final Timeline ar_timeline = new Timeline();
         final Timeline en_timeline = new Timeline();
        final Timeline camera_Timeline = new Timeline();
+       FadeTransition ft; 
             
     private Process p;
     static final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
@@ -292,11 +293,11 @@ import javafx.stage.StageStyle;
     private String ar_notification_Msg_Lines[], en_notification_Msg_Lines[], notification_Msg, facebook_moon_notification_Msg;    
     private String fajr_jamaat ,zuhr_jamaat ,asr_jamaat ,maghrib_jamaat ,isha_jamaat ;
     private String labeconv;
-    private String friday_jamaat, future_zuhr_jamaat_time;
+    private String friday_jamaat, friday2_jamaat, future_zuhr_jamaat_time;
     private String future_fajr_jamaat ,future_zuhr_jamaat ,future_asr_jamaat ,future_maghrib_jamaat ,future_isha_jamaat ;
     private String en_message_String, ar_message_String; 
     private String facebook_post, facebook_post_visibility, facebook_hadith, facebook_Fan_Count, facebook_Post_Url,old_facebook_Post_Url;
-    private String fb_Access_token, platform; 
+    private String fb_Access_token, platform,orientation; 
     private String page_ID;
     String timeZone_ID ; // = timeZone_ID
     String SQL;
@@ -342,14 +343,15 @@ import javafx.stage.StageStyle;
     
     private Label fajr_hourLeft, fajr_hourRight, fajr_minLeft, fajr_minRight, fajr_jamma_hourLeft, fajr_jamma_hourRight, fajr_jamma_minLeft, fajr_jamma_minRight, footer_Label, like_Label;
     private Label sunrise_hourLeft, sunrise_hourRight, sunrise_minLeft, sunrise_minRight;
-    private Label time_Separator1, time_Separator2, time_Separator3, time_Separator4, time_Separator5, time_Separator6,time_Separator8, time_jamma_Separator1, time_jamma_Separator2, time_jamma_Separator3, time_jamma_Separator4 ,time_jamma_Separator5; 
+    private Label time_Separator1, time_Separator2, time_Separator3, time_Separator4, time_Separator5, time_Separator6,time_Separator8, time_Separator9, time_jamma_Separator1, time_jamma_Separator2, time_jamma_Separator3, time_jamma_Separator4 ,time_jamma_Separator5; 
     private Label zuhr_hourLeft, zuhr_hourRight, zuhr_minLeft, zuhr_minRight, zuhr_jamma_hourLeft, zuhr_jamma_hourRight, zuhr_jamma_minLeft, zuhr_jamma_minRight;
     private Label asr_hourLeft, asr_hourRight, asr_minLeft, asr_minRight, asr_jamma_hourLeft, asr_jamma_hourRight, asr_jamma_minLeft, asr_jamma_minRight;
     private Label maghrib_hourLeft, maghrib_hourRight, maghrib_minLeft, maghrib_minRight, maghrib_jamma_hourLeft, maghrib_jamma_hourRight, maghrib_jamma_minLeft, maghrib_jamma_minRight;
     private Label isha_hourLeft, isha_hourRight, isha_minLeft, isha_minRight, isha_jamma_hourLeft, isha_jamma_hourRight, isha_jamma_minLeft, isha_jamma_minRight;
     private Label friday_hourLeft, friday_hourRight, friday_minLeft, friday_minRight;
+    private Label friday2_hourLeft, friday2_hourRight, friday2_minLeft, friday2_minRight;
     private Label Phase_Label, Moon_Date_Label, Sunrise_Date_Label, Moon_Image_Label, Sunrise_Image_Label, friday_Label_eng,friday_Label_ar,sunrise_Label_ar,sunrise_Label_eng, fajr_Label_ar, fajr_Label_eng, zuhr_Label_ar, zuhr_Label_eng, asr_Label_ar, asr_Label_eng, maghrib_Label_ar, maghrib_Label_eng, isha_Label_ar, isha_Label_eng, jamaat_Label_eng,jamaat_Label_ar, athan_Label_eng,athan_Label_ar, hadith_Label, announcement_Label,athan_Change_Label_L1, athan_Change_Label_L2, hour_Label,separator_Label, minute_Label, second_Label, date_Label, day_Label, full_Time_Label, divider1_Label, divider2_Label, ar_moon_hadith_Label_L1, ar_moon_hadith_Label_L2, en_moon_hadith_Label_L1, en_moon_hadith_Label_L2, facebook_Label;
-    
+    HBox fridayBox2 = new HBox();
     
     private List<String> images;
     private File directory;
@@ -501,7 +503,7 @@ import javafx.stage.StageStyle;
                 {
                     id =                            rs.getInt("id");
                     platform =                      rs.getString("platform");
-                    vertical =                      rs.getBoolean("vertical");  
+                    orientation =                   rs.getString("orientation");  
                     facebook_notification_enable =  rs.getBoolean("facebook_notification_enable");  
                     facebook_Receive             =  rs.getBoolean("facebook_Receive"); 
                     latitude =                      rs.getDouble("latitude");
@@ -574,13 +576,19 @@ import javafx.stage.StageStyle;
 //        {directory = new File("/Users/ossama/Projects/Pi/javafx/prayertime/background/");} 
         {
             
-            if (vertical)
+            if (orientation.equals("vertical") )
             {
                 directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/vertical");
             }
             
-            else {
+            else if (orientation.equals("horizontal") )
+            {
                 directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal");
+            }
+            
+            else {
+                
+                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal_HD");
             
             }
             
@@ -589,12 +597,15 @@ import javafx.stage.StageStyle;
         //change on Pi
         if (platform.equals("pi"))
         {
-            if (vertical)
+            if (orientation.equals("vertical") )
             {
                 directory = new File("/home/pi/prayertime/Images/vertical");            
             }
-            else {directory = new File("/home/pi/prayertime/Images/horizontal");}
+            else if (orientation.equals("horizontal") ) 
+            {directory = new File("/home/pi/prayertime/Images/horizontal");}
             
+            else 
+            {directory = new File("/home/pi/prayertime/Images/horizontal_HD");}
             
         }
         
@@ -770,6 +781,11 @@ import javafx.stage.StageStyle;
         friday_minLeft = new Label();
         friday_minRight = new Label();
         facebook_Label = new Label();
+        friday2_hourRight = new Label();
+        friday2_hourLeft = new Label();
+        time_Separator9 = new Label();
+        friday2_minLeft = new Label();
+        friday2_minRight = new Label();
         
         
     
@@ -1004,8 +1020,22 @@ import javafx.stage.StageStyle;
                         System.out.println(" isha time " + isha_begins_time);
                         
 //                        set friday prayer here
-                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){friday_jamaat = "01:30";}
-                        else{friday_jamaat = "12:30";}
+                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+                        {
+                            friday_jamaat = "01:30";
+                            
+                            
+                            friday2_jamaat = "01:20";
+                        }
+                        else
+                        {
+                            friday_jamaat = "12:30";  
+                            
+                            
+                            friday2_jamaat = "01:20";
+                        
+                        
+                        }
            
                         update_prayer_labels = true;
 //                        getFacebook = true;
@@ -2925,32 +2955,142 @@ import javafx.stage.StageStyle;
         Pane root = new Pane();
         // rotate tv screen to portrait mode
         // edit the /boot/config.txt file Copy stored in documentation folder (i.e. framebuffer_width=1080   framebuffer_height=1920  display_rotate=1...)
-        scene = new Scene(root, 1920, 1080);
-//        scene = new Scene(root,660,480);
-//        scene = new Scene(root);
-        stage.setX(25);
-        stage.setY(10);
-        scene.getStylesheets().addAll(this.getClass().getResource("style.css").toExternalForm());
-        stage.setScene(scene);
-        stage.initStyle(StageStyle.TRANSPARENT);
-        
-//        stage.setFullScreen(true);
-                
-        Mainpane = new GridPane();
-        try
+//#VERTICAL##################################        
+        if (orientation.equals("vertical") )
         {
-        String image = new File(rand_Image_Path).toURI().toURL().toString();
-        System.out.println("image string: " + image);
-//        String image = JavaFXApplication4.class.getResource(rand_Image_Path).toExternalForm();
-//        Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-repeat: repeat; ");  
-        Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 1920 1080; -fx-background-position: bottom left;");  
-        scene.setFill(Color.TRANSPARENT);
+            scene = new Scene(root, 1080, 1920);
+            scene.getStylesheets().addAll(this.getClass().getResource("style_90.css").toExternalForm());
+            try
+            {
+                String image = new File(rand_Image_Path).toURI().toURL().toString();
+                System.out.println("image string: " + image);
+                Mainpane = new GridPane();
+                Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 1080 1920;-fx-background-position: bottom left;");  
+            }
+            catch (IOException e) {logger.warn("Unexpected error", e);}
+            
+            stage.setScene(scene);
+            stage.initStyle(StageStyle.TRANSPARENT);
+            
+            Mainpane.getColumnConstraints().setAll(
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build()       
+        );
+        Mainpane.getRowConstraints().setAll(
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/24.0).build()
+        );
+//        Mainpane.setGridLinesVisible(true);
+        Mainpane.setId("Mainpane");
+        prayertime_pane = prayertime_pane();    
+        Moonpane =   moonpane();
+        Sunrisepane =   sunrise();
+        Sunrisepane.setVisible(false);
+        hadithPane = hadithPane();
+        clockPane =   clockPane();
+        GridPane footerPane =   footerPane();
         
+        ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
+            en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
+            ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
+            notification_image.setTranslateY(0);
+            notification_image.setFitHeight(25);
+            notification_image.setPreserveRatio(true);
+            text_Box = new Pane();
+            text_Box.setMinWidth(640);
+            text_Box.setMinHeight(23);
+            text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text, notification_image);
+            text_Box.setId("notification"); 
+
+            
+            Mainpane.add(text_Box,0,0,30,1);
+            text_Box.setTranslateY(5);
+         
+  //============================================
+        
+        DropShadow ds = new DropShadow();
+        ds.setOffsetY(10.0);
+        ds.setOffsetX(10.0);
+        ds.setColor(Color.BLACK);
+
+//        clock.setEffect(ds);
+        Moonpane.setEffect(ds);
+        Sunrisepane.setEffect(ds);
+        prayertime_pane.setEffect(ds);
+        hadithPane.setEffect(ds);
+        clockPane.setEffect(ds);
+//        footerPane.setEffect(ds);
+  //============================================
+        Mainpane.add(clockPane, 1, 1,5,1);
+        Mainpane.add(Moonpane, 7, 1);
+        Mainpane.add(Sunrisepane, 7, 1);
+        Mainpane.add(prayertime_pane, 1, 5,11,7);  
+        Mainpane.add(hadithPane, 1, 15,11,13);
+        prayertime_pane.setTranslateY(30);
+//        hadithPane.setTranslateY(0);
+        Mainpane.add(footerPane, 1, 20,11,1);
+//        footerPane.setTranslateY(514);
+//        Mainpane.setCache(true);
+
         }
-        catch (IOException e) {logger.warn("Unexpected error", e);}
-        
-        
-        Mainpane.getColumnConstraints().setAll(
+//#SD#########################################
+        else if (orientation.equals("horizontal") )
+        {
+            scene = new Scene(root,660,480);
+            scene.getStylesheets().addAll(this.getClass().getResource("style_SD.css").toExternalForm());
+            stage.setX(25);
+            stage.setY(10);
+            try
+            {
+                String image = new File(rand_Image_Path).toURI().toURL().toString();
+                System.out.println("image string: " + image);
+                Mainpane = new GridPane();
+                Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 660 480; -fx-background-position: bottom left;");  
+            }
+            catch (IOException e) {logger.warn("Unexpected error", e);}
+            
+            stage.setScene(scene);
+            stage.initStyle(StageStyle.TRANSPARENT);
+            
+            Mainpane.getColumnConstraints().setAll(
                 ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
                 ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
                 ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
@@ -2981,8 +3121,8 @@ import javafx.stage.StageStyle;
                 ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
                 ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
                 ColumnConstraintsBuilder.create().percentWidth(100/30.0).build()       
-        );
-        Mainpane.getRowConstraints().setAll(
+            );
+            Mainpane.getRowConstraints().setAll(
                 RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
                 RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
                 RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
@@ -3014,137 +3154,210 @@ import javafx.stage.StageStyle;
                 RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
                 RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
                 RowConstraintsBuilder.create().percentHeight(100/26.0).build()
-        );
-//        Mainpane.setGridLinesVisible(true);
-        Mainpane.setId("Mainpane");
-        
-        Glasspane = new GridPane();
-        Glasspane.setId("glass");       
-        prayertime_pane = prayertime_pane();    
-        Moonpane =   moonpane();
-        Sunrisepane =   sunrise();
-        Sunrisepane.setVisible(false);
-        hadithPane = hadithPane();
-        
-//        cameraView = ImageViewBuilder.create()
-//                .image(new Image(cameraSource))
-//                .build();
-//         
-//        myGroup = GroupBuilder.create()
-//                .children(cameraView)
-//                .build();
-         
-        
-        
-        
-        clockPane =   clockPane();
-        GridPane footerPane =   footerPane();
-        
+            );
+    //        Mainpane.setGridLinesVisible(true);
+            Mainpane.setId("Mainpane");
 
-        ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
-        en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
-        ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
-        notification_image.setTranslateY(0);
-        notification_image.setFitHeight(50);
-//        twitter_code.setTranslateY(20);
-        notification_image.setPreserveRatio(true);
-        text_Box = new Pane();
-        text_Box.setMinWidth(640);
-        text_Box.setMinHeight(50);
-        text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text, notification_image);
-        text_Box.setId("notification"); 
-        
-        
-        
-        
-        Mainpane.add(Glasspane, 0, 0,30,7);
-        Mainpane.add(clockPane, 0, 1,23,2);
-        
-        Mainpane.add(Moonpane, 15, 3);
-        Mainpane.add(Sunrisepane, 17, 3);
-        Mainpane.add(prayertime_pane, 16, 8,13,21); 
-        Mainpane.add(hadithPane, 1,8,14,21);
-        Mainpane.add(text_Box,0,0,30,1);
-//        Mainpane.add(myGroup, 0, 0,30,26);
-        text_Box.setTranslateY(5);
-//        prayertime_pane.setTranslateX(-15);
-//        prayertime_pane.setTranslateY(60);
-//        hadithPane.setTranslateY(25);
-        clockPane.setTranslateX(140);
-        Moonpane.setTranslateX(170);
-//        Sunrisepane.setTranslateX(220);
-        clockPane.setTranslateY(27);
-        Moonpane.setTranslateY(7);
-        Sunrisepane.setTranslateY(27);
-//        Mainpane.add(footerPane, 1, 20,11,1);
-//        footerPane.setTranslateY(514);
-//        Mainpane.setCache(true);
-        
-         //============================================
-        
-        DropShadow ds = new DropShadow();
-        ds.setOffsetY(10.0);
-        ds.setOffsetX(10.0);
-        ds.setColor(Color.BLACK);
+            Glasspane = new GridPane();
+            Glasspane.setId("glass");       
+            prayertime_pane = prayertime_pane();    
+            Moonpane =   moonpane();
+            Sunrisepane =   sunrise();
+            Sunrisepane.setVisible(false);
+            hadithPane = hadithPane();
+            clockPane =   clockPane();
+            GridPane footerPane =   footerPane();
 
-//        clock.setEffect(ds);
-        Moonpane.setEffect(ds);
-        Sunrisepane.setEffect(ds);
-        prayertime_pane.setEffect(ds);
-        hadithPane.setEffect(ds);
-        clockPane.setEffect(ds);
-        Glasspane.setEffect(ds);
-        footerPane.setEffect(ds);
-//        text_Box.setEffect(ds);
-  //============================================
+            ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
+            en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
+            ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
+            notification_image.setTranslateY(0);
+            notification_image.setFitHeight(25);
+            notification_image.setPreserveRatio(true);
+            text_Box = new Pane();
+            text_Box.setMinWidth(640);
+            text_Box.setMinHeight(23);
+            text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text, notification_image);
+            text_Box.setId("notification"); 
+
+            Mainpane.add(Glasspane, 1, 0,28,31);
+            Mainpane.add(clockPane, 0, 1,23,2);
+
+            Mainpane.add(Moonpane, 15, 3);
+            Mainpane.add(Sunrisepane, 18, 3);
+            Mainpane.add(prayertime_pane, 16, 14,13,6);  
+            Mainpane.add(hadithPane, 2,9,13,31);
+            Mainpane.add(text_Box,0,0,30,1);
+            text_Box.setTranslateY(5);
+            prayertime_pane.setTranslateY(20);
+            hadithPane.setTranslateY(20);
+            clockPane.setTranslateX(40);
+            Moonpane.setTranslateX(40);
+            clockPane.setTranslateY(5);
+            Moonpane.setTranslateY(7);
+
+             //============================================
+
+            DropShadow ds = new DropShadow();
+            ds.setOffsetY(10.0);
+            ds.setOffsetX(10.0);
+            ds.setColor(Color.BLACK);
+
+            Moonpane.setEffect(ds);
+            Sunrisepane.setEffect(ds);
+            prayertime_pane.setEffect(ds);
+            hadithPane.setEffect(ds);
+            clockPane.setEffect(ds);
+            Glasspane.setEffect(ds);
+            footerPane.setEffect(ds);
+        
+        }
+//#HD#########################################
+        else 
+        {
+            scene = new Scene(root, 1920, 1080);
+            scene.getStylesheets().addAll(this.getClass().getResource("style_HD.css").toExternalForm());
+            try
+            {
+                String image = new File(rand_Image_Path).toURI().toURL().toString();
+                System.out.println("image string: " + image);
+                Mainpane = new GridPane();
+                Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 1920 1080; -fx-background-position: bottom left;");  
+                scene.setFill(Color.TRANSPARENT);
+            }
+            catch (IOException e) {logger.warn("Unexpected error", e);}
+            
+            stage.setScene(scene);
+            stage.initStyle(StageStyle.TRANSPARENT);
+            
+            Mainpane.getColumnConstraints().setAll(
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
+                    ColumnConstraintsBuilder.create().percentWidth(100/30.0).build()       
+            );
+            Mainpane.getRowConstraints().setAll(
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/26.0).build()
+            );
+    //        Mainpane.setGridLinesVisible(true);
+            Mainpane.setId("Mainpane");
+            Glasspane = new GridPane();
+            Glasspane.setId("glass");       
+            prayertime_pane = prayertime_pane();    
+            Moonpane =   moonpane();
+            Sunrisepane =   sunrise();
+            Sunrisepane.setVisible(false);
+            hadithPane = hadithPane();      
+            clockPane =   clockPane();
+            GridPane footerPane =   footerPane();
+
+            ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
+            en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
+            ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
+            notification_image.setTranslateY(0);
+            notification_image.setFitHeight(50);
+    //        twitter_code.setTranslateY(20);
+            notification_image.setPreserveRatio(true);
+            text_Box = new Pane();
+            text_Box.setMinWidth(640);
+            text_Box.setMinHeight(50);
+            text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text, notification_image);
+            text_Box.setId("notification"); 
+
+
+            Mainpane.add(Glasspane, 0, 0,30,7);
+            Mainpane.add(clockPane, 0, 1,23,2);
+            Mainpane.add(Moonpane, 15, 3);
+            Mainpane.add(Sunrisepane, 17, 3);
+            Mainpane.add(prayertime_pane, 16, 8,13,21); 
+            Mainpane.add(hadithPane, 1,8,14,21);
+            Mainpane.add(text_Box,0,0,30,1);
+            text_Box.setTranslateY(5);
+            clockPane.setTranslateX(140);
+            Moonpane.setTranslateX(170);
+            clockPane.setTranslateY(27);
+            Moonpane.setTranslateY(7);
+            Sunrisepane.setTranslateY(27);
+
+
+             //============================================
+
+            DropShadow ds = new DropShadow();
+            ds.setOffsetY(10.0);
+            ds.setOffsetX(10.0);
+            ds.setColor(Color.BLACK);
+
+            Moonpane.setEffect(ds);
+            Sunrisepane.setEffect(ds);
+            prayertime_pane.setEffect(ds);
+            hadithPane.setEffect(ds);
+            clockPane.setEffect(ds);
+            Glasspane.setEffect(ds);
+            footerPane.setEffect(ds);
+        }
         
         scene.setRoot(Mainpane);
-        
-        
-//        Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
- 
-//set Stage boundaries to the lower right corner of the visible bounds of the main screen
-//stage.setX(0);
-//stage.setY(0);
-//stage.setX(50);
-//stage.setY(primaryScreenBounds.getMinY()+75 );
-
-//System.out.println(primaryScreenBounds.getWidth());
-//System.out.println(primaryScreenBounds.getHeight());
-
-//stage.setWidth(700);
-//stage.setHeight(480);
- 
         stage.show();
         
         translate_timer.start(); 
         clock_update_timer.start();
         
-        
-//        For debuuging purposes only
-//                new Thread()
-//        {
-//            @Override
-//            public void run() 
-//            {
-//                for (;;) 
-//                {
-//                    try 
-//                    {
-//                       Thread.sleep(360000);
-//                        moon_hadith_Label_visible = false;
-//                                //show hadith label boolean
-//                                hadith_Label_visible = true;
-//                       
-//                    }
-//                    catch (InterruptedException ex) 
-//                    {
-//                        logger.warn("Unexpected error", e);
-//                        Thread.currentThread().interrupt();
-//                    }
-//                }
-//            }
-//        }.start();
     }
 
     
@@ -3152,7 +3365,7 @@ import javafx.stage.StageStyle;
 
 //                            ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
                             ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.RIGHT);
-                            ar_Marquee_Notification_Text.setX(-960);
+//                            ar_Marquee_Notification_Text.setX(-960);
                             ar_Marquee_Notification_Text.setY(30);
                             ar_Marquee_Notification_Text_textSize = 40;
                             ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
@@ -3160,11 +3373,24 @@ import javafx.stage.StageStyle;
                     //        text.setStroke(Color.WHITESMOKE);
                     //        text.setStrokeWidth(0.4);
                             ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
-                            ar_timeline.setCycleCount(Timeline.INDEFINITE);
-                            final KeyValue ar_keyvalue = new KeyValue(ar_Marquee_Notification_Text.xProperty(), ar_Marquee_Notification_Text.getBoundsInLocal().getWidth());
-                            final KeyFrame ar_keyframe = new KeyFrame(Duration.millis(60000), ar_keyvalue);
-                            ar_timeline.getKeyFrames().add(ar_keyframe);
-                            ar_timeline.play();
+//                            ar_timeline.setCycleCount(Timeline.INDEFINITE);
+//                            final KeyValue ar_keyvalue = new KeyValue(ar_Marquee_Notification_Text.xProperty(), ar_Marquee_Notification_Text.getBoundsInLocal().getWidth());
+//                            final KeyFrame ar_keyframe = new KeyFrame(Duration.millis(60000), ar_keyvalue);
+//                            ar_timeline.getKeyFrames().add(ar_keyframe);
+//                            ar_timeline.play();
+                            ar_Marquee_Notification_Text_XPos = 320;
+                            ft = new FadeTransition(Duration.millis(2000), ar_Marquee_Notification_Text);
+                            ft.setFromValue(1.0);
+                            ft.setToValue(0);
+                            ft.setCycleCount(Timeline.INDEFINITE);
+                            ft.setAutoReverse(true);
+                            ft.play();
+                            ar_Marquee_Notification_Text.setX(1920/2 - ar_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
+                            
+//                            System.out.println("######arabic text width: " + ar_Marquee_Notification_Text.getBoundsInLocal().getWidth()); 
+//                            System.out.println("######arabic text location: " + ar_Marquee_Notification_Text.xProperty()); 
+                            
+                            
    
     }
     
@@ -3172,8 +3398,8 @@ import javafx.stage.StageStyle;
  
 //                            en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);
                             en_Marquee_Notification_Text.setTextAlignment(TextAlignment.LEFT);
-                            en_Marquee_Notification_Text.setX(960);
-                            en_Marquee_Notification_Text.setY(30);
+//                            en_Marquee_Notification_Text.setX(960);
+                            en_Marquee_Notification_Text.setY(40);
                             en_Marquee_Notification_Text_textSize = 40;
                             en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
                             en_Marquee_Notification_Text.setFill(Color.WHITE);
@@ -3182,11 +3408,27 @@ import javafx.stage.StageStyle;
                             en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
         
         
-                            en_timeline.setCycleCount(Timeline.INDEFINITE);
-                            final KeyValue en_keyvalue = new KeyValue(en_Marquee_Notification_Text.xProperty(), -en_Marquee_Notification_Text.getBoundsInLocal().getWidth());
-                            final KeyFrame en_keyframe = new KeyFrame(Duration.millis(60000), en_keyvalue);
-                            en_timeline.getKeyFrames().add(en_keyframe);
-                            en_timeline.play();
+//                            en_timeline.setCycleCount(Timeline.INDEFINITE);
+//                            final KeyValue en_keyvalue = new KeyValue(en_Marquee_Notification_Text.xProperty(), -en_Marquee_Notification_Text.getBoundsInLocal().getWidth());
+//                            final KeyFrame en_keyframe = new KeyFrame(Duration.millis(60000), en_keyvalue);
+//                            en_timeline.getKeyFrames().add(en_keyframe);
+//                            en_timeline.play();
+                            
+                            
+                            ft = new FadeTransition(Duration.millis(2000), en_Marquee_Notification_Text);
+                            ft.setFromValue(1.0);
+                            ft.setToValue(0);
+                            ft.setCycleCount(Timeline.INDEFINITE);
+                            ft.setAutoReverse(true);
+
+                            ft.play();
+                            
+                            en_Marquee_Notification_Text.setX(1920/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
+//                            en_Marquee_Notification_Text_XPos = 1920/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2;
+//                            en_Marquee_Notification_Text_XPos = 1920 - (en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
+                            
+//                            System.out.println("######english text width: " + en_Marquee_Notification_Text.getBoundsInLocal().getWidth()); 
+//                            System.out.println("######english text location: " + en_Marquee_Notification_Text.xProperty()); 
    
     }
     
@@ -3665,8 +3907,8 @@ public void update_labels() throws Exception{
                 {
                     text_Box.setVisible(true);
                     ar_Marquee_Notification_Text.setVisible(false);
-                    ar_timeline.stop();
-                    en_Marquee_Notification_Text_XPos = 320;
+//                    ar_timeline.stop();
+//                    en_Marquee_Notification_Text_XPos = 320;
 
                     en_Animate();
                     en_Marquee_Notification_Text.setVisible(true);
@@ -3993,8 +4235,9 @@ public void update_labels() throws Exception{
                 if (!camera)
                 {
                     text_Box.setVisible(true);
-                    en_timeline.stop();
-                    ar_Marquee_Notification_Text_XPos = -320;
+//                    en_timeline.stop();
+                    ft.stop();
+//                    ar_Marquee_Notification_Text_XPos = -320;
                     ar_Animate();
                     ar_Marquee_Notification_Text.setVisible(true);
                     en_Marquee_Notification_Text.setVisible(false);
@@ -4445,6 +4688,7 @@ public void update_labels() throws Exception{
             time_Separator5.setText(":");
             time_Separator6.setText(":");
             time_Separator8.setText(":");
+            time_Separator9.setText(":");
             
             
             fajrjamaatdate = fajr_jamaat_cal.getTime();
@@ -4491,6 +4735,12 @@ public void update_labels() throws Exception{
             friday_hourRight.setText(friday_jamaat.substring(1, 2));
             friday_minLeft.setText(friday_jamaat.substring(3, 4));
             friday_minRight.setText(friday_jamaat.substring(4, 5));
+            friday2_hourLeft.setText(friday2_jamaat.substring(0, 1));
+            friday2_hourRight.setText(friday2_jamaat.substring(1, 2));
+            friday2_minLeft.setText(friday2_jamaat.substring(3, 4));
+            friday2_minRight.setText(friday2_jamaat.substring(4, 5));
+
+            
              
             time_jamma_Separator1.setText(":");
             time_jamma_Separator2.setText(":");
@@ -4509,8 +4759,19 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/0%.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                
+               if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
+
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4520,8 +4781,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/0%.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4531,8 +4801,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/3%WA.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4542,8 +4821,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/12%WA.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4553,8 +4841,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/21%WA.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4563,8 +4860,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/38%WA.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4574,8 +4880,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/47%WA.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4585,8 +4900,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/56%WA.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4596,8 +4920,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/65%WA.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4607,8 +4940,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/74%WA.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4618,8 +4960,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/82%WA.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4629,8 +4980,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/91%WA.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4640,8 +5000,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/100%.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4651,8 +5020,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/8%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4662,8 +5040,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/16%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4673,8 +5060,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/24%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4684,8 +5080,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/32%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4695,8 +5100,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/40%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4706,8 +5120,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/48%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4717,8 +5140,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/56%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4728,8 +5160,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/63%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4739,8 +5180,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/71%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4750,8 +5200,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/78%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4761,8 +5220,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/86%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4772,8 +5240,17 @@ public void update_labels() throws Exception{
             {
                 Moon_Image_Label.setGraphic(null);
                 ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/94%WX.png")));      
-                Moon_img.setFitWidth(160);
-                Moon_img.setFitHeight(160);
+                if (orientation.equals("horizontal") )
+                {
+                    Moon_img.setFitWidth(60);
+                    Moon_img.setFitHeight(60);
+                }
+
+               else
+               {
+                   Moon_img.setFitWidth(160);
+                   Moon_img.setFitHeight(160);
+               }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
                 Moon_Image_Label.setGraphic(Moon_img);
@@ -4815,6 +5292,373 @@ public void update_labels() throws Exception{
     public GridPane prayertime_pane() {
         
    GridPane prayertime_pane = new GridPane();
+     
+   if (orientation.equals("vertical") )
+    {
+        prayertime_pane.setId("prayertime_pane");
+        prayertime_pane.setCache(false);       
+        prayertime_pane.setGridLinesVisible(false);
+        prayertime_pane.setPadding(new Insets(0, 0, 20, 20));
+        prayertime_pane.setAlignment(Pos.BASELINE_CENTER);
+//        prayertime_pane.setVgap(20);
+        prayertime_pane.setHgap(80);
+        
+        prayertime_pane.setConstraints(jamaat_Label_eng, 0, 1);
+        prayertime_pane.getChildren().add(jamaat_Label_eng);      
+        prayertime_pane.setConstraints(jamaat_Label_ar, 0, 1);
+        prayertime_pane.getChildren().add(jamaat_Label_ar);
+        
+        prayertime_pane.setConstraints(athan_Label_eng, 1, 1);
+        prayertime_pane.getChildren().add(athan_Label_eng);      
+        prayertime_pane.setConstraints(athan_Label_ar, 1, 1);
+        prayertime_pane.getChildren().add(athan_Label_ar);
+//=============================  
+        HBox fajrBox = new HBox();
+        fajrBox.setSpacing(0);
+        fajrBox.setMaxSize(180,60);
+        fajrBox.setMinSize(180,60);
+        fajrBox.setPrefSize(180,60);
+        
+        fajr_hourLeft.setId("hourLeft");
+        fajr_hourRight.setId("hourLeft");
+        time_Separator1.setId("hourLeft");
+        fajr_minLeft.setId("hourLeft");
+        fajr_minRight.setId("hourLeft");
+        
+        fajrBox.getChildren().addAll(fajr_hourLeft, fajr_hourRight, time_Separator1, fajr_minLeft, fajr_minRight);
+        prayertime_pane.setConstraints(fajrBox, 1, 2);
+        prayertime_pane.getChildren().add(fajrBox);
+        
+        prayertime_pane.setConstraints(fajr_Label_eng, 2, 2);
+        prayertime_pane.getChildren().add(fajr_Label_eng);      
+        prayertime_pane.setConstraints(fajr_Label_ar, 2, 2);
+        prayertime_pane.getChildren().add(fajr_Label_ar);
+        
+        fajr_hourLeft.setText("-");
+        fajr_hourRight.setText("-");
+        fajr_minLeft.setText("-");
+        fajr_minRight.setText("-");
+        time_Separator1.setText(":");
+        
+
+//============================= 
+        HBox zuhrBox = new HBox();
+        zuhrBox.setSpacing(0);
+        zuhrBox.setMaxSize(180,60);
+        zuhrBox.setMinSize(180,60);
+        zuhrBox.setPrefSize(180,60);
+        zuhr_hourLeft.setId("hourLeft");
+        zuhr_hourRight.setId("hourLeft");
+        time_Separator3.setId("hourLeft");
+        zuhr_minLeft.setId("hourLeft");
+        zuhr_minRight.setId("hourLeft");
+        zuhrBox.getChildren().addAll(zuhr_hourLeft, zuhr_hourRight, time_Separator3, zuhr_minLeft, zuhr_minRight);
+        prayertime_pane.setConstraints(zuhrBox, 1, 4);
+        prayertime_pane.getChildren().add(zuhrBox);
+        
+        prayertime_pane.setConstraints(zuhr_Label_eng, 2, 4);
+        prayertime_pane.getChildren().add(zuhr_Label_eng);      
+        prayertime_pane.setConstraints(zuhr_Label_ar, 2, 4);
+        prayertime_pane.getChildren().add(zuhr_Label_ar);
+        
+        zuhr_hourLeft.setText("-");
+        zuhr_hourRight.setText("-");
+        zuhr_minLeft.setText("-");
+        zuhr_minRight.setText("-");
+        time_Separator3.setText(":");
+
+//============================= 
+        HBox asrBox = new HBox();
+        asrBox.setSpacing(0);
+        asrBox.setMaxSize(180,60);
+        asrBox.setMinSize(180,60);
+        asrBox.setPrefSize(180,60);
+        asr_hourLeft.setId("hourLeft");
+        asr_hourRight.setId("hourLeft");
+        time_Separator4.setId("hourLeft");
+        asr_minLeft.setId("hourLeft");
+        asr_minRight.setId("hourLeft");
+        asrBox.getChildren().addAll(asr_hourLeft, asr_hourRight, time_Separator4, asr_minLeft, asr_minRight);
+        prayertime_pane.setConstraints(asrBox, 1, 6);
+        prayertime_pane.getChildren().add(asrBox);
+        
+        prayertime_pane.setConstraints(asr_Label_eng, 2, 6);
+        prayertime_pane.getChildren().add(asr_Label_eng);      
+        prayertime_pane.setConstraints(asr_Label_ar, 2, 6);
+        prayertime_pane.getChildren().add(asr_Label_ar);
+        
+        asr_hourLeft.setText("-");
+        asr_hourRight.setText("-");
+        asr_minLeft.setText("-");
+        asr_minRight.setText("-");
+        time_Separator4.setText(":");
+        
+//============================= 
+        
+        HBox maghribBox = new HBox();
+        maghribBox.setSpacing(0);
+        maghribBox.setMaxSize(180,60);
+        maghribBox.setMinSize(180,60);
+        maghribBox.setPrefSize(180,60);
+        maghrib_hourLeft.setId("hourLeft");
+        maghrib_hourRight.setId("hourLeft");
+        time_Separator5.setId("hourLeft");
+        maghrib_minLeft.setId("hourLeft");
+        maghrib_minRight.setId("hourLeft");
+        maghribBox.getChildren().addAll(maghrib_hourLeft, maghrib_hourRight, time_Separator5, maghrib_minLeft, maghrib_minRight);
+        prayertime_pane.setConstraints(maghribBox, 1, 8);
+        prayertime_pane.getChildren().add(maghribBox);
+        
+        prayertime_pane.setConstraints(maghrib_Label_eng, 2, 8);
+        prayertime_pane.getChildren().add(maghrib_Label_eng);      
+        prayertime_pane.setConstraints(maghrib_Label_ar, 2, 8);
+        prayertime_pane.getChildren().add(maghrib_Label_ar);
+        
+        maghrib_hourLeft.setText("-");
+        maghrib_hourRight.setText("-");
+        maghrib_minLeft.setText("-");
+        maghrib_minRight.setText("-");
+        time_Separator5.setText(":");
+
+//============================= 
+        
+        HBox ishaBox = new HBox();
+        ishaBox.setSpacing(0);
+        ishaBox.setMaxSize(180,60);
+        ishaBox.setMinSize(180,60);
+        ishaBox.setPrefSize(180,60);
+        isha_hourLeft.setId("hourLeft");
+        isha_hourRight.setId("hourLeft");
+        time_Separator6.setId("hourLeft");
+        isha_minLeft.setId("hourLeft");
+        isha_minRight.setId("hourLeft");
+        ishaBox.getChildren().addAll(isha_hourLeft, isha_hourRight, time_Separator6, isha_minLeft, isha_minRight);
+        prayertime_pane.setConstraints(ishaBox, 1, 10);
+        prayertime_pane.getChildren().add(ishaBox);
+        
+        prayertime_pane.setConstraints(isha_Label_eng, 2, 10);
+        prayertime_pane.getChildren().add(isha_Label_eng);      
+        prayertime_pane.setConstraints(isha_Label_ar, 2, 10);
+        prayertime_pane.getChildren().add(isha_Label_ar);
+        
+        isha_hourLeft.setText("-");
+        isha_hourRight.setText("-");
+        isha_minLeft.setText("-");
+        isha_minRight.setText("-");
+        time_Separator6.setText(":");
+
+         
+        HBox fridayBox = new HBox();
+        fridayBox.setSpacing(0);
+        fridayBox.setMaxSize(180,60);
+        fridayBox.setMinSize(180,60);
+        fridayBox.setPrefSize(180,60);
+        friday_hourLeft.setId("hourLeft");
+        friday_hourRight.setId("hourLeft");
+        time_Separator8.setId("hourLeft");
+        friday_minLeft.setId("hourLeft");
+        friday_minRight.setId("hourLeft");
+        fridayBox.getChildren().addAll(friday_hourLeft, friday_hourRight, time_Separator8, friday_minLeft, friday_minRight);
+        prayertime_pane.setConstraints(fridayBox, 1, 12);
+        prayertime_pane.getChildren().add(fridayBox);
+//        
+        
+        prayertime_pane.setConstraints(friday_Label_eng, 2, 12);
+        prayertime_pane.getChildren().add(friday_Label_eng);
+        prayertime_pane.setConstraints(friday_Label_ar, 2, 12);
+        prayertime_pane.getChildren().add(friday_Label_ar);
+        
+        friday_hourLeft.setText("-");
+        friday_hourRight.setText("-");
+        friday_minLeft.setText("-");
+        friday_minRight.setText("-");
+        time_Separator8.setText(":");
+        
+        HBox fridayBox2 = new HBox();
+        fridayBox2.setSpacing(0);
+        fridayBox2.setMaxSize(180,60);
+        fridayBox2.setMinSize(180,60);
+        fridayBox2.setPrefSize(180,60);
+        friday2_hourLeft.setId("hourLeft");
+        friday2_hourRight.setId("hourLeft");
+        time_Separator9.setId("hourLeft");
+        friday2_minLeft.setId("hourLeft");
+        friday2_minRight.setId("hourLeft");
+        fridayBox2.getChildren().addAll(friday2_hourLeft, friday2_hourRight, time_Separator9, friday2_minLeft, friday2_minRight);
+        prayertime_pane.setConstraints(fridayBox2, 0, 12);
+        prayertime_pane.getChildren().add(fridayBox2);
+
+        
+        friday2_hourLeft.setText("-");
+        friday2_hourRight.setText("-");
+        friday2_minLeft.setText("-");
+        friday2_minRight.setText("-");
+        time_Separator9.setText(":");
+ //============================= 
+        
+        final Separator sepHor1 = new Separator();
+        prayertime_pane.setValignment(sepHor1,VPos.CENTER);
+        prayertime_pane.setConstraints(sepHor1, 0, 3);
+        prayertime_pane.setColumnSpan(sepHor1, 3);
+        prayertime_pane.getChildren().add(sepHor1);   
+        
+        final Separator sepHor2 = new Separator();
+        prayertime_pane.setValignment(sepHor2,VPos.CENTER);
+        prayertime_pane.setConstraints(sepHor2, 0, 5);
+        prayertime_pane.setColumnSpan(sepHor2, 3);
+        prayertime_pane.getChildren().add(sepHor2);
+        
+        final Separator sepHor3 = new Separator();
+        prayertime_pane.setValignment(sepHor3,VPos.CENTER);
+        prayertime_pane.setConstraints(sepHor3, 0, 7);
+        prayertime_pane.setColumnSpan(sepHor3, 3);
+        prayertime_pane.getChildren().add(sepHor3);
+        
+        final Separator sepHor4 = new Separator();
+        prayertime_pane.setValignment(sepHor4,VPos.CENTER);
+        prayertime_pane.setConstraints(sepHor4, 0, 9);
+        prayertime_pane.setColumnSpan(sepHor4, 3);
+        prayertime_pane.getChildren().add(sepHor4);
+        
+        final Separator sepHor5 = new Separator();
+        prayertime_pane.setValignment(sepHor5,VPos.CENTER);
+        prayertime_pane.setConstraints(sepHor5, 0, 11);
+        prayertime_pane.setColumnSpan(sepHor5, 3);
+        prayertime_pane.getChildren().add(sepHor5);
+        
+//        final Separator sepHor6 = new Separator();
+//        prayertime_pane.setValignment(sepHor6,VPos.CENTER);
+//        prayertime_pane.setConstraints(sepHor6, 1, 14);
+//        prayertime_pane.setColumnSpan(sepHor6, 2);
+//        prayertime_pane.getChildren().add(sepHor6);
+
+//========= Jamama=======
+        
+        
+//=============================  
+        HBox fajr_jamma_Box = new HBox();
+        fajr_jamma_Box.setSpacing(0);
+        fajr_jamma_Box.setMaxSize(180,60);
+        fajr_jamma_hourLeft.setId("hourLeft");
+        fajr_jamma_hourRight.setId("hourLeft");
+        time_jamma_Separator1.setId("hourLeft");
+        fajr_jamma_minLeft.setId("hourLeft");
+        fajr_jamma_minRight.setId("hourLeft");
+        fajr_jamma_Box.getChildren().addAll(fajr_jamma_hourLeft, fajr_jamma_hourRight, time_jamma_Separator1, fajr_jamma_minLeft, fajr_jamma_minRight);
+        prayertime_pane.setConstraints(fajr_jamma_Box, 0, 2);
+        prayertime_pane.getChildren().add(fajr_jamma_Box);
+        
+        fajr_jamma_hourLeft.setText("-");
+        fajr_jamma_hourRight.setText("-");
+        fajr_jamma_minLeft.setText("-");
+        fajr_jamma_minRight.setText("-");
+        time_jamma_Separator1.setText(":");
+        
+//============================= 
+        HBox zuhr_jamma_Box = new HBox();
+        zuhr_jamma_Box.setSpacing(0);
+        zuhr_jamma_Box.setMaxSize(180,60);
+        zuhr_jamma_hourLeft.setId("hourLeft");
+        zuhr_jamma_hourRight.setId("hourLeft");
+        time_jamma_Separator2.setId("hourLeft");
+        zuhr_jamma_minLeft.setId("hourLeft");
+        zuhr_jamma_minRight.setId("hourLeft");
+        zuhr_jamma_Box.getChildren().addAll(zuhr_jamma_hourLeft, zuhr_jamma_hourRight, time_jamma_Separator2, zuhr_jamma_minLeft, zuhr_jamma_minRight);
+        prayertime_pane.setConstraints(zuhr_jamma_Box, 0, 4);
+        prayertime_pane.getChildren().add(zuhr_jamma_Box);
+        
+        zuhr_jamma_hourLeft.setText("-");
+        zuhr_jamma_hourRight.setText("-");
+        zuhr_jamma_minLeft.setText("-");
+        zuhr_jamma_minRight.setText("-");
+        time_jamma_Separator2.setText(":");
+
+//============================= 
+        HBox asr_jamma_Box = new HBox();
+        asr_jamma_Box.setSpacing(0);
+        asr_jamma_Box.setMaxSize(180,60);
+        asr_jamma_minRight.setId("hourLeft");
+        asr_jamma_minLeft.setId("hourLeft");
+        time_jamma_Separator3.setId("hourLeft");
+        asr_jamma_hourRight.setId("hourLeft");
+        asr_jamma_hourLeft.setId("hourLeft");
+        asr_jamma_Box.getChildren().addAll(asr_jamma_hourLeft, asr_jamma_hourRight, time_jamma_Separator3, asr_jamma_minLeft, asr_jamma_minRight);
+        prayertime_pane.setConstraints(asr_jamma_Box, 0, 6);
+        prayertime_pane.getChildren().add(asr_jamma_Box);
+        
+        asr_jamma_hourLeft.setText("-");
+        asr_jamma_hourRight.setText("-");
+        asr_jamma_minLeft.setText("-");
+        asr_jamma_minRight.setText("-");
+        time_jamma_Separator3.setText(":");
+        
+//============================= 
+        
+        HBox maghrib_jamma_Box = new HBox();
+        maghrib_jamma_Box.setSpacing(0);
+        maghrib_jamma_Box.setMaxSize(180,60);
+        maghrib_jamma_minRight.setId("hourLeft");
+        maghrib_jamma_minLeft.setId("hourLeft");
+        time_jamma_Separator4.setId("hourLeft");
+        maghrib_jamma_hourRight.setId("hourLeft");
+        maghrib_jamma_hourLeft.setId("hourLeft");
+        maghrib_jamma_Box.getChildren().addAll(maghrib_jamma_hourLeft, maghrib_jamma_hourRight, time_jamma_Separator4, maghrib_jamma_minLeft, maghrib_jamma_minRight);
+        prayertime_pane.setConstraints(maghrib_jamma_Box, 0, 8);
+        prayertime_pane.getChildren().add(maghrib_jamma_Box);
+        
+        maghrib_jamma_hourLeft.setText("-");
+        maghrib_jamma_hourRight.setText("-");
+        maghrib_jamma_minLeft.setText("-");
+        maghrib_jamma_minRight.setText("-");
+        time_jamma_Separator4.setText(":");
+//============================= 
+        
+        HBox isha_jamma_Box = new HBox();
+        isha_jamma_Box.setSpacing(0);
+        isha_jamma_Box.setMaxSize(180,60);
+        isha_jamma_hourLeft.setId("hourLeft");
+        isha_jamma_hourRight.setId("hourLeft");
+        time_jamma_Separator5.setId("hourLeft");
+        isha_jamma_minLeft.setId("hourLeft");
+        isha_jamma_minRight.setId("hourLeft");
+        isha_jamma_Box.getChildren().addAll(isha_jamma_hourLeft, isha_jamma_hourRight, time_jamma_Separator5, isha_jamma_minLeft, isha_jamma_minRight);
+        prayertime_pane.setConstraints(isha_jamma_Box, 0, 10);
+        prayertime_pane.getChildren().add(isha_jamma_Box);
+        
+        isha_jamma_hourLeft.setText("-");
+        isha_jamma_hourRight.setText("-");
+        isha_jamma_minLeft.setText("-");
+        isha_jamma_minRight.setText("-");
+        time_jamma_Separator5.setText(":");
+
+//============================= 
+
+//        fridayBox2 = new HBox();
+//        fridayBox2.setSpacing(0);
+//        fridayBox2.setMaxSize(180,60);
+//        fridayBox2.setMinSize(180,60);
+//        fridayBox2.setPrefSize(180,60);
+//        friday2_hourLeft.setId("hourLeft");
+//        friday2_hourRight.setId("hourLeft");
+//        time_Separator9.setId("hourLeft");
+//        friday2_minLeft.setId("hourLeft");
+//        friday2_minRight.setId("hourLeft");
+//        fridayBox2.getChildren().addAll(friday2_hourLeft, friday2_hourRight, time_Separator9, friday2_minLeft, friday2_minRight);
+//        prayertime_pane.setConstraints(fridayBox2, 0, 12);
+//        prayertime_pane.getChildren().add(fridayBox2);
+//        
+//       
+//        
+//        friday2_hourLeft.setText("-");
+//        friday2_hourRight.setText("-");
+//        friday2_minLeft.setText("-");
+//        friday2_minRight.setText("-");
+//        time_Separator9.setText(":");
+
+    }
+   
+   else if (orientation.equals("horizontal") )
+    {
         prayertime_pane.setId("prayertime_pane");
         prayertime_pane.setCache(false);       
 //        prayertime_pane.setGridLinesVisible(true);
@@ -5070,7 +5914,7 @@ public void update_labels() throws Exception{
 //        prayertime_pane.getChildren().add(friday_Label_eng);
 //        prayertime_pane.setConstraints(friday_Label_ar, 2, 13);
 //        prayertime_pane.getChildren().add(friday_Label_ar);
-//        
+        
 //        friday_hourLeft.setText("-");
 //        friday_hourRight.setText("-");
 //        friday_minLeft.setText("-");
@@ -5108,12 +5952,12 @@ public void update_labels() throws Exception{
         sepHor4.setMinHeight(1);
         prayertime_pane.getChildren().add(sepHor4);
         
-//        final Separator sepHor5 = new Separator();
-//        prayertime_pane.setValignment(sepHor5,VPos.CENTER);
-//        prayertime_pane.setConstraints(sepHor5, 1, 12);
-//        prayertime_pane.setColumnSpan(sepHor5, 2);
-//        sepHor5.setMinHeight(1);
-//        prayertime_pane.getChildren().add(sepHor5);
+        final Separator sepHor5 = new Separator();
+        prayertime_pane.setValignment(sepHor5,VPos.CENTER);
+        prayertime_pane.setConstraints(sepHor5, 1, 12);
+        prayertime_pane.setColumnSpan(sepHor5, 2);
+        sepHor5.setMinHeight(1);
+        prayertime_pane.getChildren().add(sepHor5);
         
 //        final Separator sepHor6 = new Separator();
 //        prayertime_pane.setValignment(sepHor6,VPos.CENTER);
@@ -5230,78 +6074,537 @@ public void update_labels() throws Exception{
         isha_jamma_minRight.setText("-");
         time_jamma_Separator5.setText(":");
 
+
+    }
+   
+   else
+   {
+       prayertime_pane.getColumnConstraints().setAll(
+                ColumnConstraintsBuilder.create().build(),
+                ColumnConstraintsBuilder.create().build(),
+                ColumnConstraintsBuilder.create().minWidth(50).build(),
+                ColumnConstraintsBuilder.create().build()    
+   
+        );
+
+        prayertime_pane.setId("prayertime_pane");
+        prayertime_pane.setCache(false);       
+//        prayertime_pane.setGridLinesVisible(true);
+        prayertime_pane.setPadding(new Insets(0, 0, 3, 0));
+        prayertime_pane.setAlignment(Pos.BASELINE_CENTER);
+//        prayertime_pane.setVgap(5);
+        prayertime_pane.setHgap(13);
+        
+        prayertime_pane.setConstraints(jamaat_Label_eng, 0, 1);
+        jamaat_Label_eng.setMaxHeight(1);
+        prayertime_pane.getChildren().add(jamaat_Label_eng);      
+        prayertime_pane.setConstraints(jamaat_Label_ar, 0, 1);
+        prayertime_pane.getChildren().add(jamaat_Label_ar);
+        
+        prayertime_pane.setConstraints(athan_Label_eng, 1, 1);
+        athan_Label_eng.setMaxHeight(1);
+        prayertime_pane.getChildren().add(athan_Label_eng); 
+        
+        prayertime_pane.setConstraints(athan_Label_ar, 1, 1);
+        prayertime_pane.getChildren().add(athan_Label_ar);
+//=============================  
+        HBox fajrBox = new HBox();
+        fajrBox.setSpacing(0);
+        fajrBox.setMaxSize(100,1);
+//        fajrBox.setMinSize(100,40);
+//        fajrBox.setPrefSize(100,15);
+        
+        fajr_hourLeft.setId("hourLeft");
+        fajr_hourRight.setId("hourLeft");
+        time_Separator1.setId("hourLeft");
+        fajr_minLeft.setId("hourLeft");
+        fajr_minRight.setId("hourLeft");
+        
+        fajrBox.getChildren().addAll(fajr_hourLeft, fajr_hourRight, time_Separator1, fajr_minLeft, fajr_minRight);
+        prayertime_pane.setConstraints(fajrBox, 1, 2);
+        prayertime_pane.getChildren().add(fajrBox);
+        
+//        fajr_Label_eng.setMaxSize(100,40);
+//        fajr_Label_eng.setMinSize(70,17);
+//        fajr_Label_eng.setPrefSize(100,40);
+        
+//        fajr_Label_ar.setAlignment(Pos.TOP_LEFT);
+//        fajr_Label_eng.setAlignment(Pos.TOP_LEFT);
+        fajr_Label_ar.setTranslateY(-10);
+//        fajr_Label_ar.setMaxSize(100,40);
+//        fajr_Label_ar.setMinSize(70,17);
+//        fajr_Label_ar.setPrefSize(100,40);
+                
+                
+        prayertime_pane.setConstraints(fajr_Label_eng, 3, 2);
+        prayertime_pane.getChildren().add(fajr_Label_eng);      
+        prayertime_pane.setConstraints(fajr_Label_ar, 3, 2);
+        prayertime_pane.getChildren().add(fajr_Label_ar);
+        
+        fajr_hourLeft.setText("-");
+        fajr_hourRight.setText("-");
+        fajr_minLeft.setText("-");
+        fajr_minRight.setText("-");
+        time_Separator1.setText(":");
+        
+
+//============================= 
+        HBox zuhrBox = new HBox();
+//        zuhrBox.setSpacing(0);
+        zuhrBox.setMaxSize(100,1);
+//        zuhrBox.setMinSize(100,15);
+//        zuhrBox.setPrefSize(100,15);
+        zuhr_hourLeft.setId("hourLeft");
+        zuhr_hourRight.setId("hourLeft");
+        time_Separator3.setId("hourLeft");
+        zuhr_minLeft.setId("hourLeft");
+        zuhr_minRight.setId("hourLeft");
+        zuhrBox.getChildren().addAll(zuhr_hourLeft, zuhr_hourRight, time_Separator3, zuhr_minLeft, zuhr_minRight);
+        prayertime_pane.setConstraints(zuhrBox, 1, 4);
+        prayertime_pane.getChildren().add(zuhrBox);
+        
+//        zuhr_Label_eng.setMaxSize(100,45);
+//        zuhr_Label_eng.setMinSize(100,45);
+//        zuhr_Label_eng.setPrefSize(100,45);
+//        zuhr_Label_ar.setMaxSize(100,45);
+//        zuhr_Label_ar.setMinSize(100,45);
+//        zuhr_Label_ar.setPrefSize(100,45);
+        
+        prayertime_pane.setConstraints(zuhr_Label_eng, 3, 4);
+        prayertime_pane.getChildren().add(zuhr_Label_eng);      
+        prayertime_pane.setConstraints(zuhr_Label_ar, 3, 4);
+        prayertime_pane.getChildren().add(zuhr_Label_ar);
+        
+        zuhr_hourLeft.setText("-");
+        zuhr_hourRight.setText("-");
+        zuhr_minLeft.setText("-");
+        zuhr_minRight.setText("-");
+        time_Separator3.setText(":");
+
+//============================= 
+        HBox asrBox = new HBox();
+//        asrBox.setSpacing(0);
+        asrBox.setMaxSize(100,1);
+//        asrBox.setMinSize(100,15);
+//        asrBox.setPrefSize(100,15);
+        asr_hourLeft.setId("hourLeft");
+        asr_hourRight.setId("hourLeft");
+        time_Separator4.setId("hourLeft");
+        asr_minLeft.setId("hourLeft");
+        asr_minRight.setId("hourLeft");
+        asrBox.getChildren().addAll(asr_hourLeft, asr_hourRight, time_Separator4, asr_minLeft, asr_minRight);
+        prayertime_pane.setConstraints(asrBox, 1, 6);
+        prayertime_pane.getChildren().add(asrBox);
+        
+//        asr_Label_eng.setMaxSize(100,40);
+//        asr_Label_eng.setMinSize(100,40);
+//        asr_Label_eng.setPrefSize(100,40);
+//        asr_Label_ar.setMaxSize(100,40);
+//        asr_Label_ar.setMinSize(100,40);
+//        asr_Label_ar.setPrefSize(100,40);
+        
+        prayertime_pane.setConstraints(asr_Label_eng, 3, 6);
+        prayertime_pane.getChildren().add(asr_Label_eng);      
+        prayertime_pane.setConstraints(asr_Label_ar, 3, 6);
+        prayertime_pane.getChildren().add(asr_Label_ar);
+        
+        asr_hourLeft.setText("-");
+        asr_hourRight.setText("-");
+        asr_minLeft.setText("-");
+        asr_minRight.setText("-");
+        time_Separator4.setText(":");
+        
+//============================= 
+        
+        HBox maghribBox = new HBox();
+//        maghribBox.setSpacing(0);
+        maghribBox.setMaxSize(100,1);
+//        maghribBox.setMinSize(100,15);
+//        maghribBox.setPrefSize(100,15);
+        maghrib_hourLeft.setId("hourLeft");
+        maghrib_hourRight.setId("hourLeft");
+        time_Separator5.setId("hourLeft");
+        maghrib_minLeft.setId("hourLeft");
+        maghrib_minRight.setId("hourLeft");
+        maghribBox.getChildren().addAll(maghrib_hourLeft, maghrib_hourRight, time_Separator5, maghrib_minLeft, maghrib_minRight);
+        prayertime_pane.setConstraints(maghribBox, 1, 8);
+        prayertime_pane.getChildren().add(maghribBox);
+        
+//        maghrib_Label_eng.setMaxSize(100,40);
+//        maghrib_Label_eng.setMinSize(100,40);
+//        maghrib_Label_eng.setPrefSize(100,40);
+//        maghrib_Label_ar.setMaxSize(100,40);
+//        maghrib_Label_ar.setMinSize(100,40);
+//        maghrib_Label_ar.setPrefSize(100,40);
+        
+        prayertime_pane.setConstraints(maghrib_Label_eng, 3, 8);
+        prayertime_pane.getChildren().add(maghrib_Label_eng);      
+        prayertime_pane.setConstraints(maghrib_Label_ar, 3, 8);
+        prayertime_pane.getChildren().add(maghrib_Label_ar);
+        
+        maghrib_hourLeft.setText("-");
+        maghrib_hourRight.setText("-");
+        maghrib_minLeft.setText("-");
+        maghrib_minRight.setText("-");
+        time_Separator5.setText(":");
+
+//============================= 
+        
+        HBox ishaBox = new HBox();
+//        ishaBox.setSpacing(0);
+        ishaBox.setMaxSize(100,1);
+//        ishaBox.setMinSize(100,15);
+//        ishaBox.setPrefSize(100,15);
+        isha_hourLeft.setId("hourLeft");
+        isha_hourRight.setId("hourLeft");
+        time_Separator6.setId("hourLeft");
+        isha_minLeft.setId("hourLeft");
+        isha_minRight.setId("hourLeft");
+        ishaBox.getChildren().addAll(isha_hourLeft, isha_hourRight, time_Separator6, isha_minLeft, isha_minRight);
+        prayertime_pane.setConstraints(ishaBox, 1, 10);
+        prayertime_pane.getChildren().add(ishaBox);
+        
+//        isha_Label_eng.setMaxSize(100,40);
+//        isha_Label_eng.setMinSize(100,40);
+//        isha_Label_eng.setPrefSize(100,40);
+//        isha_Label_ar.setMaxSize(100,40);
+//        isha_Label_ar.setMinSize(100,40);
+//        isha_Label_ar.setPrefSize(100,40);
+        
+        prayertime_pane.setConstraints(isha_Label_eng, 3, 10);
+        prayertime_pane.getChildren().add(isha_Label_eng);      
+        prayertime_pane.setConstraints(isha_Label_ar, 3, 10);
+        prayertime_pane.getChildren().add(isha_Label_ar);
+        
+        isha_hourLeft.setText("-");
+        isha_hourRight.setText("-");
+        isha_minLeft.setText("-");
+        isha_minRight.setText("-");
+        time_Separator6.setText(":");
+        
+        final Separator sepHor1 = new Separator();
+        prayertime_pane.setValignment(sepHor1,VPos.CENTER);
+        prayertime_pane.setConstraints(sepHor1, 0, 3);
+        prayertime_pane.setColumnSpan(sepHor1, 3);
+//        sepHor1.setMaxSize(100,15);
+//        sepHor1.setMinSize(100,15);
+        sepHor1.setMinHeight(1);
+        prayertime_pane.getChildren().add(sepHor1);   
+        
+        final Separator sepHor2 = new Separator();
+        prayertime_pane.setValignment(sepHor2,VPos.CENTER);
+        prayertime_pane.setConstraints(sepHor2, 0, 5);
+        prayertime_pane.setColumnSpan(sepHor2, 3);
+        sepHor2.setMinHeight(1);
+        prayertime_pane.getChildren().add(sepHor2);
+        
+        final Separator sepHor3 = new Separator();
+        prayertime_pane.setValignment(sepHor3,VPos.CENTER);
+        prayertime_pane.setConstraints(sepHor3, 0, 7);
+        prayertime_pane.setColumnSpan(sepHor3, 3);
+        sepHor3.setMinHeight(1);
+        prayertime_pane.getChildren().add(sepHor3);
+        
+        final Separator sepHor4 = new Separator();
+        prayertime_pane.setValignment(sepHor4,VPos.CENTER);
+        prayertime_pane.setConstraints(sepHor4, 0, 9);
+        prayertime_pane.setColumnSpan(sepHor4, 3);
+        sepHor4.setMinHeight(1);
+        prayertime_pane.getChildren().add(sepHor4);
+        
+
+//========= Jamama=======
+               
+//=============================  
+        HBox fajr_jamma_Box = new HBox();
+//        fajr_jamma_Box.setSpacing(0);
+        fajr_jamma_Box.setMaxSize(100,1);
+//        fajr_jamma_Box.setMinSize(100,40);
+//        fajr_jamma_Box.setPrefSize(100,15);
+        fajr_jamma_hourLeft.setId("hourLeft");
+        fajr_jamma_hourRight.setId("hourLeft");
+        time_jamma_Separator1.setId("hourLeft");
+        fajr_jamma_minLeft.setId("hourLeft");
+        fajr_jamma_minRight.setId("hourLeft");
+        fajr_jamma_Box.getChildren().addAll(fajr_jamma_hourLeft, fajr_jamma_hourRight, time_jamma_Separator1, fajr_jamma_minLeft, fajr_jamma_minRight);
+        prayertime_pane.setConstraints(fajr_jamma_Box, 0, 2);
+        prayertime_pane.getChildren().add(fajr_jamma_Box);
+        
+        fajr_jamma_hourLeft.setText("-");
+        fajr_jamma_hourRight.setText("-");
+        fajr_jamma_minLeft.setText("-");
+        fajr_jamma_minRight.setText("-");
+        time_jamma_Separator1.setText(":");
+        
+//============================= 
+        HBox zuhr_jamma_Box = new HBox();
+//        zuhr_jamma_Box.setSpacing(0);
+        zuhr_jamma_Box.setMaxSize(100,1);
+//        zuhr_jamma_Box.setMinSize(100,15);
+//        zuhr_jamma_Box.setPrefSize(100,15);
+        zuhr_jamma_hourLeft.setId("hourLeft");
+        zuhr_jamma_hourRight.setId("hourLeft");
+        time_jamma_Separator2.setId("hourLeft");
+        zuhr_jamma_minLeft.setId("hourLeft");
+        zuhr_jamma_minRight.setId("hourLeft");
+        zuhr_jamma_Box.getChildren().addAll(zuhr_jamma_hourLeft, zuhr_jamma_hourRight, time_jamma_Separator2, zuhr_jamma_minLeft, zuhr_jamma_minRight);
+        prayertime_pane.setConstraints(zuhr_jamma_Box, 0, 4);
+        prayertime_pane.getChildren().add(zuhr_jamma_Box);
+        
+        zuhr_jamma_hourLeft.setText("-");
+        zuhr_jamma_hourRight.setText("-");
+        zuhr_jamma_minLeft.setText("-");
+        zuhr_jamma_minRight.setText("-");
+        time_jamma_Separator2.setText(":");
+
+//============================= 
+        HBox asr_jamma_Box = new HBox();
+//        asr_jamma_Box.setSpacing(0);
+        asr_jamma_Box.setMaxSize(100,1);
+//        asr_jamma_Box.setMinSize(100,15);
+//        asr_jamma_Box.setPrefSize(100,15);
+        asr_jamma_minRight.setId("hourLeft");
+        asr_jamma_minLeft.setId("hourLeft");
+        time_jamma_Separator3.setId("hourLeft");
+        asr_jamma_hourRight.setId("hourLeft");
+        asr_jamma_hourLeft.setId("hourLeft");
+        asr_jamma_Box.getChildren().addAll(asr_jamma_hourLeft, asr_jamma_hourRight, time_jamma_Separator3, asr_jamma_minLeft, asr_jamma_minRight);
+        prayertime_pane.setConstraints(asr_jamma_Box, 0, 6);
+        prayertime_pane.getChildren().add(asr_jamma_Box);
+        
+        asr_jamma_hourLeft.setText("-");
+        asr_jamma_hourRight.setText("-");
+        asr_jamma_minLeft.setText("-");
+        asr_jamma_minRight.setText("-");
+        time_jamma_Separator3.setText(":");
+        
+//============================= 
+        
+        HBox maghrib_jamma_Box = new HBox();
+//        maghrib_jamma_Box.setSpacing(0);
+        maghrib_jamma_Box.setMaxSize(100,1);
+//        maghrib_jamma_Box.setMinSize(100,15);
+//        maghrib_jamma_Box.setPrefSize(100,15);
+        maghrib_jamma_minRight.setId("hourLeft");
+        maghrib_jamma_minLeft.setId("hourLeft");
+        time_jamma_Separator4.setId("hourLeft");
+        maghrib_jamma_hourRight.setId("hourLeft");
+        maghrib_jamma_hourLeft.setId("hourLeft");
+        maghrib_jamma_Box.getChildren().addAll(maghrib_jamma_hourLeft, maghrib_jamma_hourRight, time_jamma_Separator4, maghrib_jamma_minLeft, maghrib_jamma_minRight);
+        prayertime_pane.setConstraints(maghrib_jamma_Box, 0, 8);
+        prayertime_pane.getChildren().add(maghrib_jamma_Box);
+        
+        maghrib_jamma_hourLeft.setText("-");
+        maghrib_jamma_hourRight.setText("-");
+        maghrib_jamma_minLeft.setText("-");
+        maghrib_jamma_minRight.setText("-");
+        time_jamma_Separator4.setText(":");
+//============================= 
+        
+        HBox isha_jamma_Box = new HBox();
+//        isha_jamma_Box.setSpacing(0);
+        isha_jamma_Box.setMaxSize(100,1);
+//        isha_jamma_Box.setMinSize(100,15);
+//        isha_jamma_Box.setPrefSize(100,15);
+        isha_jamma_hourLeft.setId("hourLeft");
+        isha_jamma_hourRight.setId("hourLeft");
+        time_jamma_Separator5.setId("hourLeft");
+        isha_jamma_minLeft.setId("hourLeft");
+        isha_jamma_minRight.setId("hourLeft");
+        isha_jamma_Box.getChildren().addAll(isha_jamma_hourLeft, isha_jamma_hourRight, time_jamma_Separator5, isha_jamma_minLeft, isha_jamma_minRight);
+        prayertime_pane.setConstraints(isha_jamma_Box, 0, 10);
+        prayertime_pane.getChildren().add(isha_jamma_Box);
+        
+        isha_jamma_hourLeft.setText("-");
+        isha_jamma_hourRight.setText("-");
+        isha_jamma_minLeft.setText("-");
+        isha_jamma_minRight.setText("-");
+        time_jamma_Separator5.setText(":");
+       
+   }
+
     return prayertime_pane;
-}
+} 
     
-  
-    
-    
-    //===MOON PANE==========================  
+//===MOON PANE==========================  
     public GridPane moonpane() {
       
         GridPane Moonpane = new GridPane();
-        Moonpane.setId("moonpane");
-        Moonpane.getColumnConstraints().setAll(
-                ColumnConstraintsBuilder.create().minWidth(350).build(),
-                ColumnConstraintsBuilder.create().minWidth(50).build(),
-                ColumnConstraintsBuilder.create().minWidth(160).build()     
-        );
-        Moonpane.setHgap(20);
-        Moonpane.setMaxHeight(50);
-//       Moonpane.setGridLinesVisible(false);
+        if (orientation.equals("vertical") )
+        {
+            Moonpane.setId("moonpane");
+            Moonpane.getColumnConstraints().setAll(
+                    ColumnConstraintsBuilder.create().prefWidth(220).minWidth(220).build(),
+                    ColumnConstraintsBuilder.create().prefWidth(100).minWidth(100).build()     
+            );
+            Moonpane.setHgap(40);
+            Moonpane.setMaxHeight(50);
+    //       Moonpane.setGridLinesVisible(false);
 
-        ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/100%.png")));      
-        Moon_img.setFitWidth(160);
-        Moon_img.setFitHeight(160);
-//        Moon_img.setPreserveRatio(false);
-        Moon_img.setSmooth(true);
-        Moon_Image_Label.setGraphic(Moon_img);
-        Moonpane.setConstraints(Moon_Image_Label, 2, 0);
-        Moonpane.getChildren().add(Moon_Image_Label); 
-        Moon_Date_Label.setId("moon-text-english");
-        Moon_Date_Label.setWrapText(true);
-        Moon_Date_Label.setText("Loading......");
-        Moonpane.setConstraints(Moon_Date_Label, 0, 0);
-        Moonpane.getChildren().add(Moon_Date_Label);
+            ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/100%.png")));      
+            Moon_img.setFitWidth(160);
+            Moon_img.setFitHeight(160);
+    //        Moon_img.setPreserveRatio(false);
+            Moon_img.setSmooth(true);
+            Moon_Image_Label.setGraphic(Moon_img);
+            Moonpane.setConstraints(Moon_Image_Label, 1, 0);
+            Moonpane.getChildren().add(Moon_Image_Label); 
+            Moon_Date_Label.setId("moon-text-english");
+            Moon_Date_Label.setWrapText(true);
+            Moon_Date_Label.setText("Loading......");
+            Moonpane.setConstraints(Moon_Date_Label, 0, 0);
+            Moonpane.getChildren().add(Moon_Date_Label);
 
+        }
+        else if (orientation.equals("horizontal"))
+            
+        {
+            Moonpane.setId("moonpane");
+            Moonpane.getColumnConstraints().setAll(
+                    ColumnConstraintsBuilder.create().prefWidth(140).minWidth(140).build(),
+                    ColumnConstraintsBuilder.create().prefWidth(100).minWidth(80).build()     
+            );
+            Moonpane.setHgap(20);
+            Moonpane.setMaxHeight(50);
+    //       Moonpane.setGridLinesVisible(false);
+
+            ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/100%.png")));      
+            Moon_img.setFitWidth(60);
+            Moon_img.setFitHeight(60);
+    //        Moon_img.setPreserveRatio(false);
+            Moon_img.setSmooth(true);
+            Moon_Image_Label.setGraphic(Moon_img);
+            Moonpane.setConstraints(Moon_Image_Label, 1, 0);
+            Moonpane.getChildren().add(Moon_Image_Label); 
+            Moon_Date_Label.setId("moon-text-english");
+            Moon_Date_Label.setWrapText(true);
+            Moon_Date_Label.setText("Loading......");
+            Moonpane.setConstraints(Moon_Date_Label, 0, 0);
+            Moonpane.getChildren().add(Moon_Date_Label);
+            
+        }
+        
+        else
+            
+        {
+            Moonpane.setId("moonpane");
+            Moonpane.getColumnConstraints().setAll(
+                    ColumnConstraintsBuilder.create().minWidth(350).build(),
+                    ColumnConstraintsBuilder.create().minWidth(50).build(),
+                    ColumnConstraintsBuilder.create().minWidth(160).build()     
+            );
+            Moonpane.setHgap(20);
+            Moonpane.setMaxHeight(50);
+    //       Moonpane.setGridLinesVisible(false);
+
+            ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/100%.png")));      
+            Moon_img.setFitWidth(160);
+            Moon_img.setFitHeight(160);
+    //        Moon_img.setPreserveRatio(false);
+            Moon_img.setSmooth(true);
+            Moon_Image_Label.setGraphic(Moon_img);
+            Moonpane.setConstraints(Moon_Image_Label, 2, 0);
+            Moonpane.getChildren().add(Moon_Image_Label); 
+            Moon_Date_Label.setId("moon-text-english");
+            Moon_Date_Label.setWrapText(true);
+            Moon_Date_Label.setText("Loading......");
+            Moonpane.setConstraints(Moon_Date_Label, 0, 0);
+            Moonpane.getChildren().add(Moon_Date_Label);
+            
+        }
+        
         return Moonpane;
     }
     
-    //===SUN RISE PANE==========================  
+//===SUN RISE PANE==========================  
     public GridPane sunrise() {
       
         GridPane Sunrise = new GridPane();
         Sunrise.setId("moonpane");
-        Sunrise.getColumnConstraints().setAll(
-                ColumnConstraintsBuilder.create().minWidth(350).build(),
-                ColumnConstraintsBuilder.create().minWidth(50).build() ,
-                ColumnConstraintsBuilder.create().minWidth(160).build()    
-        );
-        Sunrise.setHgap(20);
-        Sunrise.setMaxHeight(50);
-//       Moonpane.setGridLinesVisible(false);
+        
+        if (orientation.equals("vertical") )
+        {
+            Sunrise.getColumnConstraints().setAll(
+                    ColumnConstraintsBuilder.create().prefWidth(220).minWidth(220).build(),
+                    ColumnConstraintsBuilder.create().prefWidth(100).minWidth(100).build()     
+            );
+            Sunrise.setHgap(40);
+            Sunrise.setMaxHeight(50);
+    //       Moonpane.setGridLinesVisible(false);
 
-        ImageView Sunrise_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Sun/Sun.png")));      
-        Sunrise_img.setFitWidth(160);
-        Sunrise_img.setFitHeight(160);
-//        Moon_img.setPreserveRatio(false);
-        Sunrise_img.setSmooth(true);
-        Sunrise_Image_Label.setGraphic(Sunrise_img);
-        Sunrise.setConstraints(Sunrise_Image_Label, 2, 0);
-        Sunrise.getChildren().add(Sunrise_Image_Label); 
-        Sunrise_Date_Label.setId("sunrise-text-english");
-        Sunrise_Date_Label.setWrapText(true);
-        Sunrise_Date_Label.setText("Loading......");
-        Sunrise.setConstraints(Sunrise_Date_Label, 0, 0);
-        Sunrise.getChildren().add(Sunrise_Date_Label);
+            ImageView Sunrise_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Sun/Sun.png")));      
+            Sunrise_img.setFitWidth(160);
+            Sunrise_img.setFitHeight(160);
+    //        Moon_img.setPreserveRatio(false);
+            Sunrise_img.setSmooth(true);
+            Sunrise_Image_Label.setGraphic(Sunrise_img);
+            Sunrise.setConstraints(Sunrise_Image_Label, 1, 0);
+            Sunrise.getChildren().add(Sunrise_Image_Label); 
+            Sunrise_Date_Label.setId("sunrise-text-english");
+            Sunrise_Date_Label.setWrapText(true);
+            Sunrise_Date_Label.setText("Loading......");
+            Sunrise.setConstraints(Sunrise_Date_Label, 0, 0);
+            Sunrise.getChildren().add(Sunrise_Date_Label);
+        }
+        
+        else if (orientation.equals("horizontal"))
+            
+        {
+            Sunrise.getColumnConstraints().setAll(
+                    ColumnConstraintsBuilder.create().prefWidth(120).minWidth(120).build(),
+                    ColumnConstraintsBuilder.create().prefWidth(80).minWidth(80).build()     
+            );
+            Sunrise.setHgap(20);
+            Sunrise.setMaxHeight(50);
+    //       Moonpane.setGridLinesVisible(false);
+
+            ImageView Sunrise_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Sun/Sun.png")));      
+            Sunrise_img.setFitWidth(75);
+            Sunrise_img.setFitHeight(75);
+    //        Moon_img.setPreserveRatio(false);
+            Sunrise_img.setSmooth(true);
+            Sunrise_Image_Label.setGraphic(Sunrise_img);
+            Sunrise.setConstraints(Sunrise_Image_Label, 1, 0);
+            Sunrise.getChildren().add(Sunrise_Image_Label); 
+            Sunrise_Date_Label.setId("sunrise-text-english");
+            Sunrise_Date_Label.setWrapText(true);
+            Sunrise_Date_Label.setText("Loading......");
+            Sunrise.setConstraints(Sunrise_Date_Label, 0, 0);
+            Sunrise.getChildren().add(Sunrise_Date_Label);
+        }
+        
+        else
+            
+        {
+            Sunrise.getColumnConstraints().setAll(
+                    ColumnConstraintsBuilder.create().minWidth(350).build(),
+                    ColumnConstraintsBuilder.create().minWidth(50).build() ,
+                    ColumnConstraintsBuilder.create().minWidth(160).build()    
+            );
+            Sunrise.setHgap(20);
+            Sunrise.setMaxHeight(50);
+    //       Moonpane.setGridLinesVisible(false);
+
+            ImageView Sunrise_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Sun/Sun.png")));      
+            Sunrise_img.setFitWidth(160);
+            Sunrise_img.setFitHeight(160);
+    //        Moon_img.setPreserveRatio(false);
+            Sunrise_img.setSmooth(true);
+            Sunrise_Image_Label.setGraphic(Sunrise_img);
+            Sunrise.setConstraints(Sunrise_Image_Label, 2, 0);
+            Sunrise.getChildren().add(Sunrise_Image_Label); 
+            Sunrise_Date_Label.setId("sunrise-text-english");
+            Sunrise_Date_Label.setWrapText(true);
+            Sunrise_Date_Label.setText("Loading......");
+            Sunrise.setConstraints(Sunrise_Date_Label, 0, 0);
+            Sunrise.getChildren().add(Sunrise_Date_Label);
+        }
 
         return Sunrise;
     }
     
     
-    
-    
-    //===MOON PANE==========================  
+//===hadith PANE==========================  
     public GridPane hadithPane() {
       
         GridPane hadithPane = new GridPane();
@@ -5339,24 +6642,16 @@ public void update_labels() throws Exception{
         hadithPane.setConstraints(ar_moon_hadith_Label_L2, 0, 1);
         hadithPane.getChildren().add(ar_moon_hadith_Label_L2);
         
-        ar_moon_hadith_Label_L1.setTranslateY(35);
-        ar_moon_hadith_Label_L2.setTranslateY(30);
+        if (orientation.equals("horizontal_HD") )
+        {
+            ar_moon_hadith_Label_L1.setTranslateY(35);
+            ar_moon_hadith_Label_L2.setTranslateY(30);
+        }
         
         facebook_Label.setWrapText(true);
         facebook_Label.setMinHeight(0);
         hadithPane.setConstraints(facebook_Label, 0, 0);
         hadithPane.getChildren().add(facebook_Label);
-                
-//        ImageView divider_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/divider.png")));      
-//        divider1_Label.setGraphic(divider_img);
-//        hadithPane.setHalignment(divider1_Label,HPos.CENTER);
-//        hadithPane.setConstraints(divider1_Label, 0, 2);
-//        hadithPane.getChildren().add(divider1_Label); 
-        
-//        divider2_Label.setGraphic(divider_img);
-//        hadithPane.setHalignment(divider2_Label,HPos.CENTER);
-//        hadithPane.setConstraints(divider2_Label, 0, 2);
-//        hadithPane.getChildren().add(divider2_Label); 
         
         athan_Change_Label_L1.setWrapText(true);
         athan_Change_Label_L1.setMinHeight(0);
@@ -5367,13 +6662,11 @@ public void update_labels() throws Exception{
         athan_Change_Label_L2.setMinHeight(0);
         hadithPane.setConstraints(athan_Change_Label_L2, 0, 4);
         hadithPane.getChildren().add(athan_Change_Label_L2);
-        
-        
-        
-
 
         return hadithPane;
     }    
+
+//===Footer PANE==========================  
 
     public GridPane footerPane() {
       
@@ -5431,78 +6724,164 @@ public void update_labels() throws Exception{
         footerPane.setHalignment(textFlow3,HPos.CENTER);
         footerPane.setConstraints(textFlow3, 0, 2);
         footerPane.getChildren().add(textFlow3);
-        
-        
-        
-
 
         return footerPane;
     }    
 
+//===Clock PANE==========================  
+    
     public GridPane clockPane() {
       
         GridPane clockPane = new GridPane();
         clockPane.setId("clockPane");
 //        clockPane.setVgap(30);
+        
+        if (orientation.equals("vertical") )
+        {
+            clockPane.getColumnConstraints().setAll(
+                ColumnConstraintsBuilder.create().minWidth(10).maxWidth(50).build(),
+                ColumnConstraintsBuilder.create().minWidth(120).maxWidth(300).build(),
+                ColumnConstraintsBuilder.create().minWidth(40).maxWidth(50).build(),
+                ColumnConstraintsBuilder.create().minWidth(120).maxWidth(160).build(),
+                ColumnConstraintsBuilder.create().minWidth(70).maxWidth(150).build()    
+            );
+
+            clockPane.setHgap(0);
+    //        clockPane.setGridLinesVisible(true);
+    //        clockPane.setMaxHeight(50);
+
+            hour_Label.setId("hour");  
+            clockPane.setHalignment(hour_Label,HPos.RIGHT);
+            clockPane.setConstraints(hour_Label, 1, 0);
+            clockPane.getChildren().add(hour_Label);
+
+            separator_Label.setText(":");
+            separator_Label.setId("clock_separator");  
+            clockPane.setHalignment(separator_Label,HPos.CENTER);
+            clockPane.setConstraints(separator_Label, 2, 0);
+            clockPane.getChildren().add(separator_Label);
+
+            minute_Label.setId("minute");  
+            clockPane.setHalignment(minute_Label,HPos.CENTER);
+            clockPane.setValignment(minute_Label,VPos.CENTER);
+            clockPane.setConstraints(minute_Label, 3, 0);
+            clockPane.getChildren().add(minute_Label);
+
+            second_Label.setId("second");  
+            clockPane.setHalignment(second_Label,HPos.CENTER);
+            clockPane.setValignment(second_Label,VPos.CENTER);
+            clockPane.setConstraints(second_Label, 4, 0);
+            clockPane.getChildren().add(second_Label);
+
+            date_Label.setId("date");
+            clockPane.setHalignment(date_Label,HPos.CENTER);
+            clockPane.setConstraints(date_Label, 0, 1,5,1);
+            clockPane.getChildren().add(date_Label);
 
         
-        clockPane.getColumnConstraints().setAll(
+        }
+        
+        else if (orientation.equals("horizontal") )
+        {
+            clockPane.getColumnConstraints().setAll(
+                ColumnConstraintsBuilder.create().minWidth(10).maxWidth(70).build(),
+                ColumnConstraintsBuilder.create().minWidth(50).maxWidth(90).build(),
+                ColumnConstraintsBuilder.create().minWidth(25).maxWidth(70).build(),
+                ColumnConstraintsBuilder.create().minWidth(40).maxWidth(90).build(),
+                ColumnConstraintsBuilder.create().minWidth(50).maxWidth(70).build()    
+            );
+
+            clockPane.getRowConstraints().setAll(
+                    RowConstraintsBuilder.create().minHeight(10).build(),
+                    RowConstraintsBuilder.create().minHeight(20).build(),
+                    RowConstraintsBuilder.create().minHeight(67).build(),
+                    RowConstraintsBuilder.create().minHeight(10).build()
+            );
+
+            clockPane.setHgap(0);
+    //        clockPane.setGridLinesVisible(true);
+    //        clockPane.setMaxHeight(50);
+
+            hour_Label.setId("hour");  
+            clockPane.setHalignment(hour_Label,HPos.RIGHT);
+            clockPane.setConstraints(hour_Label, 1, 2, 1, 3);
+            clockPane.getChildren().add(hour_Label);
+
+            separator_Label.setText(":");
+            separator_Label.setId("clock_separator");  
+            clockPane.setHalignment(separator_Label,HPos.CENTER);
+            clockPane.setConstraints(separator_Label, 2, 2, 1, 3);
+            clockPane.getChildren().add(separator_Label);
+
+            minute_Label.setId("minute");  
+            clockPane.setHalignment(minute_Label,HPos.CENTER);
+            clockPane.setValignment(minute_Label,VPos.CENTER);
+            clockPane.setConstraints(minute_Label, 3, 2, 1, 3);
+            clockPane.getChildren().add(minute_Label);
+
+            second_Label.setId("second");  
+            clockPane.setHalignment(second_Label,HPos.CENTER);
+            clockPane.setValignment(second_Label,VPos.CENTER);
+            clockPane.setConstraints(second_Label, 4, 2, 1, 3);
+            clockPane.getChildren().add(second_Label);
+
+            date_Label.setId("date");
+            clockPane.setHalignment(date_Label,HPos.CENTER);
+            clockPane.setConstraints(date_Label, 1, 3,5,1);
+            clockPane.getChildren().add(date_Label);
+
+        }
+        
+        else
+        {
+            clockPane.getColumnConstraints().setAll(
                 ColumnConstraintsBuilder.create().minWidth(10).build(),
                 ColumnConstraintsBuilder.create().minWidth(140).build(),
                 ColumnConstraintsBuilder.create().minWidth(65).build(),
                 ColumnConstraintsBuilder.create().minWidth(140).build(),
                 ColumnConstraintsBuilder.create().minWidth(140).build()    
-        );
-        
-        clockPane.getRowConstraints().setAll(
-                RowConstraintsBuilder.create().minHeight(10).build(),
-                RowConstraintsBuilder.create().minHeight(20).build(),
-                RowConstraintsBuilder.create().minHeight(167).build(),
-                RowConstraintsBuilder.create().minHeight(10).build()
-        );
-        
-        clockPane.setHgap(0);
-//        clockPane.setGridLinesVisible(true);
-//        clockPane.setMaxHeight(50);
-        
-        
-        hour_Label.setId("hour");  
-        clockPane.setHalignment(hour_Label,HPos.RIGHT);
-        clockPane.setConstraints(hour_Label, 1, 2, 1, 3);
-        clockPane.getChildren().add(hour_Label);
-        
-        separator_Label.setText(":");
-        separator_Label.setId("clock_separator");  
-        clockPane.setHalignment(separator_Label,HPos.CENTER);
-        clockPane.setConstraints(separator_Label, 2, 2, 1, 3);
-        clockPane.getChildren().add(separator_Label);
-        
-        minute_Label.setId("minute");  
-        clockPane.setHalignment(minute_Label,HPos.CENTER);
-        clockPane.setValignment(minute_Label,VPos.CENTER);
-        clockPane.setConstraints(minute_Label, 3, 2, 1, 3);
-        clockPane.getChildren().add(minute_Label);
-        
+            );
 
-        
-        second_Label.setId("second");  
-        clockPane.setHalignment(second_Label,HPos.CENTER);
-        clockPane.setValignment(second_Label,VPos.CENTER);
-        clockPane.setConstraints(second_Label, 4, 2, 1, 3);
-        clockPane.getChildren().add(second_Label);
-        
-       
-        
-        
-//        day_Label.setId("date");
-//        clockPane.setHalignment(day_Label,HPos.CENTER);
-//        clockPane.setConstraints(day_Label, 5, 2,5,1);
-//        clockPane.getChildren().add(day_Label);
-        
-        date_Label.setId("date");
-        clockPane.setHalignment(date_Label,HPos.CENTER);
-        clockPane.setConstraints(date_Label, 1, 3,5,1);
-        clockPane.getChildren().add(date_Label);
+            clockPane.getRowConstraints().setAll(
+                    RowConstraintsBuilder.create().minHeight(10).build(),
+                    RowConstraintsBuilder.create().minHeight(20).build(),
+                    RowConstraintsBuilder.create().minHeight(167).build(),
+                    RowConstraintsBuilder.create().minHeight(10).build()
+            );
+
+            clockPane.setHgap(0);
+    //        clockPane.setGridLinesVisible(true);
+    //        clockPane.setMaxHeight(50);
+
+            hour_Label.setId("hour");  
+            clockPane.setHalignment(hour_Label,HPos.RIGHT);
+            clockPane.setConstraints(hour_Label, 1, 2, 1, 3);
+            clockPane.getChildren().add(hour_Label);
+
+            separator_Label.setText(":");
+            separator_Label.setId("clock_separator");  
+            clockPane.setHalignment(separator_Label,HPos.CENTER);
+            clockPane.setConstraints(separator_Label, 2, 2, 1, 3);
+            clockPane.getChildren().add(separator_Label);
+
+            minute_Label.setId("minute");  
+            clockPane.setHalignment(minute_Label,HPos.CENTER);
+            clockPane.setValignment(minute_Label,VPos.CENTER);
+            clockPane.setConstraints(minute_Label, 3, 2, 1, 3);
+            clockPane.getChildren().add(minute_Label);
+
+            second_Label.setId("second");  
+            clockPane.setHalignment(second_Label,HPos.CENTER);
+            clockPane.setValignment(second_Label,VPos.CENTER);
+            clockPane.setConstraints(second_Label, 4, 2, 1, 3);
+            clockPane.getChildren().add(second_Label);
+
+            date_Label.setId("date");
+            clockPane.setHalignment(date_Label,HPos.CENTER);
+            clockPane.setConstraints(date_Label, 1, 3,5,1);
+            clockPane.getChildren().add(date_Label);
+        }
+
         return clockPane;
     }
     
