@@ -176,6 +176,14 @@ import javafx.stage.StageStyle;
      private SimpleGauge thermoMeter;   
         ImageView cameraView;
         Group myGroup;
+      
+    private ProcessBuilder processBuilder_Athan = new ProcessBuilder("bash", "-c", "mpg123 /home/pi/prayertime/Audio/athan1.mp3");
+    private ProcessBuilder processBuilder_Duha = new ProcessBuilder("bash", "-c", "mpg123 /home/pi/prayertime/Audio/duha.mp3");
+    private ProcessBuilder processBuilder_Tvon = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
+    private ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
+    private ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
+    private ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+    private ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
         
     private double ar_Marquee_Notification_Text_XPos, en_Marquee_Notification_Text_XPos;
     private double ar_Marquee_Notification_Text_YPos, en_Marquee_Notification_Text_YPos;
@@ -197,7 +205,7 @@ import javafx.stage.StageStyle;
     
     
     private final Boolean debug    = false;  //  <<========================== Debuger 
-    private final Boolean facebook_image_debug = false; //  <<========================== Debuger 
+    private final Boolean facebook_image_debug = true; //  <<========================== Debuger 
     private final Boolean auto_friday_cam_debug = false; //  <<========================== Debuger 
     private final Logger logger = Logger.getLogger(JavaFXApplication4.class.getName());
     private Date fullMoon= null; //  <<========================== might fix errors at startup
@@ -208,8 +216,12 @@ import javafx.stage.StageStyle;
     final Timeline ar_timeline = new Timeline();
         final Timeline en_timeline = new Timeline();
        final Timeline camera_Timeline = new Timeline();
-       FadeTransition ft; 
-            
+       
+    private FadeTransition facebook_image_fade_in = new FadeTransition(Duration.millis(500));
+    private FadeTransition facebook_image_fade_out = new FadeTransition(Duration.millis(500));
+    private FadeTransition ft_ar = new FadeTransition(Duration.millis(2000));
+    private FadeTransition ft_en = new FadeTransition(Duration.millis(2000));
+    
     private Process p;
     static final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
     
@@ -287,7 +299,11 @@ import javafx.stage.StageStyle;
     boolean Button_activated = false;
     boolean radar_displayed = false;
     boolean facebook_turn = false;
-    boolean zuhr_jamaat_cam_activated = false;
+    boolean friday_jamaat_cam_activated = false;
+    boolean show_friday = false;
+    boolean double_friday = false;
+    boolean jammat_from_database;
+    
             
     private String hadith, translated_hadith, ar_full_moon_hadith, en_full_moon_hadith, ar_moon_notification, en_moon_notification, announcement, en_notification_Msg, ar_notification_Msg, device_name, device_location;
     private String ar_notification_Msg_Lines[], en_notification_Msg_Lines[], notification_Msg, facebook_moon_notification_Msg;    
@@ -313,7 +329,7 @@ import javafx.stage.StageStyle;
     private int sonar_distance =50000;
     private int sonar_active_distance;
     
-    private int id, maghrib_adj;
+    private int id, fajr_adj,asr_adj,maghrib_adj,isha_summer_adj, isha_winter_adj;
     private int AsrJuristic,calcMethod;
     private int max_ar_hadith_len, max_en_hadith_len;
     int olddayofweek_int;
@@ -322,17 +338,19 @@ import javafx.stage.StageStyle;
     int fajr_diffsec_dec ,fajr_diffsec_sin, maghrib_diffsec_dec ,maghrib_diffsec_sin;
     private Date prayer_date,future_prayer_date;
     private Calendar fajr_cal, sunrise_cal, duha_cal, zuhr_cal, asr_cal, maghrib_cal, isha_cal,old_today;
-    private Calendar fajr_jamaat_cal, duha_jamaat_cal, zuhr_jamaat_cal, asr_jamaat_cal, maghrib_jamaat_cal, isha_jamaat_cal;
+    private Calendar fajr_jamaat_cal, duha_jamaat_cal, zuhr_jamaat_cal,friday_jamaat_cal, asr_jamaat_cal, maghrib_jamaat_cal, isha_jamaat_cal;
     private Calendar fajr_jamaat_update_cal, duha_jamaat_update_cal, zuhr_jamaat_update_cal, asr_jamaat_update_cal, maghrib_jamaat_update_cal, isha_jamaat_update_cal;
-    private Calendar future_fajr_jamaat_cal, future_zuhr_jamaat_cal, future_asr_jamaat_cal, future_maghrib_jamaat_cal, future_isha_jamaat_cal, maghrib_plus15_cal, zuhr_plus15_cal, zuhr_plus30_cal;
+    private Calendar future_fajr_jamaat_cal, future_zuhr_jamaat_cal, future_asr_jamaat_cal, future_maghrib_jamaat_cal, future_isha_jamaat_cal, maghrib_plus15_cal, zuhr_plus15_cal, zuhr_plus30_cal, friday_plus30_cal;
     private Calendar notification_Date_cal, hadith_notification_Date_cal;
+    
+    private Date friday1_summer,friday2_summer ,friday1_winter ,friday2_winter ,zuhr_summer ,zuhr_winter;
     
     private Date fajr_begins_time,fajr_jamaat_time, sunrise_time, duha_time, zuhr_begins_time, zuhr_jamaat_time, asr_begins_time, asr_jamaat_time, maghrib_begins_time, maghrib_jamaat_time,isha_begins_time, isha_jamaat_time;
     private Date future_fajr_jamaat_time, future_asr_jamaat_time, future_maghrib_jamaat_time,future_isha_jamaat_time;
     private Date notification_Date, hadith_notification_Date;   
     private Date fullMoon_plus1;
     Date ishadate, maghribdate, asrdate, zuhrdate, fajrdate; 
-    Date fajrjamaatdate, zuhrjamaatdate, asrjamaatdate, maghribjamaatdate, ishajamaatdate;
+    private Date fajrjamaatdate, zuhrjamaatdate, asrjamaatdate, maghribjamaatdate, ishajamaatdate;
     
     DateTimeZone tzSAUDI_ARABIA;
     DateTime dtIslamic;
@@ -445,6 +463,8 @@ import javafx.stage.StageStyle;
             }
         };
         
+        
+        
 //        Timeline camera_Timeline = new Timeline
 //                (
 //                    new KeyFrame(Duration.seconds(0), evt -> 
@@ -471,18 +491,19 @@ import javafx.stage.StageStyle;
         
         logger.info("Starting prayer application....");
         
+        
+        
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() 
         {            
             @Override
             public void run() 
             {
                 logger.info("Exiting application....");
-                ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
+                
                 try {Process process2 = processBuilder2.start();}
                 catch (IOException e) {logger.warn("Unexpected error", e);}
                 System.out.println("Switching back to App...");
-                ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
-                try {Process process = processBuilder_camera_off.start(); } 
+                                try {Process process = processBuilder_camera_off.start(); } 
                 catch (IOException e) {logger.warn("Unexpected error", e);}
                 
                 Platform.exit();
@@ -497,7 +518,9 @@ import javafx.stage.StageStyle;
         try
             {
                 c = DBConnect.connect();
-                SQL = "Select * from settings";
+//                SQL = "Select * from settings";
+                
+                SQL = "Select * from settings_al_takwa";
                 rs = c.createStatement().executeQuery(SQL);
                 while (rs.next()) 
                 {
@@ -521,7 +544,23 @@ import javafx.stage.StageStyle;
                     AsrJuristic =                   rs.getInt("AsrJuristic");
                     fb_Access_token =               rs.getString("fb_Access_token");
                     page_ID =                       rs.getString("page_ID");
+                    jammat_from_database =          rs.getBoolean("jammat_from_database");
+                    fajr_adj =                      rs.getInt("fajr_adj");
+                    asr_adj =                       rs.getInt("asr_adj");
                     maghrib_adj =                   rs.getInt("maghrib_adj");
+                    isha_summer_adj  =              rs.getInt("isha_summer_adj");
+                    isha_winter_adj  =              rs.getInt("isha_winter_adj");
+                    show_friday =                   rs.getBoolean("show_friday");
+                    double_friday =                 rs.getBoolean("double_friday");
+                    friday1_summer =                rs.getTime("friday1_summer");
+                    friday2_summer =                rs.getTime("friday2_summer");
+                    friday1_winter =                rs.getTime("friday1_winter");
+                    friday2_winter =                rs.getTime("friday2_winter");
+                    zuhr_summer =                   rs.getTime("zuhr_summer");
+                    zuhr_winter =                   rs.getTime("zuhr_winter");
+                    
+                            
+                            
                     max_ar_hadith_len =             rs.getInt("max_ar_hadith_len");
                     max_en_hadith_len =             rs.getInt("max_en_hadith_len");
                     
@@ -530,9 +569,9 @@ import javafx.stage.StageStyle;
                 }
                 c.close();
                 System.out.format("Prayertime server running on %s platform\n", platform);
-                System.out.format(" Face Book Notification Enabled: %s \n Face Book Receive posts: %s \n Facebook page ID: %s \n Latitude: %s \n Longitude: %s \n Time Zone: %s \n Calculation Method: %s  \n Asr Juristic: %s \n", facebook_notification_enable, facebook_Receive, page_ID, latitude, longitude, timezone,calcMethod, AsrJuristic );
+//                System.out.format(" Face Book Notification Enabled: %s \n Face Book Receive posts: %s \n Facebook page ID: %s \n Latitude: %s \n Longitude: %s \n Time Zone: %s \n Calculation Method: %s  \n Asr Juristic: %s \n", facebook_notification_enable, facebook_Receive, page_ID, latitude, longitude, timezone,calcMethod, AsrJuristic );
                 System.out.format("Device Name is:%s at %s \n", device_name, device_location);
-                System.out.format("Time Zone ID is:%s \n", timeZone_ID);
+//                System.out.format("Time Zone ID is:%s \n", timeZone_ID);
                 
                 
             }
@@ -614,11 +653,11 @@ import javafx.stage.StageStyle;
         {
             if(!f.getName().startsWith(".")){images.add(f.getName());}
         }   
-        System.out.println(images);
+//        System.out.println(images);
         countImages = images.size();
         imageNumber = (int) (Math.random() * countImages);
         rand_Image_Path = directory + "/"+ images.get(imageNumber);
-        System.out.println(rand_Image_Path);
+//        System.out.println(rand_Image_Path);
         
         if (!platform.equals("osx"))
         {
@@ -853,6 +892,8 @@ import javafx.stage.StageStyle;
         fajr_Label_eng.setId("prayer-label-english");
         fajr_Label_eng.setText("Fajr");
         GridPane.setHalignment(fajr_Label_eng,HPos.CENTER);
+        
+        
 
         thermoMeter = SimpleGaugeBuilder.create()
                                         .minSize(550, 550)
@@ -914,7 +955,7 @@ import javafx.stage.StageStyle;
                         getprayertime.tune(offsets);
                         
                         Date time = cal.getTime();
-                        System.out.println(" daylight saving? " + TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ));
+//                        System.out.println(" daylight saving? " + TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ));
                         
 //                        The following calculate the next daylight saving date
                         DateTimeZone zone = DateTimeZone.forID(timeZone_ID);        
@@ -943,7 +984,7 @@ import javafx.stage.StageStyle;
 //                        Date fajr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(next);
                         nextTransitionCal.add(Calendar.DAY_OF_MONTH, -7);
                         nextTransitionCal.set(Calendar.HOUR_OF_DAY, 0);
-                        System.out.println ("Next Daylight saving Check (-7 days): " + nextTransitionCal.getTime());
+//                        System.out.println ("Next Daylight saving Check (-7 days): " + nextTransitionCal.getTime());
                         
                         
                         
@@ -959,7 +1000,7 @@ import javafx.stage.StageStyle;
                         fajr_cal = Calendar.getInstance();
                         fajr_cal.setTime(fajr);
                         fajr_begins_time = fajr_cal.getTime();
-                        System.out.println(" fajr time " + fajr_begins_time);
+//                        System.out.println(" fajr time " + fajr_begins_time);
                         
                         Date sunrise_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(1)).getTime()));
                         cal.setTime(sunrise_temp);
@@ -968,7 +1009,7 @@ import javafx.stage.StageStyle;
                         sunrise_cal = Calendar.getInstance();
                         sunrise_cal.setTime(sunrise);
                         sunrise_time = sunrise_cal.getTime();
-                        System.out.println(" sunrise time " + sunrise_time);
+//                        System.out.println(" sunrise time " + sunrise_time);
                         
                         cal.add(Calendar.MINUTE, 15);
                         Date duha = cal.getTime();
@@ -977,7 +1018,7 @@ import javafx.stage.StageStyle;
                         duha_cal.setTime(duha);
                         duha_cal.set(Calendar.MILLISECOND, 0);
                         duha_cal.set(Calendar.SECOND, 0);
-                        System.out.println(" Duha alarm time " + duha_cal.getTime());
+//                        System.out.println(" Duha alarm time " + duha_cal.getTime());
                                                 
                         
                         Date zuhr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(2)).getTime()));
@@ -987,7 +1028,7 @@ import javafx.stage.StageStyle;
                         zuhr_cal = Calendar.getInstance();
                         zuhr_cal.setTime(zuhr);
                         zuhr_begins_time = zuhr_cal.getTime();
-                        System.out.println(" Zuhr time " + zuhr_begins_time);
+//                        System.out.println(" Zuhr time " + zuhr_begins_time);
                         
                         Date asr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(3)).getTime()));
                         cal.setTime(asr_temp);
@@ -996,7 +1037,7 @@ import javafx.stage.StageStyle;
                         asr_cal = Calendar.getInstance();
                         asr_cal.setTime(asr);
                         asr_begins_time = asr_cal.getTime();
-                        System.out.println(" Asr time " + asr_begins_time);
+//                        System.out.println(" Asr time " + asr_begins_time);
                         
                         Date maghrib_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(5)).getTime()));
                         cal.setTime(maghrib_temp);
@@ -1005,7 +1046,7 @@ import javafx.stage.StageStyle;
                         maghrib_cal = Calendar.getInstance();
                         maghrib_cal.setTime(maghrib);
                         maghrib_begins_time = maghrib_cal.getTime();
-                        System.out.println(" maghrib time " + maghrib_begins_time);
+//                        System.out.println(" maghrib time " + maghrib_begins_time);
 
                         maghrib_plus15_cal = (Calendar)maghrib_cal.clone();
                         maghrib_plus15_cal.add(Calendar.MINUTE, +15);
@@ -1017,22 +1058,22 @@ import javafx.stage.StageStyle;
                         isha_cal = Calendar.getInstance();
                         isha_cal.setTime(isha);
                         isha_begins_time = isha_cal.getTime();
-                        System.out.println(" isha time " + isha_begins_time);
+//                        System.out.println(" isha time " + isha_begins_time);
                         
 //                        set friday prayer here
                         if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
                         {
-                            friday_jamaat = "01:30";
+                            friday_jamaat = friday1_summer.toString();
                             
                             
-                            friday2_jamaat = "01:20";
+                            friday2_jamaat = friday2_summer.toString();;
                         }
                         else
                         {
-                            friday_jamaat = "12:30";  
+                            friday_jamaat = friday1_winter.toString();  
                             
                             
-                            friday2_jamaat = "01:20";
+                            friday2_jamaat = friday2_winter.toString();
                         
                         
                         }
@@ -1050,12 +1091,12 @@ import javafx.stage.StageStyle;
 
                         tzSAUDI_ARABIA = DateTimeZone.forID("Asia/Riyadh");
                         dtIslamic = DateTime_now.withChronology(IslamicChronology.getInstance(tzSAUDI_ARABIA, IslamicChronology.LEAP_YEAR_15_BASED));
-                        System.out.print("Arabic Date:  ");
-                        System.out.print(dtIslamic.getMonthOfYear());
-                        System.out.print("/");
-                        System.out.println(dtIslamic.getDayOfMonth());
+//                        System.out.print("Arabic Date:  ");
+//                        System.out.print(dtIslamic.getMonthOfYear());
+//                        System.out.print("/");
+//                        System.out.println(dtIslamic.getDayOfMonth());
 
-                        if (dtIslamic.getMonthOfYear()==9){System.out.println("==========Ramadan Moubarik==========");}
+//                        if (dtIslamic.getMonthOfYear()==9){System.out.println("==========Ramadan Moubarik==========");}
         
                         //enable athan play time
                         if (dayofweek_int != olddayofweek_int)
@@ -1064,7 +1105,7 @@ import javafx.stage.StageStyle;
                             moonPhase = m.illuminatedPercentage();
                             isWaning = m.isWaning();
                             update_moon_image = true;
-                            System.out.println("The moon is " + moonPhase + "% full and " + (isWaning ? "waning" : "waxing"));
+//                            System.out.println("The moon is " + moonPhase + "% full and " + (isWaning ? "waning" : "waxing"));
                     
 //                            old_today = Calendar.getInstance();
                             olddayofweek_int = dayofweek_int;                         
@@ -1080,232 +1121,330 @@ import javafx.stage.StageStyle;
                             getHadith = true;
                             
 //==============JAMAA Prayer time 
-
-                            try
+                            if(jammat_from_database)
                             {
-                                c = DBConnect.connect();
-    //                            System.out.println("connected");
-                                SQL = "select * from prayertimes where DATE(date) = DATE(NOW())";
-                                rs = c.createStatement().executeQuery(SQL);
-                                while (rs.next()) 
+                                
+                                
+                                
+                                try
                                 {
-                                    id =                rs.getInt("id");
-                                    prayer_date =       rs.getDate("date");
-                                    fajr_jamaat_time =       rs.getTime("fajr_jamaat");
-                                    asr_jamaat_time =        rs.getTime("asr_jamaat");
-                                    isha_jamaat_time =       rs.getTime("isha_jamaat");           
+                                    c = DBConnect.connect();
+        //                            System.out.println("connected");
+                                    SQL = "select * from prayertimes where DATE(date) = DATE(NOW())";
+                                    rs = c.createStatement().executeQuery(SQL);
+                                    while (rs.next()) 
+                                    {
+                                        id =                rs.getInt("id");
+                                        prayer_date =       rs.getDate("date");
+                                        fajr_jamaat_time =       rs.getTime("fajr_jamaat");
+                                        asr_jamaat_time =        rs.getTime("asr_jamaat");
+                                        isha_jamaat_time =       rs.getTime("isha_jamaat");           
+                                    }
+                                    c.close();
+                                    fajr_jamaat = fajr_jamaat_time.toString();
+
+
+
+                                    if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){zuhr_jamaat = zuhr_summer.toString();} else{zuhr_jamaat = zuhr_winter.toString();}
+                                    asr_jamaat = asr_jamaat_time.toString();
+                                    isha_jamaat = isha_jamaat_time.toString();
+                                    // print the results
+    //                                System.out.format("%s,%s,%s,%s,%s \n", id, prayer_date, fajr_jamaat, asr_jamaat, isha_jamaat );
                                 }
-                                c.close();
-                                fajr_jamaat = fajr_jamaat_time.toString();
-                                if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){zuhr_jamaat = "01:30";} else{zuhr_jamaat = "12:30";}
-                                asr_jamaat = asr_jamaat_time.toString();
-                                isha_jamaat = isha_jamaat_time.toString();
-                                // print the results
-//                                System.out.format("%s,%s,%s,%s,%s \n", id, prayer_date, fajr_jamaat, asr_jamaat, isha_jamaat );
-                            }
-                            catch (Exception e){ logger.warn("Unexpected error", e); }
-                                                
-                            
-                            Date fajr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_jamaat);
-                            cal.setTime(fajr_jamaat_temp);
-                            cal.add(Calendar.MINUTE, 5);
-                            Date fajr_jamaat = cal.getTime();
-                            fajr_jamaat_update_cal = Calendar.getInstance();
-                            fajr_jamaat_update_cal.setTime(fajr_jamaat);
-                            fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-                            fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
-                            
-                            fajr_jamaat_cal = (Calendar)fajr_jamaat_update_cal.clone();
-                            fajr_jamaat_cal.add(Calendar.MINUTE, -5);
-//                            System.out.println("fajr Jamaat update scheduled at:" + fajr_jamaat_update_cal.getTime());
-                            
-                            Date zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + zuhr_jamaat);
-                            cal.setTime(zuhr_jamaat_temp);
-                            Date zuhr_jamaat_Date = cal.getTime();
-                            zuhr_jamaat_cal = Calendar.getInstance();
-                            zuhr_jamaat_cal.setTime(zuhr_jamaat_Date);
-                            zuhr_jamaat_cal.set(Calendar.MILLISECOND, 0);
-                            zuhr_jamaat_cal.set(Calendar.SECOND, 0);
-                            System.out.println("=============Zuhr Jamaat at:" + zuhr_jamaat_cal.getTime() + "day int is" + dayofweek_int);
-                            
-                            zuhr_plus15_cal = (Calendar)zuhr_jamaat_cal.clone();
-                            zuhr_plus15_cal.add(Calendar.MINUTE, +15);
-                            
-                            zuhr_plus30_cal = (Calendar)zuhr_jamaat_cal.clone();
-                            zuhr_plus30_cal.add(Calendar.MINUTE, +30);
-                            
-                            
-                            if(auto_friday_cam_debug)
-                            {
+                                catch (Exception e){ logger.warn("Unexpected error", e); }
+                                
+                                Date fajr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_jamaat);
+                                cal.setTime(fajr_jamaat_temp);
+                                cal.add(Calendar.MINUTE, 5);
+                                Date fajr_jamaat = cal.getTime();
+                                fajr_jamaat_update_cal = Calendar.getInstance();
+                                fajr_jamaat_update_cal.setTime(fajr_jamaat);
+                                fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+                                fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
+
+                                fajr_jamaat_cal = (Calendar)fajr_jamaat_update_cal.clone();
+                                fajr_jamaat_cal.add(Calendar.MINUTE, -5);
+    //                            System.out.println("fajr Jamaat update scheduled at:" + fajr_jamaat_update_cal.getTime());
+
+
+                                Date zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + zuhr_jamaat);
+                                cal.setTime(zuhr_jamaat_temp);
+                                Date zuhr_jamaat_Date = cal.getTime();
                                 zuhr_jamaat_cal = Calendar.getInstance();
+                                zuhr_jamaat_cal.setTime(zuhr_jamaat_Date);
                                 zuhr_jamaat_cal.set(Calendar.MILLISECOND, 0);
                                 zuhr_jamaat_cal.set(Calendar.SECOND, 0);
-                                zuhr_jamaat_cal.add(Calendar.MINUTE, +2);
-//                                zuhr_jamaat_cal.set(Calendar.HOUR_OF_DAY, 11);
+    //                            System.out.println("=============Zuhr Jamaat at:" + zuhr_jamaat_cal.getTime() + "day int is" + dayofweek_int);
+
+                                zuhr_plus15_cal = (Calendar)zuhr_jamaat_cal.clone();
+                                zuhr_plus15_cal.add(Calendar.MINUTE, +15);
 
                                 zuhr_plus30_cal = (Calendar)zuhr_jamaat_cal.clone();
-                                zuhr_plus30_cal.add(Calendar.MINUTE, +2);
+                                zuhr_plus30_cal.add(Calendar.MINUTE, +30);
+
+
+
+
+                                Date friday_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + friday_jamaat);
+                                cal.setTime(friday_jamaat_temp);
+                                Date friday_jamaat_jamaat_Date = cal.getTime();
+                                friday_jamaat_cal = Calendar.getInstance();
+                                friday_jamaat_cal.setTime(friday_jamaat_jamaat_Date);
+                                friday_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                friday_jamaat_cal.set(Calendar.SECOND, 0);
+    //                            System.out.println("=============friday_jamaat Jamaat at:" + friday_jamaat_cal.getTime() + "day int" + dayofweek_int);
+
+                                friday_plus30_cal = (Calendar)friday_jamaat_cal.clone();
+                                friday_plus30_cal.add(Calendar.MINUTE, +30);
+
+                                if(auto_friday_cam_debug)
+                                {
+//                                    System.out.println("=============friday_jamaat Jamaat at:" + friday_jamaat_cal.getTime() + "day int" + dayofweek_int);
+                                    friday_jamaat_cal = Calendar.getInstance();
+                                    friday_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                    friday_jamaat_cal.set(Calendar.SECOND, 0);
+                                    friday_jamaat_cal.add(Calendar.MINUTE, +2);
+    //                                friday_jamaat_cal.set(Calendar.HOUR_OF_DAY, 11);
+
+                                    friday_plus30_cal = (Calendar)friday_jamaat_cal.clone();
+                                    friday_plus30_cal.add(Calendar.MINUTE, +2);
+
+                                    dayofweek_int = 6;
+                                }
+
+                                Date asr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + asr_jamaat);
+                                cal.setTime(asr_jamaat_temp);
+                                cal.add(Calendar.MINUTE, 5);
+                                Date asr_jamaat = cal.getTime();
+                                asr_jamaat_update_cal = Calendar.getInstance();
+                                asr_jamaat_update_cal.setTime(asr_jamaat);
+                                asr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+                                asr_jamaat_update_cal.set(Calendar.SECOND, 0);
+    //                            System.out.println("asr Jamaat update scheduled at:" + asr_jamaat_update_cal.getTime());
+                                asr_jamaat_cal = (Calendar)asr_jamaat_update_cal.clone();
+                                asr_jamaat_cal.add(Calendar.MINUTE, -5);
+
+
+                                maghrib_jamaat_cal = (Calendar)maghrib_cal.clone();
+                                maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_adj);
+
+
+                                Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
+                                cal.setTime(isha_jamaat_temp);
+                                cal.add(Calendar.MINUTE, 5);
+                                Date isha_jamaat = cal.getTime();
+                                isha_jamaat_update_cal = Calendar.getInstance();
+                                isha_jamaat_update_cal.setTime(isha_jamaat);
+                                isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+                                isha_jamaat_update_cal.set(Calendar.SECOND, 0);
+    //                            System.out.println("Isha Jamaat update scheduled at:" + isha_jamaat_update_cal.getTime());
+                                isha_jamaat_cal = (Calendar)isha_jamaat_update_cal.clone();
+                                isha_jamaat_cal.add(Calendar.MINUTE, -5);
+
+   
+                            }  
+                            
+                            else
+                            {
                                 
-                                dayofweek_int = 6;
-                            
-                            
-                            
+                                fajr_jamaat_cal = (Calendar)fajr_cal.clone();
+                                fajr_jamaat_cal.add(Calendar.MINUTE, fajr_adj);
+                                fajr_jamaat_update_cal = (Calendar)fajr_jamaat_cal.clone();
+                                fajr_jamaat_update_cal.add(Calendar.MINUTE, 5);
+                                fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+                                fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
+                                
+                                if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){zuhr_jamaat = zuhr_summer.toString();} else{zuhr_jamaat = zuhr_winter.toString();}
+                                Date zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + zuhr_jamaat);
+                                cal.setTime(zuhr_jamaat_temp);
+                                Date zuhr_jamaat_Date = cal.getTime();
+                                zuhr_jamaat_cal = Calendar.getInstance();
+                                zuhr_jamaat_cal.setTime(zuhr_jamaat_Date);
+                                zuhr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                zuhr_jamaat_cal.set(Calendar.SECOND, 0);
+    //                            System.out.println("=============Zuhr Jamaat at:" + zuhr_jamaat_cal.getTime() + "day int is" + dayofweek_int);
+
+                                zuhr_plus15_cal = (Calendar)zuhr_jamaat_cal.clone();
+                                zuhr_plus15_cal.add(Calendar.MINUTE, +15);
+
+                                zuhr_plus30_cal = (Calendar)zuhr_jamaat_cal.clone();
+                                zuhr_plus30_cal.add(Calendar.MINUTE, +30);
+                                
+                                asr_jamaat_cal = (Calendar)asr_cal.clone();
+                                asr_jamaat_cal.add(Calendar.MINUTE, asr_adj);
+                                asr_jamaat_update_cal = (Calendar)asr_jamaat_cal.clone();
+                                asr_jamaat_update_cal.add(Calendar.MINUTE, 5);
+                                asr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+                                asr_jamaat_update_cal.set(Calendar.SECOND, 0);
+                                
+                                maghrib_jamaat_cal = (Calendar)maghrib_cal.clone();
+                                maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_adj);
+                                
+                                isha_jamaat_cal = (Calendar)isha_cal.clone();
+                                if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_adj);} else{isha_jamaat_cal.add(Calendar.MINUTE, isha_winter_adj);}
+                                
+                                isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
+                                isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
+                                isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+                                isha_jamaat_update_cal.set(Calendar.SECOND, 0);
+                                
+                                Date friday_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + friday_jamaat);
+                                cal.setTime(friday_jamaat_temp);
+                                Date friday_jamaat_jamaat_Date = cal.getTime();
+                                friday_jamaat_cal = Calendar.getInstance();
+                                friday_jamaat_cal.setTime(friday_jamaat_jamaat_Date);
+                                friday_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                friday_jamaat_cal.set(Calendar.SECOND, 0);
+    //                            System.out.println("=============friday_jamaat Jamaat at:" + friday_jamaat_cal.getTime() + "day int" + dayofweek_int);
+
+                                friday_plus30_cal = (Calendar)friday_jamaat_cal.clone();
+                                friday_plus30_cal.add(Calendar.MINUTE, +30);
+
+                                if(auto_friday_cam_debug)
+                                {
+//                                    System.out.println("=============friday_jamaat Jamaat at:" + friday_jamaat_cal.getTime() + "day int" + dayofweek_int);
+                                    friday_jamaat_cal = Calendar.getInstance();
+                                    friday_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                    friday_jamaat_cal.set(Calendar.SECOND, 0);
+                                    friday_jamaat_cal.add(Calendar.MINUTE, +2);
+    //                                friday_jamaat_cal.set(Calendar.HOUR_OF_DAY, 11);
+
+                                    friday_plus30_cal = (Calendar)friday_jamaat_cal.clone();
+                                    friday_plus30_cal.add(Calendar.MINUTE, +2);
+
+                                    dayofweek_int = 6;
+                                }        
+//                              
                             
                             
                             }
                             
-                            Date asr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + asr_jamaat);
-                            cal.setTime(asr_jamaat_temp);
-                            cal.add(Calendar.MINUTE, 5);
-                            Date asr_jamaat = cal.getTime();
-                            asr_jamaat_update_cal = Calendar.getInstance();
-                            asr_jamaat_update_cal.setTime(asr_jamaat);
-                            asr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-                            asr_jamaat_update_cal.set(Calendar.SECOND, 0);
-//                            System.out.println("asr Jamaat update scheduled at:" + asr_jamaat_update_cal.getTime());
-                            asr_jamaat_cal = (Calendar)asr_jamaat_update_cal.clone();
-                            asr_jamaat_cal.add(Calendar.MINUTE, -5);
-
-
-                            maghrib_jamaat_cal = (Calendar)maghrib_cal.clone();
-                            maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_adj);
                             
-
-                            Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
-                            cal.setTime(isha_jamaat_temp);
-                            cal.add(Calendar.MINUTE, 5);
-                            Date isha_jamaat = cal.getTime();
-                            isha_jamaat_update_cal = Calendar.getInstance();
-                            isha_jamaat_update_cal.setTime(isha_jamaat);
-                            isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-                            isha_jamaat_update_cal.set(Calendar.SECOND, 0);
-//                            System.out.println("Isha Jamaat update scheduled at:" + isha_jamaat_update_cal.getTime());
-                            isha_jamaat_cal = (Calendar)isha_jamaat_update_cal.clone();
-                            isha_jamaat_cal.add(Calendar.MINUTE, -5);
-
                             
 //==============Prayer time change notification logic + 7days
 // check excel file in documentation folder for a flow chart                            
-                            
-                            // check if a notification has already been sent, to avoid flooding users with notifications, i.e during a system restart
-                            ar_notification_Msg_Lines = null;
-                            
-                            try
+                            if(jammat_from_database)
                             {
-                                c = DBConnect.connect();
-                                SQL = "Select * from notification where id = (select max(id) from notification)";
-                                rs = c.createStatement().executeQuery(SQL);
-                                while (rs.next()) 
-                                {
-                                    id =                rs.getInt("id");
-                                    notification_Date = rs.getDate("notification_Date");
-                                    en_message_String = rs.getString("en_message_String");
-                                    ar_message_String = rs.getString("ar_message_String");
-                                    notification_Sent = rs.getBoolean("notification_Sent");             
-                                }
-                                c.close();
-                                System.out.format("%s,%s,%s,%s \n", notification_Date, en_message_String, ar_message_String, notification_Sent );
-                            }
-                            catch (Exception e){logger.warn("Unexpected error", e);}
-                            notification_Date_cal = Calendar.getInstance();
-                            notification_Date_cal.setTime(notification_Date);
-                            notification_Date_cal.set(Calendar.MILLISECOND, 0);
-                            notification_Date_cal.set(Calendar.SECOND, 0);
-                            
-//                            System.out.println("notification_Date_cal:" + notification_Date_cal.getTime());
-//                            System.out.println("Calendar_now:         " + Calendar_now.getTime());
-                            
-                            if (Calendar_now.compareTo(notification_Date_cal) <0 )  //&& !notification_Sent
-                            {
-                                en_notification_Msg = en_message_String;
-                                ar_notification_Msg = ar_message_String;                                
-                                ar_notification_Msg_Lines = ar_notification_Msg.split("\\r?\\n");
-                                en_notification_Msg_Lines = en_notification_Msg.split("\\r?\\n");
-                        
-                                en_Marquee_Notification_string = "Prayer Time Change from " + new SimpleDateFormat("EEEE").format(notification_Date) +":   " + en_notification_Msg_Lines[1];
-                                ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(notification_Date) + "ستتغير اوقات الصلاة كالتالي   " + ar_notification_Msg_Lines[1];
+                                // check if a notification has already been sent, to avoid flooding users with notifications, i.e during a system restart
+                                ar_notification_Msg_Lines = null;
 
-                                System.out.format(en_Marquee_Notification_string);
-                                System.out.format(ar_Marquee_Notification_string);
-
-                              notification_Marquee_visible = true;  
-//                                athan_Change_Label_visible = true;
-//                                getFacebook = false;
-                            }
-                            
-                            if (Calendar_now.compareTo(notification_Date_cal) >=0 )  //&& !notification_Sent
-                            {
-                                athan_Change_Label_visible = false;
-                                notification_Marquee_visible = false;
                                 try
                                 {
-                                        c = DBConnect.connect();
-                                        SQL = "select * from prayertimes where DATE(date) = DATE(NOW() ) + INTERVAL 7 DAY ";
-                                        rs = c.createStatement().executeQuery(SQL);
-                                        while (rs.next()) 
-                                        {
-                                            future_prayer_date =       rs.getDate("date");
-                                            future_fajr_jamaat_time =       rs.getTime("fajr_jamaat");
-                                            future_asr_jamaat_time =        rs.getTime("asr_jamaat");
-                                            future_isha_jamaat_time =       rs.getTime("isha_jamaat");             
-                                        }
-                                        c.close();
-
-                                        // print the results
-                                        System.out.format("%s,%s,%s,%s \n", future_prayer_date, future_fajr_jamaat_time, future_asr_jamaat_time, future_isha_jamaat_time );
-
-
-                                    if (!fajr_jamaat_time.equals(future_fajr_jamaat_time))
+                                    c = DBConnect.connect();
+                                    SQL = "Select * from notification where id = (select max(id) from notification)";
+                                    rs = c.createStatement().executeQuery(SQL);
+                                    while (rs.next()) 
                                     {
-
-                                        System.out.println("Fajr Prayer Time Difference" );
-                                        fajr_jamma_time_change =true;
-                                        notification = true;
-
-                                        java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                        c = DBConnect.connect();
-                                        PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");  
-                                        ps.setDate(1, sqlDate);  
-                                        ps.executeUpdate(); 
-                                        c.close();
+                                        id =                rs.getInt("id");
+                                        notification_Date = rs.getDate("notification_Date");
+                                        en_message_String = rs.getString("en_message_String");
+                                        ar_message_String = rs.getString("ar_message_String");
+                                        notification_Sent = rs.getBoolean("notification_Sent");             
                                     }
-
-
-                                    if (!asr_jamaat_time.equals(future_asr_jamaat_time) )
-                                    {
-                                        System.out.println("asr Prayer Time Difference" );
-                                        asr_jamma_time_change =true;
-                                        if(!notification)
-                                        {
-                                            java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                            c = DBConnect.connect();
-                                            PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");  
-                                            ps.setDate(1, sqlDate);  
-                                            ps.executeUpdate(); 
-                                            c.close();
-                                        }
-                                        notification = true;
-                                    }
-
-
-                                    if (!isha_jamaat_time.equals(future_isha_jamaat_time) )
-                                    {
-                                        System.out.println("isha Prayer Time Difference" );
-                                        isha_jamma_time_change =true;
-                                        if(!notification)
-                                        {
-                                            java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                            c = DBConnect.connect();
-                                            PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");  
-                                            ps.setDate(1, sqlDate);  
-                                            ps.executeUpdate(); 
-                                            c.close();
-                                        }
-                                        notification = true;
-                                    }
+                                    c.close();
+//                                    System.out.format("%s,%s,%s,%s \n", notification_Date, en_message_String, ar_message_String, notification_Sent );
                                 }
                                 catch (Exception e){logger.warn("Unexpected error", e);}
-                                
+                                notification_Date_cal = Calendar.getInstance();
+                                notification_Date_cal.setTime(notification_Date);
+                                notification_Date_cal.set(Calendar.MILLISECOND, 0);
+                                notification_Date_cal.set(Calendar.SECOND, 0);
+
+    //                            System.out.println("notification_Date_cal:" + notification_Date_cal.getTime());
+    //                            System.out.println("Calendar_now:         " + Calendar_now.getTime());
+
+                                if (Calendar_now.compareTo(notification_Date_cal) <0 )  //&& !notification_Sent
+                                {
+                                    en_notification_Msg = en_message_String;
+                                    ar_notification_Msg = ar_message_String;                                
+                                    ar_notification_Msg_Lines = ar_notification_Msg.split("\\r?\\n");
+                                    en_notification_Msg_Lines = en_notification_Msg.split("\\r?\\n");
+
+                                    en_Marquee_Notification_string = "Prayer Time Change from " + new SimpleDateFormat("EEEE").format(notification_Date) +":   " + en_notification_Msg_Lines[1];
+                                    ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(notification_Date) + "ستتغير اوقات الصلاة كالتالي   " + ar_notification_Msg_Lines[1];
+
+//                                    System.out.format(en_Marquee_Notification_string);
+//                                    System.out.format(ar_Marquee_Notification_string);
+
+                                  notification_Marquee_visible = true;  
+    //                                athan_Change_Label_visible = true;
+    //                                getFacebook = false;
+                                }
+
+                                if (Calendar_now.compareTo(notification_Date_cal) >=0 )  //&& !notification_Sent
+                                {
+                                    athan_Change_Label_visible = false;
+                                    notification_Marquee_visible = false;
+                                    try
+                                    {
+                                            c = DBConnect.connect();
+                                            SQL = "select * from prayertimes where DATE(date) = DATE(NOW() ) + INTERVAL 7 DAY ";
+                                            rs = c.createStatement().executeQuery(SQL);
+                                            while (rs.next()) 
+                                            {
+                                                future_prayer_date =       rs.getDate("date");
+                                                future_fajr_jamaat_time =       rs.getTime("fajr_jamaat");
+                                                future_asr_jamaat_time =        rs.getTime("asr_jamaat");
+                                                future_isha_jamaat_time =       rs.getTime("isha_jamaat");             
+                                            }
+                                            c.close();
+
+                                            // print the results
+//                                            System.out.format("%s,%s,%s,%s \n", future_prayer_date, future_fajr_jamaat_time, future_asr_jamaat_time, future_isha_jamaat_time );
+
+
+                                        if (!fajr_jamaat_time.equals(future_fajr_jamaat_time))
+                                        {
+
+//                                            System.out.println("Fajr Prayer Time Difference" );
+                                            fajr_jamma_time_change =true;
+                                            notification = true;
+
+                                            java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                            c = DBConnect.connect();
+                                            PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");  
+                                            ps.setDate(1, sqlDate);  
+                                            ps.executeUpdate(); 
+                                            c.close();
+                                        }
+
+
+                                        if (!asr_jamaat_time.equals(future_asr_jamaat_time) )
+                                        {
+//                                            System.out.println("asr Prayer Time Difference" );
+                                            asr_jamma_time_change =true;
+                                            if(!notification)
+                                            {
+                                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                                c = DBConnect.connect();
+                                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");  
+                                                ps.setDate(1, sqlDate);  
+                                                ps.executeUpdate(); 
+                                                c.close();
+                                            }
+                                            notification = true;
+                                        }
+
+
+                                        if (!isha_jamaat_time.equals(future_isha_jamaat_time) )
+                                        {
+//                                            System.out.println("isha Prayer Time Difference" );
+                                            isha_jamma_time_change =true;
+                                            if(!notification)
+                                            {
+                                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                                c = DBConnect.connect();
+                                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");  
+                                                ps.setDate(1, sqlDate);  
+                                                ps.executeUpdate(); 
+                                                c.close();
+                                            }
+                                            notification = true;
+                                        }
+                                    }
+                                    catch (Exception e){logger.warn("Unexpected error", e);}
+
+                                }
                             }
                             
                             
@@ -1316,7 +1455,7 @@ import javafx.stage.StageStyle;
 // creates message to send to facebook
 // creates labels for notification
                         
-                        if (notification )
+                        if (notification && jammat_from_database)
                         {
                             ar_notification_Msg_Lines = null;
 //                            Calendar_now.setTime(future_prayer_date);
@@ -1327,7 +1466,7 @@ import javafx.stage.StageStyle;
                             
                             
                             
-                            System.out.println ("Calendar_now: " + Calendar_now.getTime());
+//                            System.out.println ("Calendar_now: " + Calendar_now.getTime());
                             int day = prayertime_Change_Due_Date.get(Calendar.DAY_OF_MONTH);
                             String dayStr = day + suffixes[day];
                             String en_notification_date = new SimpleDateFormat("EEEE").format(future_prayer_date);
@@ -1407,7 +1546,7 @@ import javafx.stage.StageStyle;
                             
                             
                             notification_Msg = ar_notification_Msg_Lines[0] + "\n" + ar_notification_Msg_Lines[1] + "\n\n" + en_notification_Msg_Lines[0] + "\n" + en_notification_Msg_Lines[1];
-                            System.out.println(notification_Msg );
+//                            System.out.println(notification_Msg );
                             
                             en_Marquee_Notification_string = "Prayer Time Change from " + new SimpleDateFormat("EEEE").format(future_prayer_date) +":   " + en_notification_Msg_Lines[1];
                             ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(future_prayer_date) + "ستتغير اوقات الصلاة كالتالي   " + ar_notification_Msg_Lines[1];
@@ -1442,10 +1581,10 @@ import javafx.stage.StageStyle;
                         
                         fullMoon = MoonPhaseFinder.findFullMoonFollowing(Calendar.getInstance());
                             newMoon = MoonPhaseFinder.findNewMoonFollowing(Calendar.getInstance());
-                            System.out.println("The moon is full on " + fullMoon );
-                            System.out.println("The moon is new on " + newMoon );                       
-                            if(newMoon.before(fullMoon)){System.out.println("New moon is before full moon");}
-                            else {System.out.println("Full moon is before new moon" );}
+//                            System.out.println("The moon is full on " + fullMoon );
+//                            System.out.println("The moon is new on " + newMoon );                       
+//                            if(newMoon.before(fullMoon)){System.out.println("New moon is before full moon");}
+//                            else {System.out.println("Full moon is before new moon" );}
                             pir_disactive_startup = false;
                         
                         
@@ -1456,7 +1595,7 @@ import javafx.stage.StageStyle;
                             
                             Days d = Days.daysBetween(new DateMidnight(DateTime_now), new DateMidnight(fullMoon));
                             int days_Between_Now_Fullmoon = d.getDays();
-                            System.out.format("Days left to full moon: %s\n", days_Between_Now_Fullmoon );
+//                            System.out.format("Days left to full moon: %s\n", days_Between_Now_Fullmoon );
                             
                             fullMoon_plus1 = (Date)fullMoon.clone();
                             Date ashura = (Date)fullMoon.clone();
@@ -1489,8 +1628,8 @@ import javafx.stage.StageStyle;
 
                                     }
                                     c.close();
-                                    System.out.println("Ashura arabic hadith length" + hadith.length());
-                                    System.out.println("Ashura english hadith length" + translated_hadith.length());
+//                                    System.out.println("Ashura arabic hadith length" + hadith.length());
+//                                    System.out.println("Ashura english hadith length" + translated_hadith.length());
                                 
                                 }  
                                 catch (Exception e){logger.warn("Unexpected error", e);}
@@ -1509,8 +1648,8 @@ import javafx.stage.StageStyle;
                                     {
                                         String pageID = page_ID +"/feed";
                                         facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
-                                        System.out.println("Full Moon Notification Sent to Facebook:" );
-                                        System.out.println(facebook_moon_notification_Msg);
+//                                        System.out.println("Full Moon Notification Sent to Facebook:" );
+//                                        System.out.println(facebook_moon_notification_Msg);
                                     }
                                     catch (FacebookException e){logger.warn("Unexpected error", e);} 
 
@@ -1604,8 +1743,8 @@ import javafx.stage.StageStyle;
                                             {
                                                 String pageID = page_ID +"/feed";
                                                 facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
-                                                System.out.println("Full Moon Notification Sent to Facebook:" );
-                                                System.out.println(facebook_moon_notification_Msg);
+//                                                System.out.println("Full Moon Notification Sent to Facebook:" );
+//                                                System.out.println(facebook_moon_notification_Msg);
                                             }
                                             catch (FacebookException e){logger.warn("Unexpected error", e);} 
                                             
@@ -1623,8 +1762,8 @@ import javafx.stage.StageStyle;
                                         ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
                                         en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. (This is based on calendar calculations)";
                                         facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;                          
-                                        System.out.println("Full Moon Notification:" );
-                                        System.out.println(facebook_moon_notification_Msg);
+//                                        System.out.println("Full Moon Notification:" );
+//                                        System.out.println(facebook_moon_notification_Msg);
                                     }
                                 }
                                 
@@ -1655,8 +1794,8 @@ import javafx.stage.StageStyle;
                                             {
                                                 String pageID = page_ID +"/feed";
                                                 facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
-                                                System.out.println("Full Moon Notification Sent to Facebook:" );
-                                                System.out.println(facebook_moon_notification_Msg);
+//                                                System.out.println("Full Moon Notification Sent to Facebook:" );
+//                                                System.out.println(facebook_moon_notification_Msg);
                                             }
                                             catch (FacebookException e){logger.warn("Unexpected error", e);} 
                                         }
@@ -1669,9 +1808,9 @@ import javafx.stage.StageStyle;
                                         String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ غدا ";
                                         String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
                                         ar_moon_notification = temp_ar_text1 +  temp_ar_text2;
-                                        System.out.println(ar_moon_notification);
+//                                        System.out.println(ar_moon_notification);
                                         en_moon_notification = "We would like to remind you that this month's \"White days\" will start tomorrow, it is recommended to fast these days. (This is based on calendar calculations)";
-                                        System.out.println(en_moon_notification);
+//                                        System.out.println(en_moon_notification);
                                         facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;    
                                         if (facebook_notification_enable)
                                         {
@@ -1679,8 +1818,8 @@ import javafx.stage.StageStyle;
                                             {
                                                 String pageID = page_ID +"/feed";
                                                 facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
-                                                System.out.println("Full Moon Notification Sent to Facebook:" );
-                                                System.out.println(facebook_moon_notification_Msg);
+//                                                System.out.println("Full Moon Notification Sent to Facebook:" );
+//                                                System.out.println(facebook_moon_notification_Msg);
                                             }
                                             catch (FacebookException e){logger.warn("Unexpected error", e);} 
                                         }
@@ -1692,7 +1831,7 @@ import javafx.stage.StageStyle;
                                     getHadith = true; 
                                     moon_hadith_Label_visible = false;
                                     hadith_Label_visible = true;
-                                    System.out.println("moon else" );
+//                                    System.out.println("moon else" );
                                 }
                             }
                             
@@ -1726,7 +1865,7 @@ import javafx.stage.StageStyle;
                             Calendar facebook_check_post_date = Calendar.getInstance();
                             facebook_check_post_date.add(Calendar.DAY_OF_MONTH, -6);
                             long facebook_check_post_Unix_Time = facebook_check_post_date.getTimeInMillis() / 1000;
-//                            out.println(facebook_check_post_Unix_Time);
+                            out.println(facebook_check_post_Unix_Time);
                             String query = "SELECT message,timeline_visibility, created_time   FROM stream WHERE source_id = " + page_ID + " AND message AND strlen(attachment.fb_object_type) < 1 AND type != 56 AND type = 46  AND strpos(message, \"prayer time(s)\") < 0 AND strpos(message, \"White days\") < 0 AND strpos(message, \"Hadith of the Day:\") < 0 AND created_time > " + facebook_check_post_Unix_Time + " LIMIT 1";
 //                            String query = "{\"messages\":\"SELECT message,timeline_visibility, created_time   FROM stream WHERE source_id = " + page_ID + " AND message AND strlen(attachment.fb_object_type) < 1 AND type != 56 AND type = 46  AND strpos(message, \'prayer time(s)\') < 0 AND strpos(message, \'White days\') < 0 AND strpos(message, \'Hadith of the Day:\') < 0 AND created_time > " + facebook_check_post_Unix_Time + " LIMIT 1\" ,  \"count\": \"SELECT fan_count FROM page WHERE page_id = " + page_ID + "\"}";
 //                            out.println(query);
@@ -1763,9 +1902,9 @@ import javafx.stage.StageStyle;
                                         
                                         else if (facebook_post.length() > 390 || lines.length > 6)
                                         {
-                                            System.out.println("Facebook post is too large, it will not be posted");
-                                            System.out.println("Facebook lines: " +lines.length);
-                                            System.out.println("Facebook string length: " + facebook_post.length());
+//                                            System.out.println("Facebook post is too large, it will not be posted");
+//                                            System.out.println("Facebook lines: " +lines.length);
+//                                            System.out.println("Facebook string length: " + facebook_post.length());
                                             facebook_post = "";
                                             facebook_Label_visible = false;
                                         }
@@ -1794,7 +1933,7 @@ import javafx.stage.StageStyle;
                             catch (FacebookException e){logger.warn("Unexpected error", e);} 
                             catch (Exception e){logger.warn("Unexpected error", e);}  
    
-                            query = "SELECT attachment.media.photo.images.src, created_time   FROM stream WHERE source_id = " + page_ID + "  AND type = 247 AND created_time > " + facebook_check_post_Unix_Time + " LIMIT 1";
+                            query = "SELECT attachment.media.photo.images.src, created_time   FROM stream WHERE source_id = " + page_ID + "  AND type = 247 AND created_time > " + facebook_check_post_Unix_Time ; //+ " LIMIT 1"
                             try 
                             {
                                 List<JsonObject> queryResults = facebookClient.executeFqlQuery(query, JsonObject.class);
@@ -1842,8 +1981,8 @@ import javafx.stage.StageStyle;
                                 
                                 if (facebook_image_debug)
                                 {
-//                                    facebook_Post_Url = "https://fbcdn-sphotos-d-a.akamaihd.net/hphotos-ak-xfp1/t31.0-8/s720x720/12247799_1094917007209864_6927654842411922722_o.jpg";
-                                    facebook_Post_Url = "https://fbcdn-sphotos-d-a.akamaihd.net/hphotos-ak-xpf1/v/t1.0-9/11429818_1016762725025293_7919066187654522176_n.png?oh=3b38ae20db78e48fc1772d45a12a60ef&oe=56E2542D&__gda__=1457667602_8ded0d24fc8943fab85f024b99fe8ac5";
+                                    facebook_Post_Url = "https://scontent.xx.fbcdn.net/hphotos-xfl1/v/t1.0-9/s720x720/12741993_1144527992248765_594594912175483215_n.png?oh=e69113bda140e23531dd65aa1b5a4efc&oe=576C1587";
+//                                    facebook_Post_Url = "https://fbcdn-sphotos-d-a.akamaihd.net/hphotos-ak-xpf1/v/t1.0-9/11429818_1016762725025293_7919066187654522176_n.png?oh=3b38ae20db78e48fc1772d45a12a60ef&oe=56E2542D&__gda__=1457667602_8ded0d24fc8943fab85f024b99fe8ac5";
                                     facebook_Picture_Post = true;
                                     facebook_Label_visible = true;
                                     facebook_Label_visible_set_once = true;
@@ -1884,7 +2023,7 @@ import javafx.stage.StageStyle;
                             {       
                                 max_ar_hadith_len =   300          ;
                                 max_en_hadith_len =   277          ;
-                                System.out.println("Screen configured to Horizontal position");
+//                                System.out.println("Screen configured to Horizontal position");
 
                             }
                             try
@@ -1895,29 +2034,29 @@ import javafx.stage.StageStyle;
                                 {
                                     max_en_hadith_len = 277;
                                     max_ar_hadith_len = 200;
-                                    System.out.println("****Short hadith due to prayer time change label******");
+//                                    System.out.println("****Short hadith due to prayer time change label******");
                                 
                                 
                                 
                                 }
                                 
+//                                System.out.println("max arabic hadith length" + max_ar_hadith_len);
                                 
-                                
-                                if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()<19){SQL ="select hadith, translated_hadith from hadith WHERE topic = 'fasting' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                                if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()<19){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE topic = 'fasting' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
 //                                if (dtIslamic.getMonthOfYear()==9){SQL ="select hadith, translated_hadith from hadith WHERE ID = 2872";}
-                                else if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()>19){SQL ="select hadith, translated_hadith from hadith WHERE topic = 'Virtues of the Night of Qadr' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
-                                else if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()>28){SQL ="select hadith, translated_hadith from hadith WHERE translated_hadith LIKE '%fitr %' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
-                                else if (dtIslamic.getMonthOfYear()==10 && dtIslamic.getDayOfMonth()==1){SQL ="select hadith, translated_hadith from hadith WHERE translated_hadith LIKE '%fitr %' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                                else if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()>19){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE topic = 'Virtues of the Night of Qadr' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                                else if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()>28){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE translated_hadith LIKE '%fitr %' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                                else if (dtIslamic.getMonthOfYear()==10 && dtIslamic.getDayOfMonth()==1){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE translated_hadith LIKE '%fitr %' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
                                 //SELECT * FROM hadith WHERE translated_hadith LIKE '%fitr %'
-                                else if(dtIslamic.getMonthOfYear()==12){SQL ="select hadith, translated_hadith from hadith WHERE topic = 'Hajj (Pilgrimage)' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
-                                else if (dayofweek_int == 6){SQL = "select hadith, translated_hadith from hadith WHERE day = '5' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                                else if(dtIslamic.getMonthOfYear()==12){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE topic = 'Hajj (Pilgrimage)' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                                else if (dayofweek_int == 6){SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE day = '5' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
                                 
-                                else if (dtIslamic.getMonthOfYear()==1 && dtIslamic.getDayOfMonth()>7 && dtIslamic.getDayOfMonth()<12 ){SQL = "select hadith, translated_hadith from hadith WHERE (translated_hadith LIKE '%Ashura%') and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                                else if (dtIslamic.getMonthOfYear()==1 && dtIslamic.getDayOfMonth()>7 && dtIslamic.getDayOfMonth()<12 ){SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE (translated_hadith LIKE '%Ashura%') and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
                           
                                 
                                 else 
                                 {
-                                    SQL = "select hadith, translated_hadith  from hadith WHERE day = '0' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";
+                                    SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)   from hadith WHERE day = '0' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";
 //                                    SQL = "select * from hadith where  CHAR_LENGTH(translated_hadith)>527"; // the bigest Hadith
                                 }
                                 
@@ -1926,17 +2065,25 @@ import javafx.stage.StageStyle;
 //                                SQL = "select * from hadith WHERE ID =1486  ORDER BY RAND( ) LIMIT 1";
 //                                athan_Change_Label_visible = false;
                                 
+                                String ara_length = null;
+                                String en_length = null;
                                 
                                 rs = c.createStatement().executeQuery(SQL);
                                 while (rs.next()) 
                                 {
                                     hadith = rs.getString("hadith");
                                     translated_hadith = rs.getString("translated_hadith");
+                                    ara_length = rs.getString("CHAR_LENGTH(hadith)");
+                                    en_length = rs.getString("CHAR_LENGTH(translated_hadith)");
+                                            
 
                                 }
                                 c.close();
-                                System.out.println("arabic hadith length" + hadith.length());
-                                System.out.println(" english hadith length" + translated_hadith.length());
+//                                System.out.println("arabic hadith length" + hadith.length());
+//                                System.out.println(" english hadith length" + translated_hadith.length());
+//                                System.out.println("mysql arabic hadith length" + ara_length);
+//                                System.out.println("mysql english hadith length" + en_length);
+                                
                                 // 528 length should be the max allowed for the hadith in english, generally arabic hadith  is smaller than english translation
                                 facebook_hadith = "Hadith of the Day:\n\n"+ hadith +"\n\n" + translated_hadith;
                             
@@ -1956,10 +2103,10 @@ import javafx.stage.StageStyle;
                                 hadith_notification_Date_cal.set(Calendar.SECOND, 0);
 
 //                                System.out.println(hadith_notification_Date_cal.getTime());
-                                System.out.println(Calendar_now.getTime());
+//                                System.out.println(Calendar_now.getTime());
                                 if (Calendar_now.compareTo(hadith_notification_Date_cal) == 0 )  
                                 {
-                                    System.out.println("hadith has already been posted today to Facebook");
+//                                    System.out.println("hadith has already been posted today to Facebook");
                                 }
 
                                 if (Calendar_now.compareTo(hadith_notification_Date_cal) != 0 )  
@@ -2098,7 +2245,7 @@ import javafx.stage.StageStyle;
             {
                 // create an instance of the serial communications class
                 final Serial serial = SerialFactory.createInstance();
-                System.out.println(" ... Sonar Detection Starting.....");
+//                System.out.println(" ... Sonar Detection Starting.....");
                 // create and register the serial data listener
                 serial.addListener(new SerialDataListener() 
                 {
@@ -2117,15 +2264,15 @@ import javafx.stage.StageStyle;
                 });
 
                  // open the default serial port provided on the GPIO header
-                System.out.println(" ... Openning Serial connection");
+//                System.out.println(" ... Openning Serial connection");
                 try {serial.open(Serial.DEFAULT_COM_PORT, 9600);}
                 catch(SerialPortException ex) 
                      {
-                         System.out.println(" ==>> SERIAL SETUP FAILED : " + ex.getMessage());  
+//                         System.out.println(" ==>> SERIAL SETUP FAILED : " + ex.getMessage());  
                          try {push.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
                          Thread.currentThread().interrupt();
                      }
-                System.out.println(" ... Serial connection Open");
+//                System.out.println(" ... Serial connection Open");
 
                  for (;;) 
                  {
@@ -2178,11 +2325,11 @@ import javafx.stage.StageStyle;
 
                             }
 
-                            if (System.nanoTime() > sonar_lastTimerCall + delay_switch_to_cam && sonar_distance<sonar_active_distance && !camera && !zuhr_jamaat_cam_activated) 
+                            if (System.nanoTime() > sonar_lastTimerCall + delay_switch_to_cam && sonar_distance<sonar_active_distance && !camera && !friday_jamaat_cam_activated) 
                              {
 
                                 System.out.println("Switching to Camera...");
-                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+//                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
                                 try {Process process = processBuilder_camera_on.start(); } 
                                 catch (IOException e) {logger.warn("Unexpected error", e);}
                                 sensor1_lastTimerCall = System.nanoTime();
@@ -2191,7 +2338,7 @@ import javafx.stage.StageStyle;
                                 if(local_HDMI_control)
                                 {
                                     System.out.println("Turning Tv OFF");
-                                    ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
+//                                    ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
                                     hdmiOn = false;
                                     try {Process process2 = processBuilder2.start();}
                                     catch (IOException e) {logger.warn("Unexpected error", e);}
@@ -2265,18 +2412,18 @@ import javafx.stage.StageStyle;
 
                              
 
-                            if (System.nanoTime() > sensor1_lastTimerCall + delay_switch_back_to_App && sonar_distance>sonar_active_distance && camera && !manual_Camera && !zuhr_jamaat_cam_activated) 
+                            if (System.nanoTime() > sensor1_lastTimerCall + delay_switch_back_to_App && sonar_distance>sonar_active_distance && camera && !manual_Camera && !friday_jamaat_cam_activated) 
                              {
 
                                 System.out.println("Switching back to App...");
-                                ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
+//                                ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
                                 try {Process process = processBuilder_camera_off.start(); } 
                                 catch (IOException e) {logger.warn("Unexpected error", e);}
                                 camera = false;
                                 prayer_In_Progress = false;
                                 if(local_HDMI_control)
                                 {
-                                    ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
+//                                    ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
                                     hdmiOn = true;
                                     sensor_lastTimerCall =  System.nanoTime();
                                     System.out.println("Tv turned on");
@@ -2341,7 +2488,7 @@ import javafx.stage.StageStyle;
                             if(!manual_Camera)
                             {
                                 System.out.println("button pressed ");
-                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+//                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
                                 try {Process process = processBuilder_camera_on.start(); System.out.println("Manually Switching to Camera...");} 
                                 catch (IOException e) {logger.warn("Unexpected error", e);}
                                 delay_Manual_switch_to_cam_lastTimerCall = System.nanoTime();
@@ -2362,7 +2509,7 @@ import javafx.stage.StageStyle;
                                 camera = false;
                                 manual_Camera = false;
                                 System.out.println("Manually Switching back to App...");
-                                ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
+//                                ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
                                 try {Process process = processBuilder_camera_off.start(); } 
                                 catch (IOException e) {logger.warn("Unexpected error", e);}
                                 
@@ -2401,7 +2548,7 @@ import javafx.stage.StageStyle;
                              sensor_lastTimerCall =  System.nanoTime();
                              if(!hdmiOn && !pir_disactive_startup && !prayer_In_Progress)
                              {
-                                ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
+//                                ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
                                 hdmiOn = true;
                                 startup = false;
                                 System.out.println("Tv turned on");
@@ -2431,7 +2578,7 @@ import javafx.stage.StageStyle;
                          {
                              startup = false;
                              System.out.println("All is quiet...");
-                             ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
+//                             ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
                              hdmiOn = false;
                              try {Process process2 = processBuilder2.start();}
                              catch (IOException e) {logger.warn("Unexpected error", e);}
@@ -2475,7 +2622,7 @@ import javafx.stage.StageStyle;
                         
                         if(received.equals("Prayer in progress") && remote_HDMI_control) 
                         {
-                            ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
+//                            ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
                             try 
                             {
                                 if (hdmiOn)
@@ -2495,7 +2642,7 @@ import javafx.stage.StageStyle;
                         if(received.equals("Prayer ended") && remote_HDMI_control) 
                         {
                             prayer_In_Progress = false;
-                            ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
+//                            ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
                             hdmiOn = true;
                             sensor_lastTimerCall =  System.nanoTime();
                             System.out.println("Tv turned on");
@@ -2692,7 +2839,7 @@ import javafx.stage.StageStyle;
 //                                        en_Marquee_Notification_Text.setVisible(false);
 //                                        en_timeline.stop();
                                         
-                                        ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+//                                        ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
                                         try {Process process = processBuilder_camera_on.start(); } 
                                         catch (IOException e) {logger.warn("Unexpected error", e);}
                                         
@@ -2712,7 +2859,7 @@ import javafx.stage.StageStyle;
 //                                        Moonpane.setVisible(true);
 //                                        prayertime_pane.setVisible(true);
 //                                        hadithPane.setVisible(true);
-                                        ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
+//                                        ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
                                         try {Process process = processBuilder_camera_off.start(); } 
                                         catch (IOException e) {logger.warn("Unexpected error", e);}
                                         camera = false;
@@ -2763,7 +2910,7 @@ import javafx.stage.StageStyle;
                         
                         if(received.equals("prayer call")) 
                         {
-                            ProcessBuilder processBuilder_Athan = new ProcessBuilder("bash", "-c", "mpg123 /home/pi/prayertime/Audio/athan1.mp3");
+//                            ProcessBuilder processBuilder_Athan = new ProcessBuilder("bash", "-c", "mpg123 /home/pi/prayertime/Audio/athan1.mp3");
 
                             try {Process process = processBuilder_Athan.start();} 
                             catch (IOException e) {logger.warn("Unexpected error", e);}
@@ -2869,7 +3016,6 @@ import javafx.stage.StageStyle;
                                 }
                                 catch (FacebookException e){logger.warn("Unexpected error", e);} 
                                 catch (Exception e){logger.warn("Unexpected error", e);}  
-
                                 query = "SELECT attachment.media.photo.images.src, created_time   FROM stream WHERE source_id = " + page_ID + "  AND type = 247 AND created_time > " + facebook_check_post_Unix_Time + " LIMIT 1";
                                 try 
                                 {
@@ -2953,6 +3099,7 @@ import javafx.stage.StageStyle;
         
 //        Platform.setImplicitExit(false);
         Pane root = new Pane();
+        
         // rotate tv screen to portrait mode
         // edit the /boot/config.txt file Copy stored in documentation folder (i.e. framebuffer_width=1080   framebuffer_height=1920  display_rotate=1...)
 //#VERTICAL##################################        
@@ -2986,50 +3133,67 @@ import javafx.stage.StageStyle;
                 ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
                 ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
                 ColumnConstraintsBuilder.create().percentWidth(100/13.0).build()       
-        );
-        Mainpane.getRowConstraints().setAll(
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
-                RowConstraintsBuilder.create().percentHeight(100/24.0).build()
-        );
-//        Mainpane.setGridLinesVisible(true);
-        Mainpane.setId("Mainpane");
-        prayertime_pane = prayertime_pane();    
-        Moonpane =   moonpane();
-        Sunrisepane =   sunrise();
-        Sunrisepane.setVisible(false);
-        hadithPane = hadithPane();
-        clockPane =   clockPane();
-        GridPane footerPane =   footerPane();
-        
-        ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
+            );
+            Mainpane.getRowConstraints().setAll(
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
+                    RowConstraintsBuilder.create().percentHeight(100/24.0).build()
+            );
+    //        Mainpane.setGridLinesVisible(true);
+            Mainpane.setId("Mainpane");
+            prayertime_pane = prayertime_pane();    
+            Moonpane =   moonpane();
+            Sunrisepane =   sunrise();
+            Sunrisepane.setVisible(false);
+            hadithPane = hadithPane();
+            clockPane =   clockPane();
+            GridPane footerPane =   footerPane();
+
+            ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
+            ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.RIGHT);
+            ar_Marquee_Notification_Text.setY(30);
+            ar_Marquee_Notification_Text_textSize = 40;
+            ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
+            ar_Marquee_Notification_Text.setFill(Color.WHITE);
+            ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+            ar_Marquee_Notification_Text_XPos = 320;
+            ar_Marquee_Notification_Text.setX(1920/2 - ar_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
             en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
+            en_Marquee_Notification_Text.setTextAlignment(TextAlignment.LEFT);                    
+            en_Marquee_Notification_Text.setY(40);
+            en_Marquee_Notification_Text_textSize = 40;
+            en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
+            en_Marquee_Notification_Text.setFill(Color.WHITE);
+            en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+            en_Marquee_Notification_Text.setX(1920/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);  
+
+
             ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
             notification_image.setTranslateY(0);
             notification_image.setFitHeight(25);
@@ -3040,35 +3204,35 @@ import javafx.stage.StageStyle;
             text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text, notification_image);
             text_Box.setId("notification"); 
 
-            
-            Mainpane.add(text_Box,0,0,30,1);
-            text_Box.setTranslateY(5);
-         
-  //============================================
-        
-        DropShadow ds = new DropShadow();
-        ds.setOffsetY(10.0);
-        ds.setOffsetX(10.0);
-        ds.setColor(Color.BLACK);
 
-//        clock.setEffect(ds);
-        Moonpane.setEffect(ds);
-        Sunrisepane.setEffect(ds);
-        prayertime_pane.setEffect(ds);
-        hadithPane.setEffect(ds);
-        clockPane.setEffect(ds);
-//        footerPane.setEffect(ds);
-  //============================================
-        Mainpane.add(clockPane, 1, 1,5,1);
-        Mainpane.add(Moonpane, 7, 1);
-        Mainpane.add(Sunrisepane, 7, 1);
-        Mainpane.add(prayertime_pane, 1, 5,11,7);  
-        Mainpane.add(hadithPane, 1, 15,11,13);
-        prayertime_pane.setTranslateY(30);
-//        hadithPane.setTranslateY(0);
-        Mainpane.add(footerPane, 1, 20,11,1);
-//        footerPane.setTranslateY(514);
-//        Mainpane.setCache(true);
+                Mainpane.add(text_Box,0,0,30,1);
+                text_Box.setTranslateY(5);
+
+      //============================================
+
+            DropShadow ds = new DropShadow();
+            ds.setOffsetY(10.0);
+            ds.setOffsetX(10.0);
+            ds.setColor(Color.BLACK);
+
+    //        clock.setEffect(ds);
+            Moonpane.setEffect(ds);
+            Sunrisepane.setEffect(ds);
+            prayertime_pane.setEffect(ds);
+            hadithPane.setEffect(ds);
+            clockPane.setEffect(ds);
+    //        footerPane.setEffect(ds);
+      //============================================
+            Mainpane.add(clockPane, 1, 1,5,1);
+            Mainpane.add(Moonpane, 7, 1);
+            Mainpane.add(Sunrisepane, 7, 1);
+            Mainpane.add(prayertime_pane, 1, 5,11,7);  
+            Mainpane.add(hadithPane, 1, 15,11,13);
+            prayertime_pane.setTranslateY(30);
+    //        hadithPane.setTranslateY(0);
+            Mainpane.add(footerPane, 1, 20,11,1);
+    //        footerPane.setTranslateY(514);
+    //        Mainpane.setCache(true);
 
         }
 //#SD#########################################
@@ -3168,8 +3332,24 @@ import javafx.stage.StageStyle;
             clockPane =   clockPane();
             GridPane footerPane =   footerPane();
 
+              
             ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
+            ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.RIGHT);
+            ar_Marquee_Notification_Text.setY(30);
+            ar_Marquee_Notification_Text_textSize = 40;
+            ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
+            ar_Marquee_Notification_Text.setFill(Color.WHITE);
+            ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+            ar_Marquee_Notification_Text_XPos = 320;
+            ar_Marquee_Notification_Text.setX(1920/2 - ar_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
             en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
+            en_Marquee_Notification_Text.setTextAlignment(TextAlignment.LEFT);                    
+            en_Marquee_Notification_Text.setY(40);
+            en_Marquee_Notification_Text_textSize = 40;
+            en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
+            en_Marquee_Notification_Text.setFill(Color.WHITE);
+            en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+            en_Marquee_Notification_Text.setX(1920/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
             ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
             notification_image.setTranslateY(0);
             notification_image.setFitHeight(25);
@@ -3295,7 +3475,7 @@ import javafx.stage.StageStyle;
                     RowConstraintsBuilder.create().percentHeight(100/26.0).build(),
                     RowConstraintsBuilder.create().percentHeight(100/26.0).build()
             );
-    //        Mainpane.setGridLinesVisible(true);
+//            Mainpane.setGridLinesVisible(true);
             Mainpane.setId("Mainpane");
             Glasspane = new GridPane();
             Glasspane.setId("glass");       
@@ -3308,7 +3488,22 @@ import javafx.stage.StageStyle;
             GridPane footerPane =   footerPane();
 
             ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
+            ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.RIGHT);
+            ar_Marquee_Notification_Text.setY(30);
+            ar_Marquee_Notification_Text_textSize = 40;
+            ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
+            ar_Marquee_Notification_Text.setFill(Color.WHITE);
+            ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+            ar_Marquee_Notification_Text_XPos = 320;
+            ar_Marquee_Notification_Text.setX(1920/2 - ar_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
             en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
+            en_Marquee_Notification_Text.setTextAlignment(TextAlignment.LEFT);                    
+            en_Marquee_Notification_Text.setY(40);
+            en_Marquee_Notification_Text_textSize = 40;
+            en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
+            en_Marquee_Notification_Text.setFill(Color.WHITE);
+            en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+            en_Marquee_Notification_Text.setX(1920/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
             ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
             notification_image.setTranslateY(0);
             notification_image.setFitHeight(50);
@@ -3325,8 +3520,22 @@ import javafx.stage.StageStyle;
             Mainpane.add(clockPane, 0, 1,23,2);
             Mainpane.add(Moonpane, 15, 3);
             Mainpane.add(Sunrisepane, 17, 3);
-            Mainpane.add(prayertime_pane, 16, 8,13,21); 
-            Mainpane.add(hadithPane, 1,8,14,21);
+            if(show_friday)
+            {   
+                Mainpane.add(prayertime_pane, 16, 8,13,21); 
+                prayertime_pane.setTranslateY(30); 
+                hadithPane.setTranslateY(15); 
+                Mainpane.add(hadithPane, 1,8,14,22);
+            }
+            else
+            {   
+                Mainpane.add(prayertime_pane, 16, 8,13,21); 
+                prayertime_pane.setTranslateY(10);
+                Mainpane.add(hadithPane, 1,8,14,21);
+            }
+            
+            
+            
             Mainpane.add(text_Box,0,0,30,1);
             text_Box.setTranslateY(5);
             clockPane.setTranslateX(140);
@@ -3334,6 +3543,7 @@ import javafx.stage.StageStyle;
             clockPane.setTranslateY(27);
             Moonpane.setTranslateY(7);
             Sunrisepane.setTranslateY(27);
+            
 
 
              //============================================
@@ -3352,6 +3562,31 @@ import javafx.stage.StageStyle;
             footerPane.setEffect(ds);
         }
         
+        ft_ar.setNode(ar_Marquee_Notification_Text);
+        ft_ar.setFromValue(1.0);
+        ft_ar.setToValue(0);
+        ft_ar.setCycleCount(Timeline.INDEFINITE);
+        ft_ar.setAutoReverse(true);
+        
+        ft_en.setNode(en_Marquee_Notification_Text);
+        ft_en.setFromValue(1.0);
+        ft_en.setToValue(0);
+        ft_en.setCycleCount(Timeline.INDEFINITE);
+        ft_en.setAutoReverse(true);
+        
+        facebook_image_fade_in = new FadeTransition(Duration.millis(500), facebook_Label);
+        
+        facebook_image_fade_in.setFromValue(0);
+        facebook_image_fade_in.setToValue(1);
+        facebook_image_fade_in.setCycleCount(1);
+        
+        facebook_image_fade_out = new FadeTransition(Duration.millis(500), facebook_Label);
+        facebook_image_fade_out.setFromValue(1);
+        facebook_image_fade_out.setToValue(0);
+        facebook_image_fade_out.setCycleCount(1);
+        
+//        facebook_Label.setVisible(true);
+        
         scene.setRoot(Mainpane);
         stage.show();
         
@@ -3361,51 +3596,42 @@ import javafx.stage.StageStyle;
     }
 
     
-    private void ar_Animate(){
+//    private void ar_Animate(){
 
-//                            ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
-                            ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.RIGHT);
+//                            ar_Marquee_Notification_Text = new Text(ar_Maar_Marquee_Notification_Textrquee_Notification_string);
+                            
 //                            ar_Marquee_Notification_Text.setX(-960);
-                            ar_Marquee_Notification_Text.setY(30);
-                            ar_Marquee_Notification_Text_textSize = 40;
-                            ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
-                            ar_Marquee_Notification_Text.setFill(Color.WHITE);
+                            
                     //        text.setStroke(Color.WHITESMOKE);
                     //        text.setStrokeWidth(0.4);
-                            ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+                            
 //                            ar_timeline.setCycleCount(Timeline.INDEFINITE);
 //                            final KeyValue ar_keyvalue = new KeyValue(ar_Marquee_Notification_Text.xProperty(), ar_Marquee_Notification_Text.getBoundsInLocal().getWidth());
 //                            final KeyFrame ar_keyframe = new KeyFrame(Duration.millis(60000), ar_keyvalue);
 //                            ar_timeline.getKeyFrames().add(ar_keyframe);
 //                            ar_timeline.play();
-                            ar_Marquee_Notification_Text_XPos = 320;
-                            ft = new FadeTransition(Duration.millis(2000), ar_Marquee_Notification_Text);
-                            ft.setFromValue(1.0);
-                            ft.setToValue(0);
-                            ft.setCycleCount(Timeline.INDEFINITE);
-                            ft.setAutoReverse(true);
-                            ft.play();
-                            ar_Marquee_Notification_Text.setX(1920/2 - ar_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
+                            
+                           
+                            
+//                            ft_ar.playFromStart();
+                            
                             
 //                            System.out.println("######arabic text width: " + ar_Marquee_Notification_Text.getBoundsInLocal().getWidth()); 
 //                            System.out.println("######arabic text location: " + ar_Marquee_Notification_Text.xProperty()); 
                             
                             
    
-    }
+//    }
     
-    private void en_Animate(){
+//    private void en_Animate(){
  
 //                            en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);
-                            en_Marquee_Notification_Text.setTextAlignment(TextAlignment.LEFT);
+                            
 //                            en_Marquee_Notification_Text.setX(960);
-                            en_Marquee_Notification_Text.setY(40);
-                            en_Marquee_Notification_Text_textSize = 40;
-                            en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
-                            en_Marquee_Notification_Text.setFill(Color.WHITE);
+                            
                     //        text.setStroke(Color.WHITESMOKE);
                     //        text.setStrokeWidth(0.4);
-                            en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+                            
         
         
 //                            en_timeline.setCycleCount(Timeline.INDEFINITE);
@@ -3413,24 +3639,18 @@ import javafx.stage.StageStyle;
 //                            final KeyFrame en_keyframe = new KeyFrame(Duration.millis(60000), en_keyvalue);
 //                            en_timeline.getKeyFrames().add(en_keyframe);
 //                            en_timeline.play();
-                            
-                            
-                            ft = new FadeTransition(Duration.millis(2000), en_Marquee_Notification_Text);
-                            ft.setFromValue(1.0);
-                            ft.setToValue(0);
-                            ft.setCycleCount(Timeline.INDEFINITE);
-                            ft.setAutoReverse(true);
 
-                            ft.play();
+//                             ft_en = new FadeTransition(Duration.millis(2000));
+//                            ft_en.playFromStart();
                             
-                            en_Marquee_Notification_Text.setX(1920/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
+                            
 //                            en_Marquee_Notification_Text_XPos = 1920/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2;
 //                            en_Marquee_Notification_Text_XPos = 1920 - (en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
                             
 //                            System.out.println("######english text width: " + en_Marquee_Notification_Text.getBoundsInLocal().getWidth()); 
 //                            System.out.println("######english text location: " + en_Marquee_Notification_Text.xProperty()); 
    
-    }
+//    }
     
     
 public static void main(String[] args) {
@@ -3481,11 +3701,24 @@ public void play_athan() throws Exception{
             fajr_diffsec_dec = fajr_diffsec/10;
             fajr_diffsec_sin = fajr_diffsec - fajr_diffsec_dec*10;
             
-            fajr_hourLeft.setId("hourLeft-countdown");
-            fajr_hourRight.setId("hourLeft-countdown");
-            fajr_minLeft.setId("hourLeft-countdown");
-            fajr_minRight.setId("hourLeft-countdown");
+            if(show_friday)
+            {
+                fajr_hourLeft.setId("hourLeft-countdown_friday_row");
+                fajr_hourRight.setId("hourLeft-countdown_friday_row");
+                fajr_minLeft.setId("hourLeft-countdown_friday_row");
+                fajr_minRight.setId("hourLeft-countdown_friday_row");
             
+            }
+            
+            else
+            {
+                fajr_hourLeft.setId("hourLeft-countdown");
+                fajr_hourRight.setId("hourLeft-countdown");
+                fajr_minLeft.setId("hourLeft-countdown");
+                fajr_minRight.setId("hourLeft-countdown");
+                
+                
+            }
             fajr_hourLeft.setText("-");
             fajr_hourRight.setText("0");
             fajr_minLeft.setText(Integer.toString(fajr_diffsec_dec));
@@ -3498,10 +3731,22 @@ public void play_athan() throws Exception{
             fajrdate = fajr_cal.getTime();
             formattedDateTime = dateFormat.format(fajrdate);
             
-            fajr_hourLeft.setId("hourLeft");
-            fajr_hourRight.setId("hourLeft");
-            fajr_minLeft.setId("hourLeft");
-            fajr_minRight.setId("hourLeft");
+            if(show_friday)
+            {
+                fajr_hourLeft.setId("hourLeft_friday_row");
+                fajr_hourRight.setId("hourLeft_friday_row");
+                fajr_minLeft.setId("hourLeft_friday_row");
+                fajr_minRight.setId("hourLeft_friday_row");
+            }
+            
+            else
+            {
+                fajr_hourLeft.setId("hourLeft");
+                fajr_hourRight.setId("hourLeft");
+                fajr_minLeft.setId("hourLeft");
+                fajr_minRight.setId("hourLeft");
+                
+            }
             
             fajr_hourLeft.setText(formattedDateTime.substring(0, 1));
             fajr_hourRight.setText(formattedDateTime.substring(1, 2));
@@ -3520,10 +3765,26 @@ public void play_athan() throws Exception{
             maghrib_diffsec_dec = maghrib_diffsec/10;
             maghrib_diffsec_sin = maghrib_diffsec - maghrib_diffsec_dec*10;
 
-            maghrib_hourLeft.setId("hourLeft-countdown");
-            maghrib_hourRight.setId("hourLeft-countdown");
-            maghrib_minLeft.setId("hourLeft-countdown");
-            maghrib_minRight.setId("hourLeft-countdown");
+
+//            
+            if(show_friday)
+            {
+                maghrib_hourLeft.setId("hourLeft-countdown_friday_row");
+                maghrib_hourRight.setId("hourLeft-countdown_friday_row");
+                maghrib_minLeft.setId("hourLeft-countdown_friday_row");
+                maghrib_minRight.setId("hourLeft-countdown_friday_row");
+            
+            }
+            
+            else
+            {
+                maghrib_hourLeft.setId("hourLeft-countdown");
+                maghrib_hourRight.setId("hourLeft-countdown");
+                maghrib_minLeft.setId("hourLeft-countdown");
+                maghrib_minRight.setId("hourLeft-countdown");
+                
+                
+            }
             
             maghrib_hourLeft.setText("-");
             maghrib_hourRight.setText("0");
@@ -3538,10 +3799,26 @@ public void play_athan() throws Exception{
             maghribdate = maghrib_cal.getTime();
             formattedDateTime = dateFormat.format(maghribdate);
             
-            maghrib_hourLeft.setId("hourLeft");
-            maghrib_hourRight.setId("hourLeft");
-            maghrib_minLeft.setId("hourLeft");
-            maghrib_minRight.setId("hourLeft");
+            
+            
+            if(show_friday)
+            {
+                maghrib_hourLeft.setId("hourLeft_friday_row");
+                maghrib_hourRight.setId("hourLeft_friday_row");
+                maghrib_minLeft.setId("hourLeft_friday_row");
+                maghrib_minRight.setId("hourLeft_friday_row");
+            
+            }
+            
+            else
+            {
+                maghrib_hourLeft.setId("hourLeft");
+                maghrib_hourRight.setId("hourLeft");
+                maghrib_minLeft.setId("hourLeft");
+                maghrib_minRight.setId("hourLeft");
+                
+                
+            }
                 
             maghrib_hourLeft.setText(formattedDateTime.substring(0, 1));
             maghrib_hourRight.setText(formattedDateTime.substring(1, 2));
@@ -3559,8 +3836,9 @@ public void play_athan() throws Exception{
 //        AudioInputStream ais = AudioSystem.getAudioInputStream( url );
         
         
-        ProcessBuilder processBuilder_Athan = new ProcessBuilder("bash", "-c", "mpg123 /home/pi/prayertime/Audio/athan1.mp3");
-        ProcessBuilder processBuilder_Duha = new ProcessBuilder("bash", "-c", "mpg123 /home/pi/prayertime/Audio/duha.mp3");
+//        ProcessBuilder processBuilder_Athan = new ProcessBuilder("bash", "-c", "mpg123 /home/pi/prayertime/Audio/athan1.mp3");
+//        ProcessBuilder processBuilder_Duha = new ProcessBuilder("bash", "-c", "mpg123 /home/pi/prayertime/Audio/duha.mp3");
+//        ProcessBuilder processBuilder_Tvon = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
 
         
 //                            try {
@@ -3577,7 +3855,7 @@ public void play_athan() throws Exception{
 //        AudioInputStream converted = AudioSystem.getAudioInputStream(littleEndianFormat, ais); 
 //        Clip clip = AudioSystem.getClip();
         
-        ProcessBuilder processBuilder_Tvon = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
+//        ProcessBuilder processBuilder_Tvon = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
 //clip.open(converted);
 //            clip.start();
 //        Calendar_now.set(Calendar.MILLISECOND, 0);
@@ -3624,11 +3902,11 @@ public void play_athan() throws Exception{
         }
         
         
-         else if (zuhr_jamaat_cal.equals(Calendar_now) && !zuhr_jamaat_cam_activated && dayofweek_int == 6 ) 
+         else if (friday_jamaat_cal.equals(Calendar_now) && !friday_jamaat_cam_activated && dayofweek_int == 6 ) 
         {
-            zuhr_jamaat_cam_activated = true;
+            friday_jamaat_cam_activated = true;
             System.out.println("Switching to Camera...Friday Prayer");
-            ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
+//            ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
             try {Process process = processBuilder_camera_on.start(); } 
             catch (IOException e) {logger.warn("Unexpected error", e);}
             camera = true;                              
@@ -3637,9 +3915,9 @@ public void play_athan() throws Exception{
                  
         }    
          
-         else if (zuhr_plus30_cal.equals(Calendar_now) && zuhr_jamaat_cam_activated && dayofweek_int == 6) 
+         else if (friday_plus30_cal.equals(Calendar_now) && friday_jamaat_cam_activated && dayofweek_int == 6) 
         {
-            zuhr_jamaat_cam_activated = false;
+            friday_jamaat_cam_activated = false;
             sensor1_lastTimerCall = System.nanoTime();
 //            camera = false;
 //            System.out.println("Manually Switching back to App...");
@@ -3725,6 +4003,8 @@ public void update_labels() throws Exception{
         Calendar_now.set(Calendar.MILLISECOND, 0);
         Calendar_now.set(Calendar.SECOND, 0);
         
+//        System.out.println("Translating Labels");
+        
 //==Update Clock============================================================        
         
 //        hour_in_hour_Label = new SimpleDateFormat("hh").format(Calendar_now.getTime());
@@ -3738,9 +4018,11 @@ public void update_labels() throws Exception{
         
         if (arabic)
         {
-            
-            facebook_Label.setVisible(false);
-            
+//            System.out.println("arabic");
+//            facebook_Label.setVisible(false);
+            arabic = false;
+            english = true;
+            if(facebook_Label_visible){facebook_Label.setVisible(true); facebook_image_fade_out.playFromStart();}
             athan_Label_ar.setVisible(false);
             athan_Label_eng.setVisible(true);
             jamaat_Label_ar.setVisible(false);
@@ -3757,6 +4039,8 @@ public void update_labels() throws Exception{
             maghrib_Label_eng.setVisible(true);
             isha_Label_ar.setVisible(false);
             isha_Label_eng.setVisible(true);
+            
+            
             
             Sunrise_Date_Label.setId("sunrise-text-english");
             Sunrise_Date_Label.setWrapText(true);
@@ -3812,68 +4096,77 @@ public void update_labels() throws Exception{
 //                divider1_Label.setMinHeight(50);
             }
             
-            if (facebook_Label_visible & facebook_turn)
-            {
-//                System.out.println("facebook_Label_visible");
-                if (facebook_Label_visible_set_once)
-                {    
-                    if(null != facebook_post && !"".equals(facebook_post))
-                    {    
-                        System.out.println("facebook_post label set");
-                        facebook_Label.setGraphic(null);
-                        facebook_Label.setText(facebook_post);
-                        facebook_Label.setId("facebook-text");
-                        facebook_Label.setVisible(true);
-                        facebook_Label_visible_set_once = false;
-                    }
-
-                    if(null != facebook_Post_Url && !"".equals(facebook_Post_Url))
-                    {
-                        System.out.println("facebook_post picture label set");
-                        facebook_Label.setText("");
-                        ImageView imageView = ImageViewBuilder.create().image(new Image(facebook_Post_Url)).build();  
-                        Image image = new Image(facebook_Post_Url); 
-//                        System.out.print("facebookimage width:");
-//                        System.out.println(image.getWidth());
-//                        System.out.print("facebookimage height:");
-//                        System.out.println(image.getHeight());
-//                        double width = image.getWidth();
-//                        double height = image.getHeight();
-
-                        if (image.getWidth()>image.getHeight())
-                        {
-                            imageView.setFitWidth(600);
-                            imageView.setPreserveRatio(true);
-                            facebook_Label.setGraphic(imageView);
-                            facebook_Label.setAlignment(Pos.CENTER);
-                            facebook_Label.setVisible(true);
-                            hadithPane.setHalignment(facebook_Label,HPos.CENTER);
-                        facebook_Label_visible_set_once = false;  
-                        }
-                        
-                        else if (image.getHeight()>image.getWidth())
-                        {
-                            imageView.setFitHeight(780);
-                            imageView.setPreserveRatio(true);
-                            facebook_Label.setGraphic(imageView);
-                            facebook_Label.setAlignment(Pos.CENTER);
-                            facebook_Label.setVisible(true);
-                            facebook_Label.setTranslateY(-60);
-                            hadithPane.setHalignment(facebook_Label,HPos.CENTER);
-                        facebook_Label_visible_set_once = false;  
-                        }
-                    }
-                }
-                ar_moon_hadith_Label_L1.setVisible(false);
-                ar_moon_hadith_Label_L2.setVisible(false);
-                en_moon_hadith_Label_L1.setVisible(false);
-                en_moon_hadith_Label_L2.setVisible(false);
-                hadith_Label.setVisible(false);
-                facebook_Label.setVisible(true);
-                facebook_turn = false;
-                arabic = false;
-  
-            }
+//            if (facebook_Label_visible & facebook_turn)
+//            {
+////                System.out.println("facebook_Label_visible");
+//                if (facebook_Label_visible_set_once)
+//                {    
+//                    if(null != facebook_post && !"".equals(facebook_post))
+//                    {    
+//                        System.out.println("facebook_post label set");
+//                        facebook_Label.setGraphic(null);
+//                        facebook_Label.setText(facebook_post);
+//                        facebook_Label.setId("facebook-text");
+//                        facebook_Label.setVisible(true);
+//                        facebook_Label_visible_set_once = false;
+//                    }
+//
+//                    if(null != facebook_Post_Url && !"".equals(facebook_Post_Url))
+//                    {
+//                        System.out.println("facebook_post picture label set");
+//                        facebook_Label.setText("");
+//                        ImageView imageView = ImageViewBuilder.create().image(new Image(facebook_Post_Url)).build();  
+//                        Image image = new Image(facebook_Post_Url); 
+////                        System.out.print("facebookimage width:");
+////                        System.out.println(image.getWidth());
+////                        System.out.print("facebookimage height:");
+////                        System.out.println(image.getHeight());
+////                        double width = image.getWidth();
+////                        double height = image.getHeight();
+//
+//                        if (image.getWidth()>image.getHeight())
+//                        {
+//                            imageView.setFitWidth(600);
+//                            imageView.setPreserveRatio(true);
+//                            facebook_Label.setGraphic(imageView);
+//                            facebook_Label.setAlignment(Pos.CENTER);
+//                            
+//                            
+//                        }
+//                        
+//                        else if (image.getHeight()>image.getWidth())
+//                        {
+//                            imageView.setFitHeight(780);
+//                            imageView.setPreserveRatio(true);
+//                            facebook_Label.setGraphic(imageView);
+//                            facebook_Label.setAlignment(Pos.CENTER);
+//                            facebook_Label.setTranslateY(-60);
+//                            
+//                        }
+//                        
+//                            facebook_Label.setVisible(true);
+//                            hadithPane.setHalignment(facebook_Label,HPos.CENTER);
+//                            facebook_Label_visible_set_once = false;  
+//                            
+//                            
+//                            
+//                            
+////                            ft.setAutoReverse(true);
+//                            facebook_image_fade.playFromStart();;
+//                            
+//                            
+//                    }
+//                }
+//                ar_moon_hadith_Label_L1.setVisible(false);
+//                ar_moon_hadith_Label_L2.setVisible(false);
+//                en_moon_hadith_Label_L1.setVisible(false);
+//                en_moon_hadith_Label_L2.setVisible(false);
+//                hadith_Label.setVisible(false);
+////                facebook_Label.setVisible(true);
+//                facebook_turn = false;
+//                arabic = false;
+//  
+//            }
             
 
             if (!facebook_Label_visible)
@@ -3909,8 +4202,9 @@ public void update_labels() throws Exception{
                     ar_Marquee_Notification_Text.setVisible(false);
 //                    ar_timeline.stop();
 //                    en_Marquee_Notification_Text_XPos = 320;
-
-                    en_Animate();
+                    ft_en.playFromStart();
+                    ft_ar.stop();
+//                    en_Animate();
                     en_Marquee_Notification_Text.setVisible(true);
                 }
             
@@ -3960,12 +4254,12 @@ public void update_labels() throws Exception{
 
                         Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
 //                        arabic = false;
-                        if (facebook_Label_visible && !facebook_turn && arabic)
-                        {
-                            facebook_turn = true;
-
-                        }
-                        else {arabic = false;}
+//                        if (facebook_Label_visible && !facebook_turn && arabic)
+//                        {
+//                            facebook_turn = true;
+//
+//                        }
+//                        else {arabic = false;}
                     }
 
                     else if ( days_Between_Now_Newmoon == 0)
@@ -3977,12 +4271,12 @@ public void update_labels() throws Exception{
 
                         Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
 //                        arabic = false;
-                        if (facebook_Label_visible && !facebook_turn && arabic)
-                        {
-                            facebook_turn = true;
-
-                        }
-                        else {arabic = false;}
+//                        if (facebook_Label_visible && !facebook_turn && arabic)
+//                        {
+//                            facebook_turn = true;
+//
+//                        }
+//                        else {arabic = false;}
                     }
 
                     else if ( days_Between_Now_Newmoon >0 && days_Between_Now_Newmoon <=1 )
@@ -3992,12 +4286,12 @@ public void update_labels() throws Exception{
                         else{Moon_Date_Label.setText("New moon is on\n"+ "tomorrow");}
                         Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
 //                        arabic = false;
-                        if (facebook_Label_visible && !facebook_turn && arabic)
-                        {
-                            facebook_turn = true;
-
-                        }
-                        else {arabic = false;}
+//                        if (facebook_Label_visible && !facebook_turn && arabic)
+//                        {
+//                            facebook_turn = true;
+//
+//                        }
+//                        else {arabic = false;}
                     }
 
                     else if ( days_Between_Now_Newmoon <10 && days_Between_Now_Newmoon > 7)
@@ -4008,12 +4302,12 @@ public void update_labels() throws Exception{
                         Moon_Date_Label.setText("New moon is on\n" + newMoon_date_en + " "  + dayStr  + newMoon_date_en1);
                         Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
 //                        arabic = false;
-                        if (facebook_Label_visible && !facebook_turn && arabic)
-                        {
-                            facebook_turn = true;
-
-                        }
-                        else {arabic = false;}
+//                        if (facebook_Label_visible && !facebook_turn && arabic)
+//                        {
+//                            facebook_turn = true;
+//
+//                        }
+//                        else {arabic = false;}
                     }
 
                     else 
@@ -4024,12 +4318,12 @@ public void update_labels() throws Exception{
                         Moon_Date_Label.setText("Next new Moon is on\n" + newMoon_date_en  + " "  + dayStr  + newMoon_date_en1);
                         Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
 //                        arabic = false;
-                        if (facebook_Label_visible && !facebook_turn && arabic)
-                        {
-                            facebook_turn = true;
-
-                        }
-                        else {arabic = false;}
+//                        if (facebook_Label_visible && !facebook_turn && arabic)
+//                        {
+//                            facebook_turn = true;
+//
+//                        }
+//                        else {arabic = false;}
 
         //            String image = JavaFXApplication4.class.getResource("wallpaper4.jpg").toExternalForm();
         //            Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-repeat: stretch; -fx-background-size: 650 1180;-fx-background-position: top left;");
@@ -4059,12 +4353,12 @@ public void update_labels() throws Exception{
 
                         Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
 //                        arabic = false;
-                        if (facebook_Label_visible && !facebook_turn && arabic)
-                        {
-                            facebook_turn = true;
-
-                        }
-                        else {arabic = false;}
+//                        if (facebook_Label_visible && !facebook_turn && arabic)
+//                        {
+//                            facebook_turn = true;
+//
+//                        }
+//                        else {arabic = false;}
                     }
 
                     else if ( days_Between_Now_Fullmoon == 0)
@@ -4076,12 +4370,12 @@ public void update_labels() throws Exception{
 
                         Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
 //                        arabic = false;
-                        if (facebook_Label_visible && !facebook_turn && arabic)
-                        {
-                            facebook_turn = true;
-
-                        }
-                        else {arabic = false;}
+//                        if (facebook_Label_visible && !facebook_turn && arabic)
+//                        {
+//                            facebook_turn = true;
+//
+//                        }
+//                        else {arabic = false;}
                     }
 
                     else if ( days_Between_Now_Fullmoon >0 && days_Between_Now_Fullmoon <=1 )
@@ -4091,12 +4385,12 @@ public void update_labels() throws Exception{
                         else{Moon_Date_Label.setText("Full moon is on\n"+ "tomorrow");}
                         Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
 //                        arabic = false;
-                        if (facebook_Label_visible && !facebook_turn && arabic)
-                        {
-                            facebook_turn = true;
-
-                        }
-                        else {arabic = false;}
+//                        if (facebook_Label_visible && !facebook_turn && arabic)
+//                        {
+//                            facebook_turn = true;
+//
+//                        }
+//                        else {arabic = false;}
                     }
 
                     else if ( days_Between_Now_Fullmoon <10 && days_Between_Now_Fullmoon > 7)
@@ -4107,12 +4401,12 @@ public void update_labels() throws Exception{
                         Moon_Date_Label.setText("Full moon is on\n" + FullMoon_date_en + " "  + dayStr  + FullMoon_date_en1);
                         Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
 //                        arabic = false;
-                        if (facebook_Label_visible && !facebook_turn && arabic)
-                        {
-                            facebook_turn = true;
-
-                        }
-                        else {arabic = false;}
+//                        if (facebook_Label_visible && !facebook_turn && arabic)
+//                        {
+//                            facebook_turn = true;
+//
+//                        }
+//                        else {arabic = false;}
                     }
 
                     else 
@@ -4123,12 +4417,12 @@ public void update_labels() throws Exception{
                         Moon_Date_Label.setText("Next Full Moon is on\n" + FullMoon_date_en  + " "  + dayStr  + FullMoon_date_en1);
                         Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
 //                        arabic = false;
-                        if (facebook_Label_visible && !facebook_turn && arabic)
-                        {
-                            facebook_turn = true;
-
-                        }
-                        else {arabic = false;}
+//                        if (facebook_Label_visible && !facebook_turn && arabic)
+//                        {
+//                            facebook_turn = true;
+//
+//                        }
+//                        else {arabic = false;}
 
         //            String image = JavaFXApplication4.class.getResource("wallpaper4.jpg").toExternalForm();
         //            Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-repeat: stretch; -fx-background-size: 650 1180;-fx-background-position: top left;");
@@ -4137,9 +4431,16 @@ public void update_labels() throws Exception{
             }
         }
 
-        else
+        else if (english)
         { 
-            facebook_Label.setVisible(false);
+//            System.out.println("english");
+            english = false;
+            
+            if(facebook_Label_visible){facebook_turn = true;}
+            else{arabic = true;}
+            
+            
+//            facebook_Label.setVisible(false);
             
             athan_Label_eng.setVisible(false);
             athan_Label_ar.setVisible(true);
@@ -4192,6 +4493,7 @@ public void update_labels() throws Exception{
                 ar_moon_hadith_Label_L1.setVisible(true);
                 ar_moon_hadith_Label_L1.setText(ar_full_moon_hadith);
                 ar_moon_hadith_Label_L1.setId("ar_moon-notification-text1");
+                hadithPane.setHalignment(ar_moon_hadith_Label_L1,HPos.RIGHT);
 //                ar_moon_hadith_Label_L1.setTranslateY(5);
                 
                 ar_moon_hadith_Label_L2.setVisible(true);
@@ -4216,8 +4518,7 @@ public void update_labels() throws Exception{
             
             if (!athan_Change_Label_visible | !notification_Marquee_visible)
             {
-                
-                
+
                 text_Box.setVisible(false);
                 en_Marquee_Notification_Text.setVisible(false);
                 ar_Marquee_Notification_Text.setVisible(false);
@@ -4236,9 +4537,13 @@ public void update_labels() throws Exception{
                 {
                     text_Box.setVisible(true);
 //                    en_timeline.stop();
-                    ft.stop();
+//                    ft_en.stop();
+                    ft_ar.playFromStart();
+                    ft_en.stop();
+                    
+                    
 //                    ar_Marquee_Notification_Text_XPos = -320;
-                    ar_Animate();
+//                    ar_Animate();
                     ar_Marquee_Notification_Text.setVisible(true);
                     en_Marquee_Notification_Text.setVisible(false);
                 }
@@ -4294,7 +4599,7 @@ public void update_labels() throws Exception{
                             Moon_Date_Label.setId("moon-text-arabic");
                             Moon_Date_Label.setText(builder.toString());
                             Moonpane.setHalignment(Moon_Date_Label,HPos.RIGHT);
-                            arabic = true;
+//                            arabic = true;
 
                         }
 
@@ -4304,7 +4609,7 @@ public void update_labels() throws Exception{
                             if (comparator.compare(newMoon, maghrib_cal)>0){ Moon_Date_Label.setText("سيظهر الهلال ليلة الغذٍٍُِِِ" );}
                             else{Moon_Date_Label.setText("سيظهر الهلال غدا" );}
                             Moonpane.setHalignment(Moon_Date_Label,HPos.RIGHT);
-                            arabic = true;
+//                            arabic = true;
                         }
 
                         else if ( days_Between_Now_Newmoon == 0)
@@ -4313,7 +4618,7 @@ public void update_labels() throws Exception{
                             if (comparator.compare(newMoon, maghrib_cal)>0){Moon_Date_Label.setText("سيظهر الهلال ليلة اليوم" );}
                             else{Moon_Date_Label.setText("سيظهر الهلال اليوم " );}
                             Moonpane.setHalignment(Moon_Date_Label,HPos.RIGHT);
-                            arabic = true;
+//                            arabic = true;
                         }
 
                         else if ( days_Between_Now_Newmoon <10 && days_Between_Now_Newmoon > 7)
@@ -4337,7 +4642,7 @@ public void update_labels() throws Exception{
                             Moon_Date_Label.setId("moon-text-arabic");
                             Moon_Date_Label.setText(builder.toString());
                             Moonpane.setHalignment(Moon_Date_Label,HPos.RIGHT);
-                            arabic = true;
+//                            arabic = true;
                         }
 
                         else 
@@ -4360,7 +4665,7 @@ public void update_labels() throws Exception{
                             Moon_Date_Label.setId("moon-text-arabic");
                             Moon_Date_Label.setText(builder.toString());
                             Moonpane.setHalignment(Moon_Date_Label,HPos.RIGHT);
-                            arabic = true;
+//                            arabic = true;
                         }
 
                 }
@@ -4396,7 +4701,7 @@ public void update_labels() throws Exception{
                         Moon_Date_Label.setId("moon-text-arabic");
                         Moon_Date_Label.setText(builder.toString());
                         Moonpane.setHalignment(Moon_Date_Label,HPos.RIGHT);
-                        arabic = true;
+//                        arabic = true;
 
                     }
 
@@ -4406,7 +4711,7 @@ public void update_labels() throws Exception{
                         if (comparator.compare(fullMoon, maghrib_cal)>0){ Moon_Date_Label.setText("سيكون القمر بدرا ليلة الغذٍٍُِِِ" );}
                         else{Moon_Date_Label.setText("سيكون القمر بدرا غدا" );}
                         Moonpane.setHalignment(Moon_Date_Label,HPos.RIGHT);
-                        arabic = true;
+//                        arabic = true;
                     }
 
                     else if ( days_Between_Now_Fullmoon == 0)
@@ -4415,7 +4720,7 @@ public void update_labels() throws Exception{
                         if (comparator.compare(fullMoon, maghrib_cal)>0){Moon_Date_Label.setText("القمر بدر ليلة اليوم" );}
                         else{Moon_Date_Label.setText("القمر بدر اليوم " );}
                         Moonpane.setHalignment(Moon_Date_Label,HPos.RIGHT);
-                        arabic = true;
+//                        arabic = true;
                     }
 
                     else if ( days_Between_Now_Fullmoon <10 && days_Between_Now_Fullmoon > 7)
@@ -4439,7 +4744,7 @@ public void update_labels() throws Exception{
                         Moon_Date_Label.setId("moon-text-arabic");
                         Moon_Date_Label.setText(builder.toString());
                         Moonpane.setHalignment(Moon_Date_Label,HPos.RIGHT);
-                        arabic = true;
+//                        arabic = true;
                     }
 
                     else 
@@ -4462,12 +4767,115 @@ public void update_labels() throws Exception{
                         Moon_Date_Label.setId("moon-text-arabic");
                         Moon_Date_Label.setText(builder.toString());
                         Moonpane.setHalignment(Moon_Date_Label,HPos.RIGHT);
-                        arabic = true;
-                        facebook_turn = false;
+//                        arabic = true;
+//                        facebook_turn = false;
                     }
                 }
             }
         }
+        
+        else if (facebook_turn && facebook_Label_visible)
+                {
+  
+//                System.out.println("facebook_Label_visible");
+                    if (facebook_Label_visible_set_once)
+                    { 
+                        facebook_Label_visible_set_once = false;
+                        
+                        if(null != facebook_post && !"".equals(facebook_post))
+                        {    
+                            System.out.println("facebook_post label set");
+                            facebook_Label.setGraphic(null);
+                            facebook_Label.setText(facebook_post);
+                            facebook_Label.setId("facebook-text");
+                            facebook_Label.setVisible(true);
+                        }
+
+                        if(null != facebook_Post_Url && !"".equals(facebook_Post_Url))
+                        {
+                            System.out.println("facebook_post picture label set");
+                            facebook_Label.setText("");
+                            ImageView imageView = ImageViewBuilder.create().image(new Image(facebook_Post_Url)).build();  
+                            Image image = new Image(facebook_Post_Url); 
+    //                        System.out.print("facebookimage width:");
+    //                        System.out.println(image.getWidth());
+    //                        System.out.print("facebookimage height:");
+    //                        System.out.println(image.getHeight());
+    //                        double width = image.getWidth();
+    //                        double height = image.getHeight();
+
+                            if (image.getWidth()>image.getHeight())
+                            {
+
+                                if (orientation.equals("vertical") )
+                                {
+
+
+
+                                }    
+                                else if (orientation.equals("horizontal") )
+                                {
+                                    imageView.setFitWidth(600);
+                                    
+                                }
+
+                                else if (orientation.equals("horizontal_HD") )
+                                {
+                                    imageView.setFitWidth(850);
+                                    
+                                }
+                                imageView.setPreserveRatio(true);
+                                facebook_Label.setGraphic(imageView);
+                                facebook_Label.setAlignment(Pos.TOP_CENTER);
+//                                facebook_Label.setTranslateY(170);
+
+
+                            }
+
+                            else if (image.getHeight()>image.getWidth())
+                            {
+                            
+                                if (orientation.equals("vertical") )
+                                {
+
+
+
+                                }    
+                                else if (orientation.equals("horizontal") )
+                                {
+                                    imageView.setFitHeight(780);
+//                                    facebook_Label.setTranslateY(-60);
+                                }
+
+                                else if (orientation.equals("horizontal_HD") )
+                                {
+                                    imageView.setFitHeight(675);
+//                                    facebook_Label.setTranslateY(20);
+                                }
+                                imageView.setPreserveRatio(true);
+                                facebook_Label.setGraphic(imageView);
+//                                facebook_Label.setAlignment(Pos.CENTER);
+                                hadithPane.setHalignment(facebook_Label,HPos.CENTER);
+                                
+
+                            }
+//                            
+                        }            
+                            
+                    }
+                
+                if(null != facebook_Post_Url && !"".equals(facebook_Post_Url)){facebook_image_fade_in.playFromStart();}
+                
+                ar_moon_hadith_Label_L1.setVisible(false);
+                ar_moon_hadith_Label_L2.setVisible(false);
+                en_moon_hadith_Label_L1.setVisible(false);
+                en_moon_hadith_Label_L2.setVisible(false);
+                hadith_Label.setVisible(false);
+                facebook_turn = false;
+                arabic = true;
+
+                }
+        
         
 //==Days left to full moon============================================================        
  
@@ -4482,7 +4890,7 @@ public void update_labels() throws Exception{
         cal.setTime(now);
 //        System.out.println(fajr_jamaat_update_cal.getTime());
         
-        if (fajr_jamaat_update_cal.equals(Calendar_now) && fajr_jamaat_update_enable )         
+        if (jammat_from_database && fajr_jamaat_update_cal.equals(Calendar_now) && fajr_jamaat_update_enable )         
         {       
             fajr_jamaat_update_enable = false;
             new Thread(new Runnable() 
@@ -4533,7 +4941,7 @@ public void update_labels() throws Exception{
             }).start();
         }   
         
-        if (asr_jamaat_update_cal.equals(Calendar_now) && asr_jamaat_update_enable )         
+        if (jammat_from_database && asr_jamaat_update_cal.equals(Calendar_now) && asr_jamaat_update_enable )         
         {       
             
             asr_jamaat_update_enable = false;
@@ -4579,7 +4987,7 @@ public void update_labels() throws Exception{
             }).start();
         }
         
-        if (isha_jamaat_update_cal.equals(Calendar_now) && isha_jamaat_update_enable )         
+        if (jammat_from_database && isha_jamaat_update_cal.equals(Calendar_now) && isha_jamaat_update_enable )         
         {       
             isha_jamaat_update_enable = false;
             new Thread(new Runnable() 
@@ -5297,7 +5705,7 @@ public void update_labels() throws Exception{
     {
         prayertime_pane.setId("prayertime_pane");
         prayertime_pane.setCache(false);       
-        prayertime_pane.setGridLinesVisible(false);
+//        prayertime_pane.setGridLinesVisible(false);
         prayertime_pane.setPadding(new Insets(0, 0, 20, 20));
         prayertime_pane.setAlignment(Pos.BASELINE_CENTER);
 //        prayertime_pane.setVgap(20);
@@ -5474,26 +5882,7 @@ public void update_labels() throws Exception{
         friday_minRight.setText("-");
         time_Separator8.setText(":");
         
-        HBox fridayBox2 = new HBox();
-        fridayBox2.setSpacing(0);
-        fridayBox2.setMaxSize(180,60);
-        fridayBox2.setMinSize(180,60);
-        fridayBox2.setPrefSize(180,60);
-        friday2_hourLeft.setId("hourLeft");
-        friday2_hourRight.setId("hourLeft");
-        time_Separator9.setId("hourLeft");
-        friday2_minLeft.setId("hourLeft");
-        friday2_minRight.setId("hourLeft");
-        fridayBox2.getChildren().addAll(friday2_hourLeft, friday2_hourRight, time_Separator9, friday2_minLeft, friday2_minRight);
-        prayertime_pane.setConstraints(fridayBox2, 0, 12);
-        prayertime_pane.getChildren().add(fridayBox2);
-
         
-        friday2_hourLeft.setText("-");
-        friday2_hourRight.setText("-");
-        friday2_minLeft.setText("-");
-        friday2_minRight.setText("-");
-        time_Separator9.setText(":");
  //============================= 
         
         final Separator sepHor1 = new Separator();
@@ -5631,29 +6020,25 @@ public void update_labels() throws Exception{
         isha_jamma_minRight.setText("-");
         time_jamma_Separator5.setText(":");
 
-//============================= 
-
-//        fridayBox2 = new HBox();
-//        fridayBox2.setSpacing(0);
-//        fridayBox2.setMaxSize(180,60);
-//        fridayBox2.setMinSize(180,60);
-//        fridayBox2.setPrefSize(180,60);
-//        friday2_hourLeft.setId("hourLeft");
-//        friday2_hourRight.setId("hourLeft");
-//        time_Separator9.setId("hourLeft");
-//        friday2_minLeft.setId("hourLeft");
-//        friday2_minRight.setId("hourLeft");
-//        fridayBox2.getChildren().addAll(friday2_hourLeft, friday2_hourRight, time_Separator9, friday2_minLeft, friday2_minRight);
-//        prayertime_pane.setConstraints(fridayBox2, 0, 12);
-//        prayertime_pane.getChildren().add(fridayBox2);
-//        
-//       
-//        
-//        friday2_hourLeft.setText("-");
-//        friday2_hourRight.setText("-");
-//        friday2_minLeft.setText("-");
-//        friday2_minRight.setText("-");
-//        time_Separator9.setText(":");
+        HBox fridayBox2 = new HBox();
+        fridayBox2.setSpacing(0);
+        fridayBox2.setMaxSize(180,60);
+        fridayBox2.setMinSize(180,60);
+        fridayBox2.setPrefSize(180,60);
+        friday2_hourLeft.setId("hourLeft");
+        friday2_hourRight.setId("hourLeft");
+        time_Separator9.setId("hourLeft");
+        friday2_minLeft.setId("hourLeft");
+        friday2_minRight.setId("hourLeft");
+        fridayBox2.getChildren().addAll(friday2_hourLeft, friday2_hourRight, time_Separator9, friday2_minLeft, friday2_minRight);
+        prayertime_pane.setConstraints(fridayBox2, 0, 12);
+        prayertime_pane.getChildren().add(fridayBox2);
+        
+        friday2_hourLeft.setText("-");
+        friday2_hourRight.setText("-");
+        friday2_minLeft.setText("-");
+        friday2_minRight.setText("-");
+        time_Separator9.setText(":");
 
     }
    
@@ -6079,6 +6464,28 @@ public void update_labels() throws Exception{
    
    else
    {
+        if (show_friday)
+        
+        {
+            prayertime_pane.getRowConstraints().setAll(
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(105).build(),
+                RowConstraintsBuilder.create().minHeight(108).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(108).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(108).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(108).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(108).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(108).build(),
+                RowConstraintsBuilder.create().minHeight(10).build()
+            );
+        }
+     
        prayertime_pane.getColumnConstraints().setAll(
                 ColumnConstraintsBuilder.create().build(),
                 ColumnConstraintsBuilder.create().build(),
@@ -6086,39 +6493,56 @@ public void update_labels() throws Exception{
                 ColumnConstraintsBuilder.create().build()    
    
         );
-
-        prayertime_pane.setId("prayertime_pane");
+        if (!show_friday){prayertime_pane.setId("prayertime_pane");}
+        else {prayertime_pane.setId("prayertime_pane_friday");}
+        
         prayertime_pane.setCache(false);       
 //        prayertime_pane.setGridLinesVisible(true);
-        prayertime_pane.setPadding(new Insets(0, 0, 3, 0));
+//        prayertime_pane.setPadding(new Insets(0, 0, 3, 0));
         prayertime_pane.setAlignment(Pos.BASELINE_CENTER);
 //        prayertime_pane.setVgap(5);
         prayertime_pane.setHgap(13);
         
         prayertime_pane.setConstraints(jamaat_Label_eng, 0, 1);
-        jamaat_Label_eng.setMaxHeight(1);
+//        jamaat_Label_eng.setMaxHeight(1);
         prayertime_pane.getChildren().add(jamaat_Label_eng);      
         prayertime_pane.setConstraints(jamaat_Label_ar, 0, 1);
         prayertime_pane.getChildren().add(jamaat_Label_ar);
         
         prayertime_pane.setConstraints(athan_Label_eng, 1, 1);
-        athan_Label_eng.setMaxHeight(1);
+//        athan_Label_eng.setMaxHeight(1);
         prayertime_pane.getChildren().add(athan_Label_eng); 
         
         prayertime_pane.setConstraints(athan_Label_ar, 1, 1);
         prayertime_pane.getChildren().add(athan_Label_ar);
 //=============================  
         HBox fajrBox = new HBox();
-        fajrBox.setSpacing(0);
-        fajrBox.setMaxSize(100,1);
+//        fajrBox.setSpacing(0);
+        fajrBox.setMaxSize(80,1);
 //        fajrBox.setMinSize(100,40);
 //        fajrBox.setPrefSize(100,15);
         
-        fajr_hourLeft.setId("hourLeft");
-        fajr_hourRight.setId("hourLeft");
-        time_Separator1.setId("hourLeft");
-        fajr_minLeft.setId("hourLeft");
-        fajr_minRight.setId("hourLeft");
+
+        if (show_friday)
+        
+        {
+            fajr_hourLeft.setId("hourLeft_friday_row");
+            fajr_hourRight.setId("hourLeft_friday_row");
+            time_Separator1.setId("hourLeft_friday_row");
+            fajr_minLeft.setId("hourLeft_friday_row");
+            fajr_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            fajr_hourLeft.setId("hourLeft");
+            fajr_hourRight.setId("hourLeft");
+            time_Separator1.setId("hourLeft");
+            fajr_minLeft.setId("hourLeft");
+            fajr_minRight.setId("hourLeft");
+        }
+        
+        
         
         fajrBox.getChildren().addAll(fajr_hourLeft, fajr_hourRight, time_Separator1, fajr_minLeft, fajr_minRight);
         prayertime_pane.setConstraints(fajrBox, 1, 2);
@@ -6151,14 +6575,28 @@ public void update_labels() throws Exception{
 //============================= 
         HBox zuhrBox = new HBox();
 //        zuhrBox.setSpacing(0);
-        zuhrBox.setMaxSize(100,1);
+        zuhrBox.setMaxSize(80,1);
 //        zuhrBox.setMinSize(100,15);
 //        zuhrBox.setPrefSize(100,15);
-        zuhr_hourLeft.setId("hourLeft");
-        zuhr_hourRight.setId("hourLeft");
-        time_Separator3.setId("hourLeft");
-        zuhr_minLeft.setId("hourLeft");
-        zuhr_minRight.setId("hourLeft");
+        
+        if (show_friday)
+        
+        {
+            zuhr_hourLeft.setId("hourLeft_friday_row");
+            zuhr_hourRight.setId("hourLeft_friday_row");
+            time_Separator3.setId("hourLeft_friday_row");
+            zuhr_minLeft.setId("hourLeft_friday_row");
+            zuhr_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            zuhr_hourLeft.setId("hourLeft");
+            zuhr_hourRight.setId("hourLeft");
+            time_Separator3.setId("hourLeft");
+            zuhr_minLeft.setId("hourLeft");
+            zuhr_minRight.setId("hourLeft");
+        }
         zuhrBox.getChildren().addAll(zuhr_hourLeft, zuhr_hourRight, time_Separator3, zuhr_minLeft, zuhr_minRight);
         prayertime_pane.setConstraints(zuhrBox, 1, 4);
         prayertime_pane.getChildren().add(zuhrBox);
@@ -6184,14 +6622,30 @@ public void update_labels() throws Exception{
 //============================= 
         HBox asrBox = new HBox();
 //        asrBox.setSpacing(0);
-        asrBox.setMaxSize(100,1);
+        asrBox.setMaxSize(80,1);
 //        asrBox.setMinSize(100,15);
 //        asrBox.setPrefSize(100,15);
-        asr_hourLeft.setId("hourLeft");
-        asr_hourRight.setId("hourLeft");
-        time_Separator4.setId("hourLeft");
-        asr_minLeft.setId("hourLeft");
-        asr_minRight.setId("hourLeft");
+
+        
+        if (show_friday)
+        
+        {
+            asr_hourLeft.setId("hourLeft_friday_row");
+            asr_hourRight.setId("hourLeft_friday_row");
+            time_Separator4.setId("hourLeft_friday_row");
+            asr_minLeft.setId("hourLeft_friday_row");
+            asr_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            asr_hourLeft.setId("hourLeft");
+            asr_hourRight.setId("hourLeft");
+            time_Separator4.setId("hourLeft");
+            asr_minLeft.setId("hourLeft");
+            asr_minRight.setId("hourLeft");
+        }
+        
         asrBox.getChildren().addAll(asr_hourLeft, asr_hourRight, time_Separator4, asr_minLeft, asr_minRight);
         prayertime_pane.setConstraints(asrBox, 1, 6);
         prayertime_pane.getChildren().add(asrBox);
@@ -6218,14 +6672,32 @@ public void update_labels() throws Exception{
         
         HBox maghribBox = new HBox();
 //        maghribBox.setSpacing(0);
-        maghribBox.setMaxSize(100,1);
+        maghribBox.setMaxSize(80,1);
 //        maghribBox.setMinSize(100,15);
 //        maghribBox.setPrefSize(100,15);
-        maghrib_hourLeft.setId("hourLeft");
-        maghrib_hourRight.setId("hourLeft");
-        time_Separator5.setId("hourLeft");
-        maghrib_minLeft.setId("hourLeft");
-        maghrib_minRight.setId("hourLeft");
+
+        
+        
+        if (show_friday)
+        
+        {
+            maghrib_hourLeft.setId("hourLeft_friday_row");
+            maghrib_hourRight.setId("hourLeft_friday_row");
+            time_Separator5.setId("hourLeft_friday_row");
+            maghrib_minLeft.setId("hourLeft_friday_row");
+            maghrib_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            maghrib_hourLeft.setId("hourLeft");
+            maghrib_hourRight.setId("hourLeft");
+            time_Separator5.setId("hourLeft");
+            maghrib_minLeft.setId("hourLeft");
+            maghrib_minRight.setId("hourLeft");
+        }
+        
+        
         maghribBox.getChildren().addAll(maghrib_hourLeft, maghrib_hourRight, time_Separator5, maghrib_minLeft, maghrib_minRight);
         prayertime_pane.setConstraints(maghribBox, 1, 8);
         prayertime_pane.getChildren().add(maghribBox);
@@ -6252,7 +6724,7 @@ public void update_labels() throws Exception{
         
         HBox ishaBox = new HBox();
 //        ishaBox.setSpacing(0);
-        ishaBox.setMaxSize(100,1);
+        ishaBox.setMaxSize(80,1);
 //        ishaBox.setMinSize(100,15);
 //        ishaBox.setPrefSize(100,15);
         isha_hourLeft.setId("hourLeft");
@@ -6260,6 +6732,27 @@ public void update_labels() throws Exception{
         time_Separator6.setId("hourLeft");
         isha_minLeft.setId("hourLeft");
         isha_minRight.setId("hourLeft");
+        
+        if (show_friday)
+        
+        {
+            isha_hourLeft.setId("hourLeft_friday_row");
+            isha_hourRight.setId("hourLeft_friday_row");
+            time_Separator6.setId("hourLeft_friday_row");
+            isha_minLeft.setId("hourLeft_friday_row");
+            isha_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            isha_hourLeft.setId("hourLeft");
+            isha_hourRight.setId("hourLeft");
+            time_Separator6.setId("hourLeft");
+            isha_minLeft.setId("hourLeft");
+            isha_minRight.setId("hourLeft");
+        }
+        
+        
         ishaBox.getChildren().addAll(isha_hourLeft, isha_hourRight, time_Separator6, isha_minLeft, isha_minRight);
         prayertime_pane.setConstraints(ishaBox, 1, 10);
         prayertime_pane.getChildren().add(ishaBox);
@@ -6282,35 +6775,89 @@ public void update_labels() throws Exception{
         isha_minRight.setText("-");
         time_Separator6.setText(":");
         
+        
+        //=============================  
+         
+        if (show_friday)
+        
+        {
+            HBox fridayBox = new HBox();
+    //        fridayBox.setSpacing(0);
+            fridayBox.setMaxSize(80,1);
+    //        fridayBox.setMinSize(100,15);
+    //        fridayBox.setPrefSize(100,15);
+            
+            
+            friday_hourLeft.setId("hourLeft_friday_row");
+            friday_hourRight.setId("hourLeft_friday_row");
+            time_Separator8.setId("hourLeft_friday_row");
+            friday_minLeft.setId("hourLeft_friday_row");
+            friday_minRight.setId("hourLeft_friday_row");
+            
+            fridayBox.getChildren().addAll(friday_hourLeft, friday_hourRight, time_Separator8, friday_minLeft, friday_minRight);
+            prayertime_pane.setConstraints(fridayBox, 0, 13);
+            prayertime_pane.getChildren().add(fridayBox);
+
+    //        friday_Label_eng.setMaxSize(100,40);
+    //        friday_Label_eng.setMinSize(100,40);
+    //        friday_Label_eng.setPrefSize(100,40);
+    //        friday_Label_ar.setMaxSize(100,40);
+    //        friday_Label_ar.setMinSize(100,40);
+    //        friday_Label_ar.setPrefSize(100,40);
+
+            prayertime_pane.setConstraints(friday_Label_eng, 3, 13);
+            prayertime_pane.getChildren().add(friday_Label_eng);
+            prayertime_pane.setConstraints(friday_Label_ar, 3, 13);
+            prayertime_pane.getChildren().add(friday_Label_ar);
+
+            friday_hourLeft.setText("-");
+            friday_hourRight.setText("-");
+            friday_minLeft.setText("-");
+            friday_minRight.setText("-");
+            time_Separator8.setText(":");
+
+            final Separator sepHor5 = new Separator();
+            prayertime_pane.setValignment(sepHor5,VPos.CENTER);
+            prayertime_pane.setConstraints(sepHor5, 0, 12);
+            prayertime_pane.setColumnSpan(sepHor5, 3);
+//            sepHor5.setMinHeight(1);
+            prayertime_pane.getChildren().add(sepHor5);
+        
+        }
+ //============================= 
+        
         final Separator sepHor1 = new Separator();
         prayertime_pane.setValignment(sepHor1,VPos.CENTER);
         prayertime_pane.setConstraints(sepHor1, 0, 3);
         prayertime_pane.setColumnSpan(sepHor1, 3);
 //        sepHor1.setMaxSize(100,15);
 //        sepHor1.setMinSize(100,15);
-        sepHor1.setMinHeight(1);
+//        sepHor1.setMinHeight(1);
         prayertime_pane.getChildren().add(sepHor1);   
         
         final Separator sepHor2 = new Separator();
         prayertime_pane.setValignment(sepHor2,VPos.CENTER);
         prayertime_pane.setConstraints(sepHor2, 0, 5);
         prayertime_pane.setColumnSpan(sepHor2, 3);
-        sepHor2.setMinHeight(1);
+//        sepHor2.setMinHeight(1);
         prayertime_pane.getChildren().add(sepHor2);
         
         final Separator sepHor3 = new Separator();
         prayertime_pane.setValignment(sepHor3,VPos.CENTER);
         prayertime_pane.setConstraints(sepHor3, 0, 7);
         prayertime_pane.setColumnSpan(sepHor3, 3);
-        sepHor3.setMinHeight(1);
+//        sepHor3.setMinHeight(1);
         prayertime_pane.getChildren().add(sepHor3);
         
         final Separator sepHor4 = new Separator();
         prayertime_pane.setValignment(sepHor4,VPos.CENTER);
         prayertime_pane.setConstraints(sepHor4, 0, 9);
         prayertime_pane.setColumnSpan(sepHor4, 3);
-        sepHor4.setMinHeight(1);
+//        sepHor4.setMinHeight(1);
         prayertime_pane.getChildren().add(sepHor4);
+        
+        
+        
         
 
 //========= Jamama=======
@@ -6318,14 +6865,31 @@ public void update_labels() throws Exception{
 //=============================  
         HBox fajr_jamma_Box = new HBox();
 //        fajr_jamma_Box.setSpacing(0);
-        fajr_jamma_Box.setMaxSize(100,1);
+        fajr_jamma_Box.setMaxSize(80,1);
 //        fajr_jamma_Box.setMinSize(100,40);
 //        fajr_jamma_Box.setPrefSize(100,15);
-        fajr_jamma_hourLeft.setId("hourLeft");
-        fajr_jamma_hourRight.setId("hourLeft");
-        time_jamma_Separator1.setId("hourLeft");
-        fajr_jamma_minLeft.setId("hourLeft");
-        fajr_jamma_minRight.setId("hourLeft");
+
+        
+        if (show_friday)
+        
+        {
+            fajr_jamma_hourLeft.setId("hourLeft_friday_row");
+            fajr_jamma_hourRight.setId("hourLeft_friday_row");
+            time_jamma_Separator1.setId("hourLeft_friday_row");
+            fajr_jamma_minLeft.setId("hourLeft_friday_row");
+            fajr_jamma_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            fajr_jamma_hourLeft.setId("hourLeft");
+            fajr_jamma_hourRight.setId("hourLeft");
+            time_jamma_Separator1.setId("hourLeft");
+            fajr_jamma_minLeft.setId("hourLeft");
+            fajr_jamma_minRight.setId("hourLeft");
+        }
+        
+        
         fajr_jamma_Box.getChildren().addAll(fajr_jamma_hourLeft, fajr_jamma_hourRight, time_jamma_Separator1, fajr_jamma_minLeft, fajr_jamma_minRight);
         prayertime_pane.setConstraints(fajr_jamma_Box, 0, 2);
         prayertime_pane.getChildren().add(fajr_jamma_Box);
@@ -6339,14 +6903,31 @@ public void update_labels() throws Exception{
 //============================= 
         HBox zuhr_jamma_Box = new HBox();
 //        zuhr_jamma_Box.setSpacing(0);
-        zuhr_jamma_Box.setMaxSize(100,1);
+        zuhr_jamma_Box.setMaxSize(80,1);
 //        zuhr_jamma_Box.setMinSize(100,15);
 //        zuhr_jamma_Box.setPrefSize(100,15);
-        zuhr_jamma_hourLeft.setId("hourLeft");
-        zuhr_jamma_hourRight.setId("hourLeft");
-        time_jamma_Separator2.setId("hourLeft");
-        zuhr_jamma_minLeft.setId("hourLeft");
-        zuhr_jamma_minRight.setId("hourLeft");
+
+        
+        if (show_friday)
+        
+        {
+            zuhr_jamma_hourLeft.setId("hourLeft_friday_row");
+            zuhr_jamma_hourRight.setId("hourLeft_friday_row");
+            time_jamma_Separator2.setId("hourLeft_friday_row");
+            zuhr_jamma_minLeft.setId("hourLeft_friday_row");
+            zuhr_jamma_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            zuhr_jamma_hourLeft.setId("hourLeft");
+            zuhr_jamma_hourRight.setId("hourLeft");
+            time_jamma_Separator2.setId("hourLeft");
+            zuhr_jamma_minLeft.setId("hourLeft");
+            zuhr_jamma_minRight.setId("hourLeft");
+        }
+        
+        
         zuhr_jamma_Box.getChildren().addAll(zuhr_jamma_hourLeft, zuhr_jamma_hourRight, time_jamma_Separator2, zuhr_jamma_minLeft, zuhr_jamma_minRight);
         prayertime_pane.setConstraints(zuhr_jamma_Box, 0, 4);
         prayertime_pane.getChildren().add(zuhr_jamma_Box);
@@ -6360,14 +6941,31 @@ public void update_labels() throws Exception{
 //============================= 
         HBox asr_jamma_Box = new HBox();
 //        asr_jamma_Box.setSpacing(0);
-        asr_jamma_Box.setMaxSize(100,1);
+        asr_jamma_Box.setMaxSize(80,1);
 //        asr_jamma_Box.setMinSize(100,15);
 //        asr_jamma_Box.setPrefSize(100,15);
-        asr_jamma_minRight.setId("hourLeft");
-        asr_jamma_minLeft.setId("hourLeft");
-        time_jamma_Separator3.setId("hourLeft");
-        asr_jamma_hourRight.setId("hourLeft");
-        asr_jamma_hourLeft.setId("hourLeft");
+ 
+        
+        if (show_friday)
+        
+        {
+            asr_jamma_minRight.setId("hourLeft_friday_row");
+            asr_jamma_minLeft.setId("hourLeft_friday_row");
+            time_jamma_Separator3.setId("hourLeft_friday_row");
+            asr_jamma_hourRight.setId("hourLeft_friday_row");
+            asr_jamma_hourLeft.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            asr_jamma_minRight.setId("hourLeft");
+            asr_jamma_minLeft.setId("hourLeft");
+            time_jamma_Separator3.setId("hourLeft");
+            asr_jamma_hourRight.setId("hourLeft");
+            asr_jamma_hourLeft.setId("hourLeft");
+        }
+        
+        
         asr_jamma_Box.getChildren().addAll(asr_jamma_hourLeft, asr_jamma_hourRight, time_jamma_Separator3, asr_jamma_minLeft, asr_jamma_minRight);
         prayertime_pane.setConstraints(asr_jamma_Box, 0, 6);
         prayertime_pane.getChildren().add(asr_jamma_Box);
@@ -6382,14 +6980,30 @@ public void update_labels() throws Exception{
         
         HBox maghrib_jamma_Box = new HBox();
 //        maghrib_jamma_Box.setSpacing(0);
-        maghrib_jamma_Box.setMaxSize(100,1);
+        maghrib_jamma_Box.setMaxSize(80,1);
 //        maghrib_jamma_Box.setMinSize(100,15);
 //        maghrib_jamma_Box.setPrefSize(100,15);
-        maghrib_jamma_minRight.setId("hourLeft");
-        maghrib_jamma_minLeft.setId("hourLeft");
-        time_jamma_Separator4.setId("hourLeft");
-        maghrib_jamma_hourRight.setId("hourLeft");
-        maghrib_jamma_hourLeft.setId("hourLeft");
+
+        if (show_friday)
+        
+        {
+            maghrib_jamma_minRight.setId("hourLeft_friday_row");
+            maghrib_jamma_minLeft.setId("hourLeft_friday_row");
+            time_jamma_Separator4.setId("hourLeft_friday_row");
+            maghrib_jamma_hourRight.setId("hourLeft_friday_row");
+            maghrib_jamma_hourLeft.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            maghrib_jamma_minRight.setId("hourLeft");
+            maghrib_jamma_minLeft.setId("hourLeft");
+            time_jamma_Separator4.setId("hourLeft");
+            maghrib_jamma_hourRight.setId("hourLeft");
+            maghrib_jamma_hourLeft.setId("hourLeft");
+        }
+        
+        
         maghrib_jamma_Box.getChildren().addAll(maghrib_jamma_hourLeft, maghrib_jamma_hourRight, time_jamma_Separator4, maghrib_jamma_minLeft, maghrib_jamma_minRight);
         prayertime_pane.setConstraints(maghrib_jamma_Box, 0, 8);
         prayertime_pane.getChildren().add(maghrib_jamma_Box);
@@ -6403,14 +7017,32 @@ public void update_labels() throws Exception{
         
         HBox isha_jamma_Box = new HBox();
 //        isha_jamma_Box.setSpacing(0);
-        isha_jamma_Box.setMaxSize(100,1);
+        isha_jamma_Box.setMaxSize(80,1);
 //        isha_jamma_Box.setMinSize(100,15);
 //        isha_jamma_Box.setPrefSize(100,15);
-        isha_jamma_hourLeft.setId("hourLeft");
-        isha_jamma_hourRight.setId("hourLeft");
-        time_jamma_Separator5.setId("hourLeft");
-        isha_jamma_minLeft.setId("hourLeft");
-        isha_jamma_minRight.setId("hourLeft");
+
+        
+        
+        if (show_friday)
+        
+        {
+            isha_jamma_hourLeft.setId("hourLeft_friday_row");
+            isha_jamma_hourRight.setId("hourLeft_friday_row");
+            time_jamma_Separator5.setId("hourLeft_friday_row");
+            isha_jamma_minLeft.setId("hourLeft_friday_row");
+            isha_jamma_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            isha_jamma_hourLeft.setId("hourLeft");
+            isha_jamma_hourRight.setId("hourLeft");
+            time_jamma_Separator5.setId("hourLeft");
+            isha_jamma_minLeft.setId("hourLeft");
+            isha_jamma_minRight.setId("hourLeft");
+        }
+        
+        
         isha_jamma_Box.getChildren().addAll(isha_jamma_hourLeft, isha_jamma_hourRight, time_jamma_Separator5, isha_jamma_minLeft, isha_jamma_minRight);
         prayertime_pane.setConstraints(isha_jamma_Box, 0, 10);
         prayertime_pane.getChildren().add(isha_jamma_Box);
@@ -6420,6 +7052,29 @@ public void update_labels() throws Exception{
         isha_jamma_minLeft.setText("-");
         isha_jamma_minRight.setText("-");
         time_jamma_Separator5.setText(":");
+        
+        if(show_friday && double_friday)
+            
+        {
+            HBox fridayBox2 = new HBox();
+            fridayBox2.setMaxSize(80,1);
+            friday2_hourLeft.setId("hourLeft_friday_row");
+            friday2_hourRight.setId("hourLeft_friday_row");
+            time_Separator9.setId("hourLeft_friday_row");
+            friday2_minLeft.setId("hourLeft_friday_row");
+            friday2_minRight.setId("hourLeft_friday_row");
+            fridayBox2.getChildren().addAll(friday2_hourLeft, friday2_hourRight, time_Separator9, friday2_minLeft, friday2_minRight);
+            prayertime_pane.setConstraints(fridayBox2, 1, 13);
+            prayertime_pane.getChildren().add(fridayBox2);
+
+            friday2_hourLeft.setText("-");
+            friday2_hourRight.setText("-");
+            friday2_minLeft.setText("-");
+            friday2_minRight.setText("-");
+            time_Separator9.setText(":");
+        
+        
+        }
        
    }
 
@@ -6608,14 +7263,39 @@ public void update_labels() throws Exception{
     public GridPane hadithPane() {
       
         GridPane hadithPane = new GridPane();
+        
+        hadithPane.getRowConstraints().setAll(
+                RowConstraintsBuilder.create().percentHeight(100/10.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/10.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/10.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/10.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/10.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/10.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/10.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/10.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/10.0).build(),
+                RowConstraintsBuilder.create().percentHeight(100/10.0).build()
+            );
+        
+     
+       hadithPane.getColumnConstraints().setAll(
+                ColumnConstraintsBuilder.create().percentWidth(100).build()
+                   
+   
+        );
 //        hadithPane.setGridLinesVisible(true);
-        hadithPane.setId("hadithpane");
+        
+        
+        if (!show_friday){hadithPane.setId("hadithpane");}
+        else {hadithPane.setId("hadithpane_friday"); System.out.println("hadith pane using friday css");}
+        
+        
         hadithPane.setVgap(0);
 
         hadith_Label.setId("hadith-text-arabic");
         hadith_Label.setWrapText(true);
         hadith_Label.setMinHeight(0);
-        hadithPane.setConstraints(hadith_Label, 0, 0);
+        hadithPane.setConstraints(hadith_Label, 0, 0,1,10);
         hadithPane.getChildren().add(hadith_Label);
         
         
@@ -6623,45 +7303,46 @@ public void update_labels() throws Exception{
         en_moon_hadith_Label_L1.setWrapText(true);
         en_moon_hadith_Label_L1.setText("Loading.....");
         en_moon_hadith_Label_L1.setMinHeight(0);
-        hadithPane.setConstraints(en_moon_hadith_Label_L1, 0, 0);
+        hadithPane.setConstraints(en_moon_hadith_Label_L1, 0, 0,1,5);
         hadithPane.getChildren().add(en_moon_hadith_Label_L1);
         
         en_moon_hadith_Label_L2.setWrapText(true);
         en_moon_hadith_Label_L2.setMinHeight(0);
-        hadithPane.setConstraints(en_moon_hadith_Label_L2, 0, 1);
+        hadithPane.setConstraints(en_moon_hadith_Label_L2, 0, 5,1,5);
         hadithPane.getChildren().add(en_moon_hadith_Label_L2);
         
         ar_moon_hadith_Label_L1.setId("ar_moon-notification-text1");
         ar_moon_hadith_Label_L1.setWrapText(true);
         ar_moon_hadith_Label_L1.setMinHeight(0);
-        hadithPane.setConstraints(ar_moon_hadith_Label_L1, 0, 0);
+        hadithPane.setConstraints(ar_moon_hadith_Label_L1, 0, 0,1,5);
         hadithPane.getChildren().add(ar_moon_hadith_Label_L1);
         
         ar_moon_hadith_Label_L2.setWrapText(true);
         ar_moon_hadith_Label_L2.setMinHeight(0);
-        hadithPane.setConstraints(ar_moon_hadith_Label_L2, 0, 1);
+        hadithPane.setConstraints(ar_moon_hadith_Label_L2, 0, 5,1,5);
         hadithPane.getChildren().add(ar_moon_hadith_Label_L2);
         
-        if (orientation.equals("horizontal_HD") )
-        {
-            ar_moon_hadith_Label_L1.setTranslateY(35);
-            ar_moon_hadith_Label_L2.setTranslateY(30);
-        }
+//        if (orientation.equals("horizontal_HD") )
+//        {
+//            ar_moon_hadith_Label_L1.setTranslateY(35);
+//            ar_moon_hadith_Label_L2.setTranslateY(30);
+//        }
+
         
         facebook_Label.setWrapText(true);
-        facebook_Label.setMinHeight(0);
-        hadithPane.setConstraints(facebook_Label, 0, 0);
+        facebook_Label.setAlignment(Pos.CENTER);
+        hadithPane.setConstraints(facebook_Label, 0, 0,1,10);
         hadithPane.getChildren().add(facebook_Label);
         
-        athan_Change_Label_L1.setWrapText(true);
-        athan_Change_Label_L1.setMinHeight(0);
-        hadithPane.setConstraints(athan_Change_Label_L1, 0, 3);
-        hadithPane.getChildren().add(athan_Change_Label_L1);
-        
-        athan_Change_Label_L2.setWrapText(true);
-        athan_Change_Label_L2.setMinHeight(0);
-        hadithPane.setConstraints(athan_Change_Label_L2, 0, 4);
-        hadithPane.getChildren().add(athan_Change_Label_L2);
+//        athan_Change_Label_L1.setWrapText(true);
+//        athan_Change_Label_L1.setMinHeight(0);
+//        hadithPane.setConstraints(athan_Change_Label_L1, 0, 3);
+//        hadithPane.getChildren().add(athan_Change_Label_L1);
+//        
+//        athan_Change_Label_L2.setWrapText(true);
+//        athan_Change_Label_L2.setMinHeight(0);
+//        hadithPane.setConstraints(athan_Change_Label_L2, 0, 4);
+//        hadithPane.getChildren().add(athan_Change_Label_L2);
 
         return hadithPane;
     }    
@@ -6857,24 +7538,28 @@ public void update_labels() throws Exception{
             clockPane.setHalignment(hour_Label,HPos.RIGHT);
             clockPane.setConstraints(hour_Label, 1, 2, 1, 3);
             clockPane.getChildren().add(hour_Label);
+            hour_Label.setTranslateY(-5);
 
             separator_Label.setText(":");
             separator_Label.setId("clock_separator");  
             clockPane.setHalignment(separator_Label,HPos.CENTER);
             clockPane.setConstraints(separator_Label, 2, 2, 1, 3);
             clockPane.getChildren().add(separator_Label);
+            separator_Label.setTranslateY(-5);
 
             minute_Label.setId("minute");  
             clockPane.setHalignment(minute_Label,HPos.CENTER);
             clockPane.setValignment(minute_Label,VPos.CENTER);
             clockPane.setConstraints(minute_Label, 3, 2, 1, 3);
             clockPane.getChildren().add(minute_Label);
+            minute_Label.setTranslateY(-5);
 
             second_Label.setId("second");  
             clockPane.setHalignment(second_Label,HPos.CENTER);
             clockPane.setValignment(second_Label,VPos.CENTER);
             clockPane.setConstraints(second_Label, 4, 2, 1, 3);
             clockPane.getChildren().add(second_Label);
+            second_Label.setTranslateY(-5);
 
             date_Label.setId("date");
             clockPane.setHalignment(date_Label,HPos.CENTER);
