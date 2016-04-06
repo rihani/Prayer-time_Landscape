@@ -324,6 +324,7 @@ import java.nio.charset.Charset;
     boolean jammat_from_database;
    
     boolean weather_retrieve_fault = false;
+    boolean weather_image_wrong = false;
     
             
     private String hadith, translated_hadith, ar_full_moon_hadith, en_full_moon_hadith, ar_moon_notification, en_moon_notification, announcement, en_notification_Msg, ar_notification_Msg, device_name, device_location;
@@ -591,8 +592,8 @@ try
     c = DBConnect.connect();
 //                SQL = "Select * from settings";
 
-//SQL = "Select * from settings_al_takwa";
-SQL = "Select * from settings_ibn_abbas";
+SQL = "Select * from settings_al_takwa";
+//SQL = "Select * from settings_ibn_abbas";
 
 rs = c.createStatement().executeQuery(SQL);
 while (rs.next())
@@ -2354,7 +2355,7 @@ if(weather_enabled)
 
                             System.out.println("Current Temperature:" + getAtPath(je, "current_observation/temp_c").getAsString() );
 //                            weather_icon_url = getAtPath(je, "current_observation/icon_url").getAsString();
-//                            System.out.println("Weather URL:" + weather_icon_url);
+                            System.out.println("startup is true");
                             Weather_icon = getAtPath(je, "current_observation/icon").getAsString();
                             System.out.println("Weather Icon:" + Weather_icon );
 //                            System.out.println("max Temperature:" + getAtPath(je2, "forecast/simpleforecast/forecastday/high/celsius").getAsString() );
@@ -2368,43 +2369,85 @@ if(weather_enabled)
                                     Weather_Label1.setText(getAtPath(je, "current_observation/temp_c").getAsString() +"°C");
                                     Weather_Label2.setText(getAtPath(je2, "forecast/simpleforecast/forecastday/low/celsius").getAsString() +"°" + "/" + getAtPath(je2, "forecast/simpleforecast/forecastday/high/celsius").getAsString()+"°");                              
                                     
-                                    if (Weather_icon.equals("partlycloudy"))
+                                    if (Weather_icon.equals("mostlycloudy"))
                                     {
+                                        
+                                        weather_image_wrong = false;
+                                        if(Calendar_now.before(maghrib_plus15_cal))
+                                            weather_image_string = "/Images/Weather/set1/mostlycloudy.png";
+                                        else
+                                            weather_image_string = "/Images/Weather/set1/mostlycloudy_night.png";
+                                    }
+                                            
+                                    else if (Weather_icon.equals("partlycloudy"))
+                                    {
+                                        weather_image_wrong = false;
                                         if(Calendar_now.before(maghrib_plus15_cal))
                                             weather_image_string = "/Images/Weather/set1/partlycloudy.png";
                                         else
                                             weather_image_string = "/Images/Weather/set1/partlycloudy_night.png";
                                     }
                                     
-                                    else if (Weather_icon.equals("cloudy")){weather_image_string = "/Images/Weather/set1/cloudy5.png";}
+                                    else if (Weather_icon.equals("cloudy")){weather_image_wrong = false; weather_image_string = "/Images/Weather/set1/cloudy5.png";}
+                                    
+                                      
+                                    else if (Weather_icon.equals("mostlysunny"))
+                                    {
+                                        weather_image_wrong = false;
+                                        if(Calendar_now.before(maghrib_plus15_cal))
+                                            weather_image_string = "/Images/Weather/set1/mostlysunny.png";
+                                        else
+                                            weather_image_string = "/Images/Weather/set1/mostlysunny_night.png";
+                                    }
                                     
                                     else if (Weather_icon.equals("partlysunny"))
                                     {
+                                        weather_image_wrong = false;
                                         if(Calendar_now.before(maghrib_plus15_cal))
                                             weather_image_string = "/Images/Weather/set1/partlysunny.png";
                                         else
                                             weather_image_string = "/Images/Weather/set1/partlysunny_night.png";
                                     }
                                     
-                                    else if (Weather_icon.equals("sunny"))
+                                    else if (Weather_icon.equals("sunny") || Weather_icon.equals("clear"))
                                     {
+                                        weather_image_wrong = false;
                                         if(Calendar_now.before(maghrib_plus15_cal))
                                             weather_image_string = "/Images/Weather/set1/sunny.png";
                                         else
                                             weather_image_string = "/Images/Weather/set1/sunny_night.png";
                                     }
                                     
-                                    else{weather_image_string = "/Images/Weather/set1/partlycloudy.png";}
+                                    else if (Weather_icon.equals("rain") ){weather_image_wrong = false; weather_image_string = "/Images/Weather/set1/rain.png";}
+                                    
+                                    else if (Weather_icon.equals("sleet") ){weather_image_wrong = false; weather_image_string = "/Images/Weather/set1/sleet.png";}
+                                    
+                                    else if (Weather_icon.equals("snow") ){weather_image_wrong = false; weather_image_string = "/Images/Weather/set1/snow4.png";}
+                                    
+                                    else if (Weather_icon.equals("tstorms") ){weather_image_wrong = false; weather_image_string = "/Images/Weather/set1/tstorm3.png";}
+                                    
+                                    else if (Weather_icon.equals("fog") || Weather_icon.equals("hazy") )
+                                    {
+                                        weather_image_wrong = false;
+                                        if(Calendar_now.before(maghrib_plus15_cal))
+                                            weather_image_string = "/Images/Weather/set1/fog.png";
+                                        else
+                                            weather_image_string = "/Images/Weather/set1/fog_night.png";
+                                    }
+                                    
+
+                                    else{Weather_Image_Label.setVisible(false); weather_image_wrong = true;}
                                     
                                     
                                     
                                     ImageView weather_img = new ImageView(new Image(getClass().getResourceAsStream(weather_image_string)));  
                                     Weather_Image_Label.setGraphic(weather_img);
+                                    if(!weather_image_wrong){Weather_Image_Label.setVisible(true); }
                                 }
                             });
                         }
                     
-                        Thread.sleep(900000);
+                        Thread.sleep(300000);
                         LocalTime now = LocalTime.now();
                         Calendar_now = Calendar.getInstance();
                         is = new URL(url).openStream();
@@ -2419,6 +2462,8 @@ if(weather_enabled)
                         System.out.println("Current Temperature:" + getAtPath(je, "current_observation/temp_c").getAsString() );
 //                        weather_icon_url = getAtPath(je, "current_observation/icon_url").getAsString();
 //                        System.out.println("Weather URL:" + weather_icon_url);
+                        Weather_icon = getAtPath(je, "current_observation/icon").getAsString();
+                        System.out.println("Weather Icon:" + Weather_icon );
 //                        System.out.println("max Temperature:" + getAtPath(je2, "forecast/simpleforecast/forecastday/high/celsius").getAsString() );
 //                        System.out.println("min Temperature:" + getAtPath(je2, "forecast/simpleforecast/forecastday/low/celsius").getAsString() );
 
@@ -2427,14 +2472,83 @@ if(weather_enabled)
                             @Override public void run()
                             {
                                 if (weather_retrieve_fault){Weatherpane.setVisible(true);}
-                                Weather_Label1.setText(getAtPath(je, "current_observation/temp_c").getAsString() +"°C");
-                                Weather_Label2.setText(getAtPath(je2, "forecast/simpleforecast/forecastday/low/celsius").getAsString() +"°" + "/" + getAtPath(je2, "forecast/simpleforecast/forecastday/high/celsius").getAsString()+"°");
-                                
-                                ImageView weather_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Weather/cloudy2.png")));      
-                                weather_img.setFitWidth(160);
-                                weather_img.setFitHeight(160);
-                                weather_img.setSmooth(true);
-                                Weather_Image_Label.setGraphic(weather_img);
+                                    Weather_Label1.setText(getAtPath(je, "current_observation/temp_c").getAsString() +"°C");
+                                    Weather_Label2.setText(getAtPath(je2, "forecast/simpleforecast/forecastday/low/celsius").getAsString() +"°" + "/" + getAtPath(je2, "forecast/simpleforecast/forecastday/high/celsius").getAsString()+"°");                              
+                                    
+                                    if (Weather_icon.equals("mostlycloudy"))
+                                    {
+                                        
+                                        weather_image_wrong = false;
+                                        if(Calendar_now.before(maghrib_plus15_cal))
+                                            weather_image_string = "/Images/Weather/set1/mostlycloudy.png";
+                                        else
+                                            weather_image_string = "/Images/Weather/set1/mostlycloudy_night.png";
+                                    }
+                                            
+                                    else if (Weather_icon.equals("partlycloudy"))
+                                    {
+                                        weather_image_wrong = false;
+                                        if(Calendar_now.before(maghrib_plus15_cal))
+                                            weather_image_string = "/Images/Weather/set1/partlycloudy.png";
+                                        else
+                                            weather_image_string = "/Images/Weather/set1/partlycloudy_night.png";
+                                    }
+                                    
+                                    else if (Weather_icon.equals("cloudy")){weather_image_wrong = false; weather_image_string = "/Images/Weather/set1/cloudy5.png";}
+                                    
+                                      
+                                    else if (Weather_icon.equals("mostlysunny"))
+                                    {
+                                        weather_image_wrong = false;
+                                        if(Calendar_now.before(maghrib_plus15_cal))
+                                            weather_image_string = "/Images/Weather/set1/mostlysunny.png";
+                                        else
+                                            weather_image_string = "/Images/Weather/set1/mostlysunny_night.png";
+                                    }
+                                    
+                                    else if (Weather_icon.equals("partlysunny"))
+                                    {
+                                        weather_image_wrong = false;
+                                        if(Calendar_now.before(maghrib_plus15_cal))
+                                            weather_image_string = "/Images/Weather/set1/partlysunny.png";
+                                        else
+                                            weather_image_string = "/Images/Weather/set1/partlysunny_night.png";
+                                    }
+                                    
+                                    else if (Weather_icon.equals("sunny") || Weather_icon.equals("clear"))
+                                    {
+                                        weather_image_wrong = false;
+                                        if(Calendar_now.before(maghrib_plus15_cal))
+                                            weather_image_string = "/Images/Weather/set1/sunny.png";
+                                        else
+                                            weather_image_string = "/Images/Weather/set1/sunny_night.png";
+                                    }
+                                    
+                                    else if (Weather_icon.equals("rain") ){weather_image_wrong = false; weather_image_string = "/Images/Weather/set1/rain.png";}
+                                    
+                                    else if (Weather_icon.equals("sleet") ){weather_image_wrong = false; weather_image_string = "/Images/Weather/set1/sleet.png";}
+                                    
+                                    else if (Weather_icon.equals("snow") ){weather_image_wrong = false; weather_image_string = "/Images/Weather/set1/snow4.png";}
+                                    
+                                    else if (Weather_icon.equals("tstorms") ){weather_image_wrong = false; weather_image_string = "/Images/Weather/set1/tstorm3.png";}
+                                    
+                                    else if (Weather_icon.equals("fog") || Weather_icon.equals("hazy") )
+                                    {
+                                        weather_image_wrong = false;
+                                        if(Calendar_now.before(maghrib_plus15_cal))
+                                            weather_image_string = "/Images/Weather/set1/fog.png";
+                                        else
+                                            weather_image_string = "/Images/Weather/set1/fog_night.png";
+                                    }
+                                    
+
+                                    else{Weather_Image_Label.setVisible(false); weather_image_wrong = true;}
+                                    
+                                    
+                                    
+                                    ImageView weather_img = new ImageView(new Image(getClass().getResourceAsStream(weather_image_string)));  
+                                    Weather_Image_Label.setGraphic(weather_img);
+                                    if(!weather_image_wrong){Weather_Image_Label.setVisible(true); }
                                         
                             }
                         });
@@ -3351,7 +3465,7 @@ System.out.println("saved...");
             try
             {
                 String image = new File(rand_Image_Path).toURI().toURL().toString();
-                System.out.println("image string: " + image);
+//                System.out.println("image string: " + image);
                 Mainpane = new GridPane();
                 Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 1080 1920;-fx-background-position: bottom left;");  
             }
@@ -3420,8 +3534,8 @@ System.out.println("saved...");
 
             ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
             ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.RIGHT);
-            ar_Marquee_Notification_Text.setY(30);
-            ar_Marquee_Notification_Text_textSize = 40;
+            ar_Marquee_Notification_Text.setY(35);
+            ar_Marquee_Notification_Text_textSize = 38;
             ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
             ar_Marquee_Notification_Text.setFill(Color.WHITE);
             ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
@@ -3430,21 +3544,21 @@ System.out.println("saved...");
             en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
             en_Marquee_Notification_Text.setTextAlignment(TextAlignment.LEFT);                    
             en_Marquee_Notification_Text.setY(40);
-            en_Marquee_Notification_Text_textSize = 40;
+            en_Marquee_Notification_Text_textSize = 37;
             en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
             en_Marquee_Notification_Text.setFill(Color.WHITE);
             en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
             en_Marquee_Notification_Text.setX(1920/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);  
 
 
-            ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
-            notification_image.setTranslateY(0);
-            notification_image.setFitHeight(25);
-            notification_image.setPreserveRatio(true);
+//            ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
+//            notification_image.setTranslateY(0);
+//            notification_image.setFitHeight(25);
+//            notification_image.setPreserveRatio(true);
             text_Box = new Pane();
             text_Box.setMinWidth(640);
             text_Box.setMinHeight(23);
-            text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text, notification_image);
+            text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text);
             text_Box.setId("notification"); 
 
 
@@ -3582,8 +3696,8 @@ System.out.println("saved...");
               
             ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
             ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.RIGHT);
-            ar_Marquee_Notification_Text.setY(30);
-            ar_Marquee_Notification_Text_textSize = 40;
+            ar_Marquee_Notification_Text.setY(35);
+            ar_Marquee_Notification_Text_textSize = 38;
             ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
             ar_Marquee_Notification_Text.setFill(Color.WHITE);
             ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
@@ -3592,19 +3706,19 @@ System.out.println("saved...");
             en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
             en_Marquee_Notification_Text.setTextAlignment(TextAlignment.LEFT);                    
             en_Marquee_Notification_Text.setY(40);
-            en_Marquee_Notification_Text_textSize = 40;
+            en_Marquee_Notification_Text_textSize = 37;
             en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
             en_Marquee_Notification_Text.setFill(Color.WHITE);
             en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
             en_Marquee_Notification_Text.setX(1920/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
-            ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
-            notification_image.setTranslateY(0);
-            notification_image.setFitHeight(25);
-            notification_image.setPreserveRatio(true);
+//            ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
+//            notification_image.setTranslateY(0);
+//            notification_image.setFitHeight(25);
+//            notification_image.setPreserveRatio(true);
             text_Box = new Pane();
             text_Box.setMinWidth(640);
             text_Box.setMinHeight(23);
-            text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text, notification_image);
+            text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text);
             text_Box.setId("notification"); 
 
             Mainpane.add(Glasspane, 1, 0,28,31);
@@ -3747,8 +3861,8 @@ System.out.println("saved...");
 
             ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
             ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.RIGHT);
-            ar_Marquee_Notification_Text.setY(30);
-            ar_Marquee_Notification_Text_textSize = 40;
+            ar_Marquee_Notification_Text.setY(35);
+            ar_Marquee_Notification_Text_textSize = 38;
             ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
             ar_Marquee_Notification_Text.setFill(Color.WHITE);
             ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
@@ -3757,28 +3871,28 @@ System.out.println("saved...");
             en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
             en_Marquee_Notification_Text.setTextAlignment(TextAlignment.LEFT);                    
             en_Marquee_Notification_Text.setY(40);
-            en_Marquee_Notification_Text_textSize = 40;
+            en_Marquee_Notification_Text_textSize = 37;
             en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
             en_Marquee_Notification_Text.setFill(Color.WHITE);
             en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
             en_Marquee_Notification_Text.setX(1920/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
-            ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
-            notification_image.setTranslateY(0);
-            notification_image.setFitHeight(50);
+//            ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
+//            notification_image.setTranslateY(0);
+//            notification_image.setFitHeight(50);
     //        twitter_code.setTranslateY(20);
-            notification_image.setPreserveRatio(true);
+//            notification_image.setPreserveRatio(true);
             text_Box = new Pane();
             text_Box.setMinWidth(640);
             text_Box.setMinHeight(50);
-            text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text, notification_image);
+            text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text);
             text_Box.setId("notification"); 
 
 
             Mainpane.add(Glasspane, 0, 0,30,7);
             Mainpane.add(clockPane, 0, 1,23,2);
-            Mainpane.add(Moonpane, 16, 3);
-            Mainpane.add(Weatherpane, 12, 3);
-            Mainpane.add(Sunrisepane, 17, 3);
+            Mainpane.add(Moonpane, 18, 3);
+            Mainpane.add(Weatherpane, 14, 3);
+            Mainpane.add(Sunrisepane, 20, 3);
             if(show_friday)
             {   
                 Mainpane.add(prayertime_pane, 16, 8,13,21); 
@@ -3801,7 +3915,7 @@ System.out.println("saved...");
             Moonpane.setTranslateX(170);
             clockPane.setTranslateY(27);
             Moonpane.setTranslateY(7);
-            Sunrisepane.setTranslateY(27);
+//            Sunrisepane.setTranslateX(27);
             
 
 
@@ -5359,8 +5473,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
 
                 Moon_img.setPreserveRatio(false);
@@ -5380,8 +5494,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5400,8 +5514,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5420,8 +5534,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5440,8 +5554,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5459,8 +5573,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5479,8 +5593,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5499,8 +5613,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5519,8 +5633,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5539,8 +5653,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5559,8 +5673,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5579,8 +5693,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5599,8 +5713,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5619,8 +5733,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5639,8 +5753,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5659,8 +5773,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5679,8 +5793,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5699,8 +5813,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5719,8 +5833,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5739,8 +5853,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5759,8 +5873,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5779,8 +5893,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5799,8 +5913,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5819,8 +5933,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -5839,8 +5953,8 @@ public void update_labels() throws Exception{
 
                else
                {
-                   Moon_img.setFitWidth(160);
-                   Moon_img.setFitHeight(160);
+                   Moon_img.setFitWidth(120);
+                   Moon_img.setFitHeight(120);
                }
                 Moon_img.setPreserveRatio(false);
                 Moon_img.setSmooth(true);        
@@ -7280,8 +7394,8 @@ public void update_labels() throws Exception{
     //       Moonpane.setGridLinesVisible(false);
 
             ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/100%.png")));      
-            Moon_img.setFitWidth(160);
-            Moon_img.setFitHeight(160);
+            Moon_img.setFitWidth(120);
+            Moon_img.setFitHeight(120);
     //        Moon_img.setPreserveRatio(false);
             Moon_img.setSmooth(true);
             Moon_Image_Label.setGraphic(Moon_img);
@@ -7328,20 +7442,20 @@ public void update_labels() throws Exception{
             Moonpane.setId("moonpane");
             Moonpane.getColumnConstraints().setAll(
                     ColumnConstraintsBuilder.create().minWidth(350).build(),
-                    ColumnConstraintsBuilder.create().minWidth(50).build(),
+//                    ColumnConstraintsBuilder.create().minWidth(50).build(),
                     ColumnConstraintsBuilder.create().minWidth(160).build()     
             );
-            Moonpane.setHgap(20);
+            Moonpane.setHgap(30);
             Moonpane.setMaxHeight(50);
-    //       Moonpane.setGridLinesVisible(false);
+//           Moonpane.setGridLinesVisible(true);
 
             ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/100%.png")));      
-            Moon_img.setFitWidth(160);
-            Moon_img.setFitHeight(160);
+            Moon_img.setFitWidth(120);
+            Moon_img.setFitHeight(120);
     //        Moon_img.setPreserveRatio(false);
             Moon_img.setSmooth(true);
             Moon_Image_Label.setGraphic(Moon_img);
-            Moonpane.setConstraints(Moon_Image_Label, 2, 0);
+            Moonpane.setConstraints(Moon_Image_Label, 1, 0);
             Moonpane.getChildren().add(Moon_Image_Label); 
             Moon_Date_Label.setId("moon-text-english");
             Moon_Date_Label.setWrapText(true);
@@ -7370,8 +7484,8 @@ public void update_labels() throws Exception{
     //       Moonpane.setGridLinesVisible(false);
 
             ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/100%.png")));      
-            Moon_img.setFitWidth(160);
-            Moon_img.setFitHeight(160);
+            Moon_img.setFitWidth(120);
+            Moon_img.setFitHeight(120);
     //        Moon_img.setPreserveRatio(false);
             Moon_img.setSmooth(true);
             Moon_Image_Label.setGraphic(Moon_img);
@@ -7432,7 +7546,7 @@ public void update_labels() throws Exception{
             weather_img.setFitWidth(160);
             weather_img.setFitHeight(160);
     //        Moon_img.setPreserveRatio(false);
-            weather_img.setSmooth(true);
+//            weather_img.setSmooth(true);
             
             Weather_Image_Label.setGraphic(weather_img);
             Weatherpane.setConstraints(Weather_Image_Label, 1, 0,1,2);
@@ -7516,20 +7630,20 @@ public void update_labels() throws Exception{
         {
             Sunrise.getColumnConstraints().setAll(
                     ColumnConstraintsBuilder.create().minWidth(350).build(),
-                    ColumnConstraintsBuilder.create().minWidth(50).build() ,
-                    ColumnConstraintsBuilder.create().minWidth(160).build()    
+//                    ColumnConstraintsBuilder.create().minWidth(50).build() ,
+                    ColumnConstraintsBuilder.create().minWidth(150).build()    
             );
-            Sunrise.setHgap(20);
+            Sunrise.setHgap(30);
             Sunrise.setMaxHeight(50);
-    //       Moonpane.setGridLinesVisible(false);
+//           Sunrise.setGridLinesVisible(true);
 
             ImageView Sunrise_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Sun/Sun.png")));      
-            Sunrise_img.setFitWidth(160);
-            Sunrise_img.setFitHeight(160);
+            Sunrise_img.setFitWidth(150);
+            Sunrise_img.setFitHeight(150);
     //        Moon_img.setPreserveRatio(false);
             Sunrise_img.setSmooth(true);
             Sunrise_Image_Label.setGraphic(Sunrise_img);
-            Sunrise.setConstraints(Sunrise_Image_Label, 2, 0);
+            Sunrise.setConstraints(Sunrise_Image_Label, 1, 0);
             Sunrise.getChildren().add(Sunrise_Image_Label); 
             Sunrise_Date_Label.setId("sunrise-text-english");
             Sunrise_Date_Label.setWrapText(true);
