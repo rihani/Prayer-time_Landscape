@@ -442,12 +442,27 @@ and open the template in the editor.
         
         #hadithpane{
 	 
-/*         -fx-background-color: rgba(0, 0, 0, 0.30); 
-	 -fx-border-color: black;
-	 -fx-border-radius: 20;
-	 -fx-padding: 15 15 15 15;
-	 -fx-background-radius: 20;*/
+         /*-fx-background-color: rgba(0, 0, 0, 0.30);*/ 
+         -fx-background-color: rgba(0, 0, 0, 0.35); 
+	 /*-fx-border-color: black;*/
+	 /*-fx-border-radius: 20;*/
+         
+	 -fx-padding: 12 30 5 35;
+	 /*-fx-background-radius: 20;*/
 	}
+        
+        #hadithpane_friday{
+            
+            /*-fx-background-color: rgba(0, 0, 0, 0.30);*/ 
+         -fx-background-color: rgba(0, 0, 0, 0.35); 
+	 /*-fx-border-color: black;*/
+	 /*-fx-border-radius: 20;*/
+         
+	 -fx-padding: 12 30 5 35;
+	 /*-fx-background-radius: 20;*/
+            
+            
+        }
         
         #clockPane{
 	 
@@ -472,7 +487,17 @@ and open the template in the editor.
          -fx-border-image-slice: 20 20 20 20 repeat;
          -fx-border-image-width: 20 20 20 20;
          -fx-border-image-repeat: round;*/
+        -fx-background-color: rgba(0, 0, 0, 0.35); 
+         -fx-padding: 0 0 26 0;
     }
+    
+    #prayertime_pane_friday{
+            
+            -fx-background-color: rgba(0, 0, 0, 0.35);
+            
+            
+            
+        }
     
     #hourLeft{
         /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
@@ -482,9 +507,9 @@ and open the template in the editor.
          -fx-border-width:0.5;
          -fx-border-color: black;
 	 /*-fx-border-color: rgba(0,0,0,0.15);*/
-	 -fx-border-radius: 5;
+	 -fx-border-radius: 1;
 	 -fx-padding: 2 2 2 2;
-	 -fx-background-radius: 5;
+	 -fx-background-radius: 1;
          
          -fx-font-size: 20px;
         /*-fx-font-family: 'B Majid Shadow';*/
@@ -513,9 +538,9 @@ and open the template in the editor.
          -fx-background-color: whitesmoke; 
          -fx-border-color: black;
 	 /*-fx-border-color: rgba(0,0,0,0.15);*/
-	 -fx-border-radius: 5;
+	 -fx-border-radius: 1;
 	 -fx-padding: 2 2 2 2;
-	 -fx-background-radius: 5;
+	 -fx-background-radius: 1;
          
          -fx-font-size: 20px;
         /*-fx-font-family: 'B Majid Shadow';*/
@@ -536,7 +561,68 @@ and open the template in the editor.
 
     
     }
+    #hourLeft_friday_row{
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+/*        -fx-effect: dropshadow( one-pass-box , black , 8 , 0.2 , 2 , 0 );*/
+        
+         -fx-background-color: whitesmoke; 
+         -fx-border-width:0.5;
+         -fx-border-color: black;
+	 /*-fx-border-color: rgba(0,0,0,0.15);*/
+	 -fx-border-radius: 1;
+	 -fx-padding: 2 2 2 2;
+	 -fx-background-radius: 1;
+         
+         -fx-font-size: 20px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+        /*-fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        /*-fx-font-family: 'PT Bold Arch';*/
+        -fx-font-family: 'Arial Bold';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        /*-fx-text-alignment: right;*/
+        -fx-text-fill:black;
+/*        -fx-shape: "M 0,1 L 1,1";
+        -fx-stroke: #ff5700;
+        -fx-background-color: skyblue;*/
+    /*-fx-background-insets: 0, 10;*/
+
     
+    }
+    
+    #hourLeft-countdown_friday_row{
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+/*        -fx-effect: dropshadow( one-pass-box , black , 8 , 0.2 , 2 , 0 );*/
+        
+         -fx-background-color: whitesmoke; 
+         -fx-border-color: black;
+	 /*-fx-border-color: rgba(0,0,0,0.15);*/
+	 -fx-border-radius: 1;
+	 -fx-padding: 2 2 2 2;
+	 -fx-background-radius: 1;
+         
+         -fx-font-size: 20px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+        /*-fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        /*-fx-font-family: 'PT Bold Arch';*/
+        -fx-font-family: 'Arial Bold';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        /*-fx-text-alignment: right;*/
+        -fx-text-fill:red;
+/*        -fx-shape: "M 0,1 L 1,1";
+        -fx-stroke: #ff5700;
+        -fx-background-color: skyblue;*/
+    /*-fx-background-insets: 0, 10;*/
+
+    
+    }
 
         #hour {
         
@@ -614,5 +700,39 @@ and open the template in the editor.
         
         /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.8) , 0,0,0,1 );*/ 
         -fx-text-alignment: left;
+        
+   }
+   
+     #Weather_Label1{
+        
+        -fx-font-size: 20px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Arial';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: center;
+        -fx-text-fill:whitesmoke;
+        
+   }
+
+   
+   
+   #Weather_Label2{
+       
+        -fx-font-size: 13px;
+        /*-fx-font-family: 'B Majid Shadow';*/
+/*        -fx-font-family: 'Old Antic Outline Shaded';*/
+        /*-fx-font-family: 'B Jadid';*/
+        -fx-font-family: 'Arial';
+        /*-fx-fill: white;*/
+        /*-fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.5) , 4, 0.0 , 0 , 2 );*/
+        
+        /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
+        -fx-text-alignment: center;
+        -fx-text-fill:whitesmoke;
         
    }
