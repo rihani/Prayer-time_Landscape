@@ -105,7 +105,7 @@ and open the template in the editor.
 
       #moon-text-arabic{
         
-        -fx-font-size: 36px;
+        -fx-font-size: 32px;
         /*-fx-font-family: 'B Majid Shadow';*/
         /*-fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/
@@ -355,7 +355,7 @@ and open the template in the editor.
    
       #hadith-text-arabic{
         
-        -fx-font-size: 63px;
+        -fx-font-size: 60px;
         /*-fx-font-family: 'B Majid Shadow';*/
         /*-fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/
@@ -376,7 +376,7 @@ and open the template in the editor.
    
    #hadith-text-english{
         
-        -fx-font-size: 63px;
+        -fx-font-size: 60px;
         /*-fx-font-family: 'B Majid Shadow';*/
         /*-fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/

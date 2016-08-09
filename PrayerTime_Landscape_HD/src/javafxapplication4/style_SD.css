@@ -105,7 +105,7 @@ and open the template in the editor.
 
       #moon-text-arabic{
         
-        -fx-font-size: 16px;
+        -fx-font-size: 13px;
         /*-fx-font-family: 'B Majid Shadow';*/
         /*-fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/
@@ -144,7 +144,7 @@ and open the template in the editor.
 
       #sunrise-text-arabic{
         
-        -fx-font-size: 16px;
+        -fx-font-size: 13px;
         /*-fx-font-family: 'B Majid Shadow';*/
         /*-fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/
@@ -323,7 +323,7 @@ and open the template in the editor.
    
       #hadith-text-arabic{
         
-        -fx-font-size: 23px;
+        -fx-font-size: 21px;
         /*-fx-font-family: 'B Majid Shadow';*/
         /*-fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/
@@ -626,7 +626,7 @@ and open the template in the editor.
 
         #hour {
         
-        -fx-font-size: 55px;
+        -fx-font-size: 50px;
         /*-fx-font-family: 'B Majid Shadow';*/
 /*        -fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/
@@ -642,7 +642,7 @@ and open the template in the editor.
    
    #minute {
         
-        -fx-font-size: 55px;
+        -fx-font-size: 50px;
         /*-fx-font-family: 'B Majid Shadow';*/
 /*        -fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/
