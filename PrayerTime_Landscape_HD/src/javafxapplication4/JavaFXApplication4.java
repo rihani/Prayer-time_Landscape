@@ -277,6 +277,8 @@ import java.nio.charset.Charset;
     private Boolean isha_jamma_time_change = false;
     private Boolean notification = false;
     private Boolean prayer_change_notification;
+    private Boolean zuhr_custom_notification_set;
+    
     private Boolean notification_Bis = false;
     private Boolean athan_Change_Label_visible = false;
     private Boolean notification_Marquee_visible  = false;
@@ -1663,20 +1665,7 @@ else
 
                 }
                 
-                else if (diffMinutes<-35 && diffMinutes>=-50)
-                {
-                    isha_jamaat_cal = Calendar.getInstance();
-                    isha_jamaat_cal.setTime(isha_jamaat_temp);
-                    int add = isha_summer_increment_initial + isha_summer_increment + isha_summer_increment;
-                    isha_jamaat_cal.add(Calendar.MINUTE, add );
-                    isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-                    isha_jamaat_cal.set(Calendar.SECOND, 0);
-
-                    isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
-                    isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
-                    isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-                    isha_jamaat_update_cal.set(Calendar.SECOND, 0);
-                }
+                
                 
                 
                 
@@ -1905,16 +1894,20 @@ else
     //                                    System.out.format("%s,%s,%s,%s \n", notification_Date, en_message_String, ar_message_String, notification_Sent );
         }
         catch (Exception e){logger.warn("Unexpected error", e);}
-        notification_Date_cal = Calendar.getInstance();
-        notification_Date_cal.setTime(notification_Date);
-        notification_Date_cal.set(Calendar.MILLISECOND, 0);
-        notification_Date_cal.set(Calendar.SECOND, 0);
+        if(notification_Date!= null)
+        {
+            notification_Date_cal = Calendar.getInstance();
+            notification_Date_cal.setTime(notification_Date);
+            notification_Date_cal.set(Calendar.MILLISECOND, 0);
+            notification_Date_cal.set(Calendar.SECOND, 0);
+        }
 
         //                            System.out.println("notification_Date_cal:" + notification_Date_cal.getTime());
         //                            System.out.println("Calendar_now:         " + Calendar_now.getTime());
 
-        if (Calendar_now.compareTo(notification_Date_cal) <0 )  //&& !notification_Sent
+        if (notification_Date_cal!= null && Calendar_now.compareTo(notification_Date_cal) <0 )  //&& !notification_Sent
         {
+            System.out.println(" ****************displaying database notification");
             en_notification_Msg = en_message_String;
             ar_notification_Msg = ar_message_String;
             ar_notification_Msg_Lines = ar_notification_Msg.split("\\r?\\n");
@@ -1923,16 +1916,17 @@ else
             en_Marquee_Notification_string = "Prayer Time Change from " + new SimpleDateFormat("EEEE").format(notification_Date) +":   " + en_notification_Msg_Lines[1];
             ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(notification_Date) + "ستتغير اوقات الصلاة   " + ar_notification_Msg_Lines[1];
 
-    //                                    System.out.format(en_Marquee_Notification_string);
-    //                                    System.out.format(ar_Marquee_Notification_string);
+                                        System.out.format(en_Marquee_Notification_string);
+                                        System.out.format(ar_Marquee_Notification_string);
 
             notification_Marquee_visible = true;
     //                                athan_Change_Label_visible = true;
     //                                getFacebook = false;
-            }
+        }
 
-        if (Calendar_now.compareTo(notification_Date_cal) >=0 )  //&& !notification_Sent
+        else 
         {
+            System.out.println(" ****************no database notification is not available, will now calculate prayer changes");
             athan_Change_Label_visible = false;
             notification_Marquee_visible = false;
         
@@ -2080,42 +2074,82 @@ else
             else 
             //only if custom  i.e. isha, zuhr for MIA??
             {
-                
+                Calendar future_prayer_cal = Calendar.getInstance();
+                future_prayer_cal.add(Calendar.DAY_OF_MONTH, +3);
+                System.out.println ("looking for changes in the next 3 days : " + future_prayer_cal.getTime());
+                prayerTimes = getprayertime.getPrayerTimes(future_prayer_cal, latitude, longitude, timezone);
+                prayerNames = getprayertime.getTimeNames();
+                future_prayer_date = future_prayer_cal.getTime();
+                System.out.println(" future prayer date change " + future_prayer_date);
                 
                 if (isha_settime)
                 {
-                    Calendar future_prayer_cal = Calendar.getInstance();
-                    future_prayer_cal.add(Calendar.DAY_OF_MONTH, +3);
-                    System.out.println ("looking for changes in the next 3 days : " + future_prayer_cal.getTime());
-                    prayerTimes = getprayertime.getPrayerTimes(future_prayer_cal, latitude, longitude, timezone);
-                    prayerNames = getprayertime.getTimeNames();
-
+                    
                     formatter = new SimpleDateFormat("HH:mm");
                     Date future_isha_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(6)).getTime()));
-                    cal.setTime(future_isha_temp);
-                    cal.add(Calendar.MINUTE, 60);
-                    future_isha_jamaat_time = cal.getTime();
+                    Calendar future_isha_cal = future_prayer_cal.getInstance();
+                    future_isha_cal.setTime(future_isha_temp);
+                    future_isha_cal.add(Calendar.MINUTE, 60);
+//                    future_isha_cal.add(Calendar.DAY_OF_MONTH, -3);
+                    Date future_isha_time = future_isha_cal.getTime();
+
+                    System.out.println(" future isha time " + future_isha_time);
                     
-                    
-                    
-                    System.out.println(" future isha time " + future_isha_jamaat_time);
-                    
-                    future_prayer_date = future_prayer_cal.getTime();
         ////////Debugin
         //                isha_cal.add(Calendar.MINUTE, 27);
         //                isha_begins_time = isha_cal.getTime();
 
                     isha_jamaat_current = isha_summer_start_time.toString();
+                    
+                    
+                    
                     Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat_current);
-                    diff = isha_jamaat_temp.getTime() - future_isha_jamaat_time.getTime();
+                    
+                    System.out.println("  isha jamaa temp  " + isha_jamaat_temp);
+                    
+                    
+                    
+                    diff = isha_jamaat_temp.getTime() - future_isha_time.getTime();
                     long diffMinutes = diff / (60 * 1000) % 60;      
                     System.out.print("future isha gap from initial");    
                     System.out.println(diffMinutes);  
                     
+                    if (diffMinutes>isha_summer_min_gap)
+                    {
+
+                        future_isha_jamaat_cal = future_prayer_cal.getInstance();
+                        future_isha_jamaat_cal.setTime(isha_jamaat_temp);
+                        future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                        future_isha_jamaat_cal.set(Calendar.SECOND, 0);
+                        future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
+                        
+                        isha_jamaat_time = isha_jamaat_cal.getTime();
+                        long diff1 = isha_jamaat_time.getTime() - future_isha_jamaat_time.getTime();
+                        
+                        if(diff1 != 0)
+                        {
+                            System.out.println("future isha change 1 detected in 3 days");
+                            isha_jamma_time_change =true;
+                            if(!notification)
+                            {
+                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                c = DBConnect.connect();
+                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                ps.setDate(1, sqlDate);
+                                ps.executeUpdate();
+                                c.close();
+                            }
+                            notification = true;
+                            
+                        }
+
+                        
+                    }
+                    
                     
                     if (diffMinutes<=isha_summer_min_gap && diffMinutes>=0 || (diffMinutes<=-1 && diffMinutes>=-20))
                     {                        
-                        future_isha_jamaat_cal = Calendar.getInstance();
+                        future_isha_jamaat_cal = future_prayer_cal.getInstance();
                         future_isha_jamaat_cal.setTime(isha_jamaat_temp);
                         future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment_initial );
                         future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
@@ -2124,13 +2158,22 @@ else
                         
                         isha_jamaat_time = isha_jamaat_cal.getTime();
                         long diff1 = isha_jamaat_time.getTime() - future_isha_jamaat_time.getTime();
-                        System.out.println(diff1);
                         
                         if(diff1 != 0)
                         {
-                            System.out.println("future isha change  1 detected in 3 days");
+                            System.out.println("future isha change 1 detected in 3 days");
                             isha_jamma_time_change =true;
+                            if(!notification)
+                            {
+                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                c = DBConnect.connect();
+                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                ps.setDate(1, sqlDate);
+                                ps.executeUpdate();
+                                c.close();
+                            }
                             notification = true;
+                            
                         }
                         
                     }
@@ -2138,7 +2181,7 @@ else
                     else if (diffMinutes<-20 && diffMinutes>=-35)
                     {
                         isha_jamma_time_change =true;
-                        future_isha_jamaat_cal = Calendar.getInstance();
+                        future_isha_jamaat_cal = future_prayer_cal.getInstance();
                         future_isha_jamaat_cal.setTime(isha_jamaat_temp);
                         int add = isha_summer_increment_initial + isha_summer_increment;
                         future_isha_jamaat_cal.add(Calendar.MINUTE, add);
@@ -2154,38 +2197,129 @@ else
                         {
                             System.out.println("future isha change 2 detected in 3 days");
                             isha_jamma_time_change =true;
+                            if(!notification)
+                            {
+                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                c = DBConnect.connect();
+                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                ps.setDate(1, sqlDate);
+                                ps.executeUpdate();
+                                c.close();
+                            }
                             notification = true;
                         }
                     }
 
-                    else if (diffMinutes<-35 && diffMinutes>=-50)
-                    {
-                        isha_jamma_time_change =true;
-                        future_isha_jamaat_cal = Calendar.getInstance();
-                        future_isha_jamaat_cal.setTime(isha_jamaat_temp);
-                        int add = isha_summer_increment_initial + isha_summer_increment + isha_summer_increment;
-                        future_isha_jamaat_cal.add(Calendar.MINUTE, add);
-                        future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-                        future_isha_jamaat_cal.set(Calendar.SECOND, 0);
-                        future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
-                        
-                        isha_jamaat_time = isha_jamaat_cal.getTime();
-                        long diff1 = isha_jamaat_time.getTime() - future_isha_jamaat_time.getTime();
-                        System.out.println(diff1);
-                        
-                        if(diff1 != 0)
-                        {
-                            System.out.println("future isha change detected in 3 days");
-                            isha_jamma_time_change =true;
-                            notification = true;
-                        }
-                        
-                    }
+//                    else if (diffMinutes<-35 && diffMinutes>=-50)
+//                    {
+//                        isha_jamma_time_change =true;
+//                        future_isha_jamaat_cal = future_prayer_cal.getInstance();
+//                        future_isha_jamaat_cal.setTime(isha_jamaat_temp);
+//                        int add = isha_summer_increment_initial + isha_summer_increment + isha_summer_increment;
+//                        future_isha_jamaat_cal.add(Calendar.MINUTE, add);
+//                        future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+//                        future_isha_jamaat_cal.set(Calendar.SECOND, 0);
+//                        future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
+//                        
+//                        isha_jamaat_time = isha_jamaat_cal.getTime();
+//                        long diff1 = isha_jamaat_time.getTime() - future_isha_jamaat_time.getTime();
+//                        System.out.println(diff1);
+//                        
+//                        if(diff1 != 0)
+//                        {
+//                            System.out.println("future isha change detected in 3 days");
+//                            isha_jamma_time_change =true;
+//                            if(!notification)
+//                            {
+//                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+//                                c = DBConnect.connect();
+//                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+//                                ps.setDate(1, sqlDate);
+//                                ps.executeUpdate();
+//                                c.close();
+//                            }
+//                            notification = true;
+//                        }
+//                        
+//                    }
 
                 }
 
                 if (zuhr_custom)
                 {
+                    //When athan goes 1:10 move iqamah to 1:20
+                    
+                    if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+                    {                                       
+                                
+                        formatter = new SimpleDateFormat("HH:mm");
+                        Date future_zuhr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(2)).getTime()));
+                        cal.setTime(future_zuhr_temp);
+                        cal.add(Calendar.MINUTE, 60);
+                        future_zuhr_temp = cal.getTime();
+
+                        System.out.println(" future zuhr time " + future_zuhr_temp);
+
+                        Date zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + zuhr_jamaat);
+                        Calendar zuhr_jamaat_temp_cal =  Calendar.getInstance();
+                        zuhr_jamaat_temp_cal.setTime(zuhr_jamaat_temp);      
+                //        zuhr_jamaat_temp_cal.set(Calendar.HOUR, 13);
+                        zuhr_jamaat_temp_cal.set(Calendar.AM_PM, Calendar.PM );
+                        zuhr_jamaat_temp = zuhr_jamaat_temp_cal.getTime();       
+
+                        long diff = zuhr_jamaat_temp.getTime() - future_zuhr_temp.getTime();
+                        long diffMinutes = diff / (60 * 1000) % 60; 
+                        System.out.print("future Zuhr gap:  ");    
+                        System.out.println(diffMinutes);  
+                        if (diffMinutes<=5)
+                        { 
+                            zuhr_jamma_time_change =true;
+                            future_zuhr_jamaat = "01:20";
+                            zuhr_custom_notification_set = true;
+                            if(!notification)
+                            {
+                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                c = DBConnect.connect();
+                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                ps.setDate(1, sqlDate);
+                                ps.executeUpdate();
+                                c.close();
+                            }
+                            notification = true;
+
+                        }
+                        else if (diffMinutes==11)
+                        { 
+                            zuhr_jamma_time_change =true;
+                            future_zuhr_jamaat = "01:15";
+                            zuhr_custom_notification_set = true;
+                            if(!notification)
+                            {
+                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                c = DBConnect.connect();
+                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                ps.setDate(1, sqlDate);
+                                ps.executeUpdate();
+                                c.close();
+                            }
+                            notification = true;
+
+                        }
+                        else zuhr_custom_notification_set = false;
+            
+                        
+                //////////////testing zuhr 5 mins gap////////////////////////
+                            //        zuhr_cal.set(Calendar.SECOND, 0); 
+                            //        zuhr_cal.set(Calendar.MINUTE, 12); 
+                            //        zuhr_cal.set(Calendar.HOUR_OF_DAY, 13); 
+                            //        zuhr_begins_time = zuhr_cal.getTime();
+                             ///////////////////////////////////////////////   
+
+                        
+                             
+
+                    } 
+                    
 
                 }
 
@@ -2259,7 +2393,17 @@ if(Calendar_now.compareTo(nextTransitionCal_min_3)==0 )
     else{future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_summer);}
     en_notification_Msg = en_notification_Msg + "Duhr: " + future_zuhr_jamaat_time_mod +"    ";
     ar_notification_Msg = ar_notification_Msg + "الظهر: " + future_zuhr_jamaat_time_mod +"    ";
+    zuhr_jamma_time_change = false;
 }
+
+if (zuhr_custom_notification_set)
+        {
+//            String future_zuhr_jamaat_time_mod = DATE_FORMAT.format(future_zuhr_jamaat);
+            en_notification_Msg = en_notification_Msg + "Duhr: " + future_zuhr_jamaat +"    ";
+            ar_notification_Msg = ar_notification_Msg + "الظهر: " + future_zuhr_jamaat +"    ";
+            zuhr_jamma_time_change = false;
+            
+        }
 
 if (asr_jamma_time_change )
 {
@@ -2292,6 +2436,8 @@ isha_jamma_time_change = false;
 
 
 }
+
+
 try
 {
     c = DBConnect.connect();
@@ -2303,6 +2449,9 @@ try
     en_notification_Msg_Lines = en_notification_Msg.split("\\r?\\n");
 }
 catch (Exception e){logger.warn("Unexpected error", e);}
+
+System.out.format(ar_notification_Msg);
+System.out.format(en_notification_Msg);
 
 notification = false;
 //                            athan_Change_Label_visible = true;
