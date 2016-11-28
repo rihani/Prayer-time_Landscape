@@ -2142,6 +2142,12 @@ else
                     
                     Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat_current);
                     
+                    
+                    Calendar isha_jamaat_temp_cal = Calendar.getInstance();
+                    isha_jamaat_temp_cal.setTime(isha_jamaat_temp);
+                    isha_jamaat_temp_cal.set(Calendar.AM_PM, Calendar.PM );
+                    isha_jamaat_temp = isha_jamaat_temp_cal.getTime();
+                    
                     System.out.println("  isha jamaa temp  " + isha_jamaat_temp);
                     
                     
@@ -2161,6 +2167,8 @@ else
                         future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
                         future_isha_jamaat_cal.set(Calendar.SECOND, 0);
                         future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
+                        
+                        
                         
                         isha_jamaat_time = isha_jamaat_cal.getTime();
                         long diff1 = isha_jamaat_time.getTime() - future_isha_jamaat_time.getTime();
@@ -2219,7 +2227,6 @@ else
 
                     else if (diffMinutes<-20 && diffMinutes>=-35)
                     {
-                        isha_jamma_time_change =true;
                         future_isha_jamaat_cal = future_prayer_cal.getInstance();
                         future_isha_jamaat_cal.setTime(isha_jamaat_temp);
                         int add = isha_summer_increment_initial + isha_summer_increment;
@@ -2393,44 +2400,54 @@ else
                         System.out.println(diffMinutes);  
                         
 //                        compare future_zuhr_jamaat and zuhr_jamaat
-                                
-                                
-                        if (diffMinutes<=5)
+                        zuhr_jamaat_time = zuhr_jamaat_cal.getTime();
+                              
+                               
+                        if (diffMinutes<=5 )
                         { 
-                            zuhr_jamma_time_change =true;
-                            future_zuhr_jamaat = "01:20";
-                            zuhr_custom_notification_set = true;
-                            if(!notification)
-                            {
-                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                c = DBConnect.connect();
-                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                                ps.setDate(1, sqlDate);
-                                ps.executeUpdate();
-                                c.close();
+                            Date future_zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + "01:20");
+                            long diff1 = zuhr_jamaat_time.getTime() - future_zuhr_jamaat_temp.getTime();
+                            System.out.println(diff1); 
+                            if(diff1 !=0)
+                            {    
+                                zuhr_jamma_time_change =true;
+                                zuhr_custom_notification_set = true;
+                                future_zuhr_jamaat = "01:20";
+                                if(!notification)
+                                {
+                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                    c = DBConnect.connect();
+                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                    ps.setDate(1, sqlDate);
+                                    ps.executeUpdate();
+                                    c.close();
+                                }
+                                notification = true;
                             }
-                            notification = true;
 
                         }
                         else if (diffMinutes==11)
                         { 
                             
-                            
-                            
-                            System.out.print("******zuhr notification to 1:15");          
-                            zuhr_jamma_time_change =true;
-                            future_zuhr_jamaat = "01:15";
-                            zuhr_custom_notification_set = true;
-                            if(!notification)
-                            {
-                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                c = DBConnect.connect();
-                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                                ps.setDate(1, sqlDate);
-                                ps.executeUpdate();
-                                c.close();
+                            Date future_zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + "01:15");
+                            long diff1 = zuhr_jamaat_time.getTime() - future_zuhr_jamaat_temp.getTime();
+                            System.out.println(diff1); 
+                            if(diff1 !=0)
+                            {    
+                                zuhr_jamma_time_change =true;
+                                zuhr_custom_notification_set = true;
+                                future_zuhr_jamaat = "01:15";
+                                if(!notification)
+                                {
+                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                    c = DBConnect.connect();
+                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                    ps.setDate(1, sqlDate);
+                                    ps.executeUpdate();
+                                    c.close();
+                                }
+                                notification = true;
                             }
-                            notification = true;
 
                         }
                         else zuhr_custom_notification_set = false;
