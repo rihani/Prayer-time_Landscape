@@ -331,7 +331,7 @@ import org.joda.time.chrono.ISOChronology;
     boolean show_friday = false;
     boolean double_friday = false;
     boolean jammat_from_database;
-    boolean asr_settime, isha_settime;
+    boolean zuhr_adj_enable, asr_settime, isha_settime;
     boolean custom_background, zuhr_custom;
     
     boolean isha_ramadan_bool;
@@ -365,7 +365,8 @@ import org.joda.time.chrono.ISOChronology;
     private int sonar_distance =50000;
     private int sonar_active_distance;
     
-    private int id, fajr_adj,asr_adj,maghrib_adj,isha_summer_adj, isha_winter_adj, isha_summer_increment_initial, isha_summer_increment, isha_summer_min_gap;
+    private int id, fajr_adj, zuhr_adj, asr_adj,maghrib_adj,isha_summer_adj, isha_winter_adj, isha_summer_increment_initial, isha_summer_increment, isha_summer_min_gap;        
+                
     private int AsrJuristic,calcMethod;
     private int max_ar_hadith_len, max_en_hadith_len;
     int olddayofweek_int;
@@ -406,9 +407,7 @@ import org.joda.time.chrono.ISOChronology;
     private Label friday2_hourLeft, friday2_hourRight, friday2_minLeft, friday2_minRight;
     private Label Phase_Label, Moon_Date_Label, Sunrise_Date_Label, Moon_Image_Label, Sunrise_Image_Label,Logo_Image_Label,  Weather_Image_Label, Weather_Label1, Weather_Label2,  friday_Label_eng,friday_Label_ar,sunrise_Label_ar,sunrise_Label_eng, fajr_Label_ar, fajr_Label_eng, zuhr_Label_ar, zuhr_Label_eng, asr_Label_ar, asr_Label_eng, maghrib_Label_ar, maghrib_Label_eng, isha_Label_ar, isha_Label_eng, jamaat_Label_eng,jamaat_Label_ar, athan_Label_eng,athan_Label_ar, hadith_Label, announcement_Label,athan_Change_Label_L1, athan_Change_Label_L2, hour_Label,separator_Label, minute_Label, second_Label, date_Label, day_Label, full_Time_Label, divider1_Label, divider2_Label, ar_moon_hadith_Label_L1, ar_moon_hadith_Label_L2, en_moon_hadith_Label_L1, en_moon_hadith_Label_L2, facebook_Label;
     HBox fridayBox2 = new HBox();
-    
-    
-    
+
                     
     private List<String> images;
     private File directory;
@@ -610,7 +609,8 @@ try
 //    SQL = "Select * from settings_al_takwa";
 //    SQL = "Select * from settings_ESCA";
 //    SQL = "Select * from settings";
-    SQL = "Select * from settings_MIA";
+      SQL = "Select * from settings_arncliffe"; 
+//    SQL = "Select * from settings_MIA";
     
     rs = c.createStatement().executeQuery(SQL);
     while (rs.next())
@@ -649,6 +649,9 @@ try
         jammat_from_database =          rs.getBoolean("jammat_from_database");
         prayertime_database =           rs.getString("prayertime_database");
         fajr_adj =                      rs.getInt("fajr_adj");
+        
+        zuhr_adj_enable =               rs.getBoolean("zuhr_adj_enable");
+        zuhr_adj =                      rs.getInt("zuhr_adj");
         asr_settime =                   rs.getBoolean("asr_settime");        
         asr_adj =                       rs.getInt("asr_adj");
         maghrib_adj =                   rs.getInt("maghrib_adj");
@@ -977,7 +980,7 @@ jamaat_Label_ar.setId("prayer-label-arabic");
 jamaat_Label_ar.setText("الإقامة");
 prayertime_pane.setHalignment(jamaat_Label_ar,HPos.CENTER) ;
 jamaat_Label_eng.setId("prayer-label-english");
-jamaat_Label_eng.setText("Congregation");
+jamaat_Label_eng.setText("Iqama");
 prayertime_pane.setHalignment(jamaat_Label_eng,HPos.CENTER);
 
 
@@ -1425,47 +1428,60 @@ else
     fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
     fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
     
-    if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
-    {       
-        zuhr_jamaat = zuhr_summer.toString();   
-        if (zuhr_custom)
-        {
-//////////////testing zuhr 5 mins gap////////////////////////
-            //        zuhr_cal.set(Calendar.SECOND, 0); 
-            //        zuhr_cal.set(Calendar.MINUTE, 12); 
-            //        zuhr_cal.set(Calendar.HOUR_OF_DAY, 13); 
-            //        zuhr_begins_time = zuhr_cal.getTime();
-             ///////////////////////////////////////////////   
-            
-            Date zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + zuhr_jamaat);
-            Calendar zuhr_jamaat_temp_cal =  Calendar.getInstance();
-            zuhr_jamaat_temp_cal.setTime(zuhr_jamaat_temp);      
-    //        zuhr_jamaat_temp_cal.set(Calendar.HOUR, 13);
-            zuhr_jamaat_temp_cal.set(Calendar.AM_PM, Calendar.PM );
-            zuhr_jamaat_temp = zuhr_jamaat_temp_cal.getTime();       
-
-            long diff = zuhr_jamaat_temp.getTime() - zuhr_begins_time.getTime();
-            long diffMinutes = diff / (60 * 1000) % 60; 
-            System.out.print("Zuhr gap:  ");    
-            System.out.println(diffMinutes);  
-            if (diffMinutes<=5)
-            { zuhr_jamaat = "01:20:00";}
-        }      
-                
-    } 
-    
-    else
+    if (zuhr_adj_enable)
     {
-        zuhr_jamaat = zuhr_winter.toString();
+        zuhr_jamaat_cal = (Calendar)zuhr_cal.clone();
+        zuhr_jamaat_cal.add(Calendar.MINUTE, zuhr_adj);  
+        System.out.print("Zuhr jamaat:  ");    
+                System.out.println(zuhr_jamaat_cal.getTime()); 
     }
-    Date zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + zuhr_jamaat);
-    cal.setTime(zuhr_jamaat_temp);
-    Date zuhr_jamaat_Date = cal.getTime();
-    zuhr_jamaat_cal = Calendar.getInstance();
-    zuhr_jamaat_cal.setTime(zuhr_jamaat_Date);
-    zuhr_jamaat_cal.set(Calendar.MILLISECOND, 0);
-    zuhr_jamaat_cal.set(Calendar.SECOND, 0);
+        
+    else
+    {    
+        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+        {       
+            zuhr_jamaat = zuhr_summer.toString();   
+            if (zuhr_custom)
+            {
+    //////////////testing zuhr 5 mins gap////////////////////////
+                //        zuhr_cal.set(Calendar.SECOND, 0); 
+                //        zuhr_cal.set(Calendar.MINUTE, 12); 
+                //        zuhr_cal.set(Calendar.HOUR_OF_DAY, 13); 
+                //        zuhr_begins_time = zuhr_cal.getTime();
+                 ///////////////////////////////////////////////   
+
+                Date zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + zuhr_jamaat);
+                Calendar zuhr_jamaat_temp_cal =  Calendar.getInstance();
+                zuhr_jamaat_temp_cal.setTime(zuhr_jamaat_temp);      
+        //        zuhr_jamaat_temp_cal.set(Calendar.HOUR, 13);
+                zuhr_jamaat_temp_cal.set(Calendar.AM_PM, Calendar.PM );
+                zuhr_jamaat_temp = zuhr_jamaat_temp_cal.getTime();       
+
+                long diff = zuhr_jamaat_temp.getTime() - zuhr_begins_time.getTime();
+                long diffMinutes = diff / (60 * 1000) % 60; 
+                System.out.print("Zuhr gap:  ");    
+                System.out.println(diffMinutes);  
+                if (diffMinutes<=5)
+                { zuhr_jamaat = "01:20:00";}
+            }      
+
+        } 
+
+        else
+        {
+            zuhr_jamaat = zuhr_winter.toString();
+        }
+        
+        Date zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + zuhr_jamaat);
+        cal.setTime(zuhr_jamaat_temp);
+        Date zuhr_jamaat_Date = cal.getTime();
+        zuhr_jamaat_cal = Calendar.getInstance();
+        zuhr_jamaat_cal.setTime(zuhr_jamaat_Date);
+        zuhr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+        zuhr_jamaat_cal.set(Calendar.SECOND, 0);
     //                            System.out.println("=============Zuhr Jamaat at:" + zuhr_jamaat_cal.getTime() + "day int is" + dayofweek_int);
+    }
+    
     
     zuhr_plus15_cal = (Calendar)zuhr_jamaat_cal.clone();
     zuhr_plus15_cal.add(Calendar.MINUTE, +15);
@@ -3974,7 +3990,15 @@ new Thread(() ->
             while (true)
             {
                 
-                socket.receive(packet);
+              socket.receive(packet);
+              InetAddress IPAddress = packet.getAddress();
+              String sendString = "Ack";
+              byte[] sendData = sendString.getBytes("UTF-8");
+              DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, packet.getPort());
+              socket.send(sendPacket);
+              
+                
+                
                 String received = new String(packet.getData(), 0, packet.getLength());
                 System.out.println("UDP Packet received: " + received);
                 
@@ -4001,18 +4025,18 @@ new Thread(() ->
                 {
                     prayer_In_Progress = false;
 //                            ProcessBuilder processBuilder1 = new ProcessBuilder("bash", "-c", "echo \"as\" | cec-client -d 1 -s \"standby 0\" RPI");
-hdmiOn = true;
-sensor_lastTimerCall =  System.nanoTime();
-System.out.println("Tv turned on");
-try
-{
-    Thread.sleep(2500);
-    processBuilder1.start();
-    Thread.sleep(2500);
-    processBuilder1.start();
-}
-catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) {
-    java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);}
+                    hdmiOn = true;
+                    sensor_lastTimerCall =  System.nanoTime();
+                    System.out.println("Tv turned on");
+                    try
+                    {
+                        Thread.sleep(2500);
+                        processBuilder1.start();
+                        Thread.sleep(2500);
+                        processBuilder1.start();
+                    }
+                    catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) {
+                        java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);}
 
 
 
@@ -4230,8 +4254,8 @@ catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedEx
 //                                        en_timeline.stop();
                                         
 //                                        ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
-try {Process process = processBuilder_camera_on.start(); }
-catch (IOException e) {logger.warn("Unexpected error", e);}
+                                try {Process process = processBuilder_camera_on.start(); }
+                                catch (IOException e) {logger.warn("Unexpected error", e);}
 
                             }
                         });
@@ -4306,6 +4330,16 @@ catch (IOException e) {logger.warn("Unexpected error", e);}
                     catch (IOException e) {logger.warn("Unexpected error", e);}
                 }
                 
+                if(received.equals("hello"))
+                {
+                    sendString = "Hi, I am Alive";
+                    sendData = sendString.getBytes("UTF-8");
+                    sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, packet.getPort());
+                    socket.send(sendPacket);
+//                            
+                }
+                
+                
                 if(received.equals("snapshot"))
                 {
                     System.out.println("saving...");
@@ -4313,15 +4347,15 @@ catch (IOException e) {logger.warn("Unexpected error", e);}
 //                            WritableImage snapshot_full = scene.snapshot(null);
 //                            ImageIO.write(SwingFXUtils.fromFXImage(snapshot_full, null), "png", file);
 
-WritableImage image = new WritableImage(400, 400);
-scene.snapshot(image);
-File outputfile = new File("saved.png");
-ImageIO.write((RenderedImage) image, "png", outputfile);
+                    WritableImage image = new WritableImage(400, 400);
+                    scene.snapshot(image);
+                    File outputfile = new File("saved.png");
+                    ImageIO.write((RenderedImage) image, "png", outputfile);
 
 
 
 
-System.out.println("saved...");
+                    System.out.println("saved...");
                 }
                 
                 if(received.equals("refresh facebook"))
@@ -5166,7 +5200,7 @@ System.out.println("saved...");
             
             Mainpane.getChildren().add(background);
 //            background.setTranslateX(400);
-            background.setTranslateY(525);
+            background.setTranslateY(523);
             
             Mainpane.add(Glasspane, 0, 0,30,7);
             
@@ -6759,11 +6793,25 @@ public void update_labels() throws Exception{
             fajr_jamma_minRight.setText(formattedDateTime.substring(4, 5));
             
 
+            if (zuhr_adj_enable)
+            {
+                zuhrjamaatdate = zuhr_jamaat_cal.getTime();
+                formattedDateTime = dateFormat.format(zuhrjamaatdate);
+
+                zuhr_jamma_hourLeft.setText(formattedDateTime.substring(0, 1));
+                zuhr_jamma_hourRight.setText(formattedDateTime.substring(1, 2));
+                zuhr_jamma_minLeft.setText(formattedDateTime.substring(3, 4));
+                zuhr_jamma_minRight.setText(formattedDateTime.substring(4, 5));
+                
+            }
             
-            zuhr_jamma_hourLeft.setText(zuhr_jamaat.substring(0, 1));
-            zuhr_jamma_hourRight.setText(zuhr_jamaat.substring(1, 2));
-            zuhr_jamma_minLeft.setText(zuhr_jamaat.substring(3, 4));
-            zuhr_jamma_minRight.setText(zuhr_jamaat.substring(4, 5));
+            else
+            {
+                zuhr_jamma_hourLeft.setText(zuhr_jamaat.substring(0, 1));
+                zuhr_jamma_hourRight.setText(zuhr_jamaat.substring(1, 2));
+                zuhr_jamma_minLeft.setText(zuhr_jamaat.substring(3, 4));
+                zuhr_jamma_minRight.setText(zuhr_jamaat.substring(4, 5));
+            }
              
             
             asrjamaatdate = asr_jamaat_cal.getTime();
@@ -8505,7 +8553,6 @@ public void update_labels() throws Exception{
        prayertime_pane.getColumnConstraints().setAll(
                 ColumnConstraintsBuilder.create().build(),
                 ColumnConstraintsBuilder.create().build(),
-                ColumnConstraintsBuilder.create().minWidth(50).build(),
                 ColumnConstraintsBuilder.create().build()    
    
         );
@@ -8517,7 +8564,7 @@ public void update_labels() throws Exception{
 //        prayertime_pane.setPadding(new Insets(0, 0, 3, 0));
         prayertime_pane.setAlignment(Pos.BASELINE_CENTER);
 //        prayertime_pane.setVgap(5);
-        prayertime_pane.setHgap(13);
+        prayertime_pane.setHgap(70);
         
         prayertime_pane.setConstraints(jamaat_Label_eng, 0, 1);
 //        jamaat_Label_eng.setMaxHeight(1);
@@ -8576,9 +8623,9 @@ public void update_labels() throws Exception{
 //        fajr_Label_ar.setPrefSize(100,40);
                 
                 
-        prayertime_pane.setConstraints(fajr_Label_eng, 3, 2);
+        prayertime_pane.setConstraints(fajr_Label_eng, 2, 2);
         prayertime_pane.getChildren().add(fajr_Label_eng);      
-        prayertime_pane.setConstraints(fajr_Label_ar, 3, 2);
+        prayertime_pane.setConstraints(fajr_Label_ar, 2, 2);
         prayertime_pane.getChildren().add(fajr_Label_ar);
         
         fajr_hourLeft.setText("-");
@@ -8624,9 +8671,9 @@ public void update_labels() throws Exception{
 //        zuhr_Label_ar.setMinSize(100,45);
 //        zuhr_Label_ar.setPrefSize(100,45);
         
-        prayertime_pane.setConstraints(zuhr_Label_eng, 3, 4);
+        prayertime_pane.setConstraints(zuhr_Label_eng, 2, 4);
         prayertime_pane.getChildren().add(zuhr_Label_eng);      
-        prayertime_pane.setConstraints(zuhr_Label_ar, 3, 4);
+        prayertime_pane.setConstraints(zuhr_Label_ar, 2, 4);
         prayertime_pane.getChildren().add(zuhr_Label_ar);
         
         zuhr_hourLeft.setText("-");
@@ -8673,9 +8720,9 @@ public void update_labels() throws Exception{
 //        asr_Label_ar.setMinSize(100,40);
 //        asr_Label_ar.setPrefSize(100,40);
         
-        prayertime_pane.setConstraints(asr_Label_eng, 3, 6);
+        prayertime_pane.setConstraints(asr_Label_eng, 2, 6);
         prayertime_pane.getChildren().add(asr_Label_eng);      
-        prayertime_pane.setConstraints(asr_Label_ar, 3, 6);
+        prayertime_pane.setConstraints(asr_Label_ar, 2, 6);
         prayertime_pane.getChildren().add(asr_Label_ar);
         
         asr_hourLeft.setText("-");
@@ -8725,9 +8772,9 @@ public void update_labels() throws Exception{
 //        maghrib_Label_ar.setMinSize(100,40);
 //        maghrib_Label_ar.setPrefSize(100,40);
         
-        prayertime_pane.setConstraints(maghrib_Label_eng, 3, 8);
+        prayertime_pane.setConstraints(maghrib_Label_eng, 2, 8);
         prayertime_pane.getChildren().add(maghrib_Label_eng);      
-        prayertime_pane.setConstraints(maghrib_Label_ar, 3, 8);
+        prayertime_pane.setConstraints(maghrib_Label_ar, 2, 8);
         prayertime_pane.getChildren().add(maghrib_Label_ar);
         
         maghrib_hourLeft.setText("-");
@@ -8780,9 +8827,9 @@ public void update_labels() throws Exception{
 //        isha_Label_ar.setMinSize(100,40);
 //        isha_Label_ar.setPrefSize(100,40);
         
-        prayertime_pane.setConstraints(isha_Label_eng, 3, 10);
+        prayertime_pane.setConstraints(isha_Label_eng, 2, 10);
         prayertime_pane.getChildren().add(isha_Label_eng);      
-        prayertime_pane.setConstraints(isha_Label_ar, 3, 10);
+        prayertime_pane.setConstraints(isha_Label_ar, 2, 10);
         prayertime_pane.getChildren().add(isha_Label_ar);
         
         isha_hourLeft.setText("-");
@@ -8821,9 +8868,9 @@ public void update_labels() throws Exception{
     //        friday_Label_ar.setMinSize(100,40);
     //        friday_Label_ar.setPrefSize(100,40);
 
-            prayertime_pane.setConstraints(friday_Label_eng, 3, 13);
+            prayertime_pane.setConstraints(friday_Label_eng, 2, 13);
             prayertime_pane.getChildren().add(friday_Label_eng);
-            prayertime_pane.setConstraints(friday_Label_ar, 3, 13);
+            prayertime_pane.setConstraints(friday_Label_ar, 2, 13);
             prayertime_pane.getChildren().add(friday_Label_ar);
 
             friday_hourLeft.setText("-");
