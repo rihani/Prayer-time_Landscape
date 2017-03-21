@@ -10,7 +10,7 @@ sudo service samba restart
 scp -P 2221 JavaFXApplication4.jar  pi@192.168.1.1:/home/pi/prayertime
 or
 
-rsync -v --progress -e ssh ossama@192.168.0.30:~/NetBeansProjects/PrayerTime_Landscape_HD/dist/JavaFXApplication4.jar /home/pi/prayertime/
+rsync -v --progress -e ssh ossama@192.168.0.32:~/NetBeansProjects/PrayerTime_Landscape_HD/dist/JavaFXApplication4.jar /home/pi/prayertime/
 rsync -r -v --progress -e ssh JavaFXApplication4.jar pi@192.168.0.41:/home/pi/prayertime/
 sshpass -p "raspberry" scp -P 22 JavaFXApplication4.jar  pi@192.168.0.41:/home/pi/prayertime
 
@@ -208,7 +208,7 @@ import org.joda.time.chrono.ISOChronology;
     private Toolkit tk;
     private Dimension screenDimension;
     private String en_Marquee_Notification_string, ar_Marquee_Notification_string;
-    private Text en_Marquee_Notification_Text, ar_Marquee_Notification_Text;
+    private Text en_Marquee_Notification_Text, ar_Marquee_Notification_Text, text1, text2, text3, text4, text5;
     
     private Canvas canvas;
     private GraphicsContext canvasgc;
@@ -340,7 +340,7 @@ import org.joda.time.chrono.ISOChronology;
     boolean weather_image_wrong = false;
     
             
-    private String hadith, translated_hadith, ar_full_moon_hadith, en_full_moon_hadith, ar_moon_notification, en_moon_notification, announcement, en_notification_Msg, ar_notification_Msg, device_name, device_location;
+    private String hadith, translated_hadith,hadith_reference,sanad_0, short_hadith, sanad_1, narated, short_translated_hadith, ar_full_moon_hadith, en_full_moon_hadith, ar_moon_notification, en_moon_notification, announcement, en_notification_Msg, ar_notification_Msg, device_name, device_location;
     private String ar_notification_Msg_Lines[], en_notification_Msg_Lines[], notification_Msg, facebook_moon_notification_Msg;    
     private String fajr_jamaat ,zuhr_jamaat ,asr_jamaat ,maghrib_jamaat ,isha_jamaat, isha_jamaat_current ;
     private String labeconv;
@@ -405,8 +405,9 @@ import org.joda.time.chrono.ISOChronology;
     private Label isha_hourLeft, isha_hourRight, isha_minLeft, isha_minRight, isha_jamma_hourLeft, isha_jamma_hourRight, isha_jamma_minLeft, isha_jamma_minRight;
     private Label friday_hourLeft, friday_hourRight, friday_minLeft, friday_minRight;
     private Label friday2_hourLeft, friday2_hourRight, friday2_minLeft, friday2_minRight;
-    private Label Phase_Label, Moon_Date_Label, Sunrise_Date_Label, Moon_Image_Label, Sunrise_Image_Label,Logo_Image_Label,  Weather_Image_Label, Weather_Label1, Weather_Label2,  friday_Label_eng,friday_Label_ar,sunrise_Label_ar,sunrise_Label_eng, fajr_Label_ar, fajr_Label_eng, zuhr_Label_ar, zuhr_Label_eng, asr_Label_ar, asr_Label_eng, maghrib_Label_ar, maghrib_Label_eng, isha_Label_ar, isha_Label_eng, jamaat_Label_eng,jamaat_Label_ar, athan_Label_eng,athan_Label_ar, hadith_Label, announcement_Label,athan_Change_Label_L1, athan_Change_Label_L2, hour_Label,separator_Label, minute_Label, second_Label, date_Label, day_Label, full_Time_Label, divider1_Label, divider2_Label, ar_moon_hadith_Label_L1, ar_moon_hadith_Label_L2, en_moon_hadith_Label_L1, en_moon_hadith_Label_L2, facebook_Label;
-    HBox fridayBox2 = new HBox();
+    private Label Phase_Label, Moon_Date_Label, Sunrise_Date_Label, Moon_Image_Label, Sunrise_Image_Label,Logo_Image_Label,  Weather_Image_Label, Weather_Label1, Weather_Label2,  friday_Label_eng,friday_Label_ar,sunrise_Label_ar,sunrise_Label_eng, fajr_Label_ar, fajr_Label_eng, zuhr_Label_ar, zuhr_Label_eng, asr_Label_ar, asr_Label_eng, maghrib_Label_ar, maghrib_Label_eng, isha_Label_ar, isha_Label_eng, jamaat_Label_eng,jamaat_Label_ar, athan_Label_eng,athan_Label_ar, announcement_Label,athan_Change_Label_L1, athan_Change_Label_L2, hour_Label,separator_Label, minute_Label, second_Label, date_Label, day_Label, full_Time_Label, divider1_Label, divider2_Label,  facebook_Label;
+    private TextFlow hadith_flow;
+    private HBox fridayBox2 = new HBox();
 
                     
     private List<String> images;
@@ -417,7 +418,7 @@ import org.joda.time.chrono.ISOChronology;
     private int imageNumber;
     private int camera_mode_moon_img_width = 30;
     private int camera_mode_moon_img_height = 30;
-    int dayofweek_int;
+    int dayofweek_int, days_Between_Now_Fullmoon;
     
     
     private long moonPhase_lastTimerCall,translate_lastTimerCall, clock_update_lastTimerCall ,sensor_lastTimerCall,sonar_lastTimerCall, sensor1_lastTimerCall, debug_lastTimerCall, radarwidget_lastTimerCall, delay_Manual_switch_to_cam_lastTimerCall, weather_lastTimerCall;
@@ -505,16 +506,10 @@ import org.joda.time.chrono.ISOChronology;
             }
         }
         return current;
-    }
-
-    
+    }   
     
     @Override public void init() throws IOException {
-        
-        
-    
-        
-            
+       
             
 // Twitter ==============================
             
@@ -532,13 +527,7 @@ import org.joda.time.chrono.ISOChronology;
 //            } catch (MalformedURLException ex) {
 //                java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
 //            }
-            
-            
- 
-            
-
-            
-            
+                 
             now1 = LocalTime.now();
             radar_gauge_anninmation = new AnimationTimer() {
                 @Override public void handle(long now1) {
@@ -575,10 +564,7 @@ import org.joda.time.chrono.ISOChronology;
 //            camera_Timeline.setCycleCount(Animation.INDEFINITE);
 //
  
-
 logger.info("Starting prayer application....");
-
-
 
 Runtime.getRuntime().addShutdownHook(new Thread(new Runnable()
 {
@@ -609,8 +595,8 @@ try
 //    SQL = "Select * from settings_al_takwa";
 //    SQL = "Select * from settings_ESCA";
 //    SQL = "Select * from settings";
-      SQL = "Select * from settings_arncliffe"; 
-//    SQL = "Select * from settings_MIA";
+//      SQL = "Select * from settings_arncliffe"; 
+    SQL = "Select * from settings_MIA";
     
     rs = c.createStatement().executeQuery(SQL);
     while (rs.next())
@@ -746,21 +732,33 @@ if (platform.equals("osx"))
     
     if (orientation.equals("vertical") )
     {
-        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/vertical");
+//        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/vertical");
+        String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/vertical";
+            directory = new File(path);
     }
     
     else if (orientation.equals("horizontal") )
     {
-        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal");
+//        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal");
+        String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/horizontal";
+            directory = new File(path);
     }
     
     else {
         
         if(custom_background)
-        {directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/custom");}
+        {
+//            directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/custom");
+            String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/custom";
+            directory = new File(path);
+        }
         else
-        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal_HD");
-        
+        {
+//        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal_HD");
+            String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/horizontal_HD";
+            directory = new File(path);
+        }
+         
     }
     
 }
@@ -881,11 +879,7 @@ maghrib_Label_ar = new Label();
 maghrib_Label_eng = new Label();
 isha_Label_ar = new Label();
 isha_Label_eng = new Label();
-hadith_Label = new Label();
-ar_moon_hadith_Label_L1 = new Label();
-ar_moon_hadith_Label_L2 = new Label();
-en_moon_hadith_Label_L1 = new Label();
-en_moon_hadith_Label_L2 = new Label();
+hadith_flow = new TextFlow();
 announcement_Label = new Label();
 athan_Change_Label_L1 = new Label();
 athan_Change_Label_L2 = new Label();
@@ -1069,13 +1063,6 @@ prayerCalcTimer.scheduleAtFixedRate(new TimerTask()
     public void run()
     {
         try {
-            
-//                        Moon m = new Moon();
-//                        moonPhase = m.illuminatedPercentage();
-//                        isWaning = m.isWaning();
-//                        update_moon_image = true;
-//                        System.out.println("The moon is " + moonPhase + "% full and " + (isWaning ? "waning" : "waxing"));
-//
 
 Locale.setDefault(new Locale("en", "AU"));
 Date now = new Date();
@@ -1208,18 +1195,12 @@ isha_begins_time = isha_cal.getTime();
 if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
 {
     friday_jamaat = friday1_summer.toString(); 
-    
-    
     friday2_jamaat = friday2_summer.toString();;
 }
 else
 {
     friday_jamaat = friday1_winter.toString();
-    
-    
     friday2_jamaat = friday2_winter.toString();
-    
-    
 }
 
 update_prayer_labels = true;
@@ -1270,9 +1251,6 @@ getHadith = true;
 //==============JAMAA Prayer time
 if(jammat_from_database)
 {
-    
-    
-    
     try
     {
         c = DBConnect.connect();
@@ -1293,8 +1271,6 @@ if(jammat_from_database)
         }
         c.close();
         fajr_jamaat = fajr_jamaat_time.toString();
-        
-        
         
         if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){zuhr_jamaat = zuhr_summer.toString();} else{zuhr_jamaat = zuhr_winter.toString();}
         asr_jamaat = asr_jamaat_time.toString();
@@ -1333,9 +1309,7 @@ if(jammat_from_database)
     
     zuhr_plus30_cal = (Calendar)zuhr_jamaat_cal.clone();
     zuhr_plus30_cal.add(Calendar.MINUTE, +30);
-    
-    
-    
+
     
     Date friday_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + friday_jamaat);
     cal.setTime(friday_jamaat_temp);
@@ -1397,12 +1371,8 @@ if(jammat_from_database)
     {
         maghrib_jamaat_cal = (Calendar)maghrib_cal.clone();
         maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_adj);
-
     }
-    
-    
-    
-    
+ 
     Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
     cal.setTime(isha_jamaat_temp);
     cal.add(Calendar.MINUTE, 5);
@@ -2660,7 +2630,7 @@ catch (Exception e){{logger.warn("Unexpected error", e);}}
 
 fullMoon = MoonPhaseFinder.findFullMoonFollowing(Calendar.getInstance());
 newMoon = MoonPhaseFinder.findNewMoonFollowing(Calendar.getInstance());
-//                            System.out.println("The moon is full on " + fullMoon );
+                            System.out.println("The moon is full on " + fullMoon );
 //                            System.out.println("The moon is new on " + newMoon );                       
 //                            if(newMoon.before(fullMoon)){System.out.println("New moon is before full moon");}
 //                            else {System.out.println("Full moon is before new moon" );}
@@ -2673,7 +2643,7 @@ pir_disactive_startup = false;
 //TODO Use moonsighting.info to get moon sighting observations
 
 Days d = Days.daysBetween(new DateMidnight(DateTime_now), new DateMidnight(fullMoon));
-int days_Between_Now_Fullmoon = d.getDays();
+days_Between_Now_Fullmoon = d.getDays();
 //                            System.out.format("Days left to full moon: %s\n", days_Between_Now_Fullmoon );
 
 fullMoon_plus1 = (Date)fullMoon.clone();
@@ -2681,8 +2651,17 @@ Date ashura = (Date)fullMoon.clone();
 DateTimeComparator comparator = DateTimeComparator.getTimeOnlyInstance();
 //                                System.out.println(days_Between_Now_Fullmoon);
 
-if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fullmoon ==9 && comparator.compare(fullMoon, maghrib_cal)>0)
+boolean test = false; //used to test ashura display
+System.out.println("islamic month:  " + dtIslamic.getMonthOfYear() );
+System.out.println("days_Between_Now_Fullmoon: " + days_Between_Now_Fullmoon );
+System.out.println("comparator.compare(fullMoon, maghrib_cal: ) " + comparator.compare(fullMoon, maghrib_cal) );
+
+
+
+
+if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fullmoon <=9 && days_Between_Now_Fullmoon >=6 && comparator.compare(fullMoon, maghrib_cal)>0 || test)
 {
+    System.out.println("Ashura nearby condition 1" );
     //hide hadith label boolean
     getHadith = false;
     //                                getFacebook = false;
@@ -2693,17 +2672,34 @@ if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fu
     try
     {
         c = DBConnect.connect();
-        SQL = "select hadith, translated_hadith from hadith WHERE (translated_hadith LIKE '%Ashura%') and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";
+        SQL = "select hadith, translated_hadith, reference, sanad_0, short_hadith, sanad_1, narated, short_translated_hadith from hadith_v2 WHERE (translated_hadith LIKE '%Ashura%') and CHAR_LENGTH(translated_hadith)<"+ "280" + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " and  CHAR_LENGTH(sanad_0) > 0 ORDER BY RAND( ) LIMIT 1";
     //                                    SQL = "select hadith, translated_hadith from hadith WHERE ID = 1";
     rs = c.createStatement().executeQuery(SQL);
     while (rs.next())
     {
         hadith = rs.getString("hadith");
         translated_hadith = rs.getString("translated_hadith");
+        hadith_reference = rs.getString("reference");
+        sanad_0 =  rs.getString("sanad_0");
+        short_hadith =  rs.getString("short_hadith");
+        sanad_1 =  rs.getString("sanad_1");
+
+        narated =  rs.getString("narated");
+        short_translated_hadith =  rs.getString("short_translated_hadith"); 
     }
     c.close();
     //                                    System.out.println("Ashura arabic hadith length" + hadith.length());
     //                                    System.out.println("Ashura english hadith length" + translated_hadith.length());
+
+
+
+//    System.out.println("narated before" + narated);
+    narated = narated.replaceAll("ﷺ", "PBUH");
+//    System.out.println("narated after" + narated);
+
+//    System.out.println("short_translated_hadith before" + short_translated_hadith);
+    short_translated_hadith = short_translated_hadith.replaceAll("ﷺ", "PBUH");
+//    System.out.println("short_translated_hadith after" + short_translated_hadith);
     }
     catch (Exception e){logger.warn("Unexpected error", e);}
 
@@ -2727,134 +2723,354 @@ if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fu
         catch (FacebookException e){logger.warn("Unexpected error", e);} 
     }
 }
-else if (moon_calcs_display && dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fullmoon ==9 )
+else if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fullmoon <=9 && days_Between_Now_Fullmoon >=6 && comparator.compare(fullMoon, maghrib_cal)<0 || test)
 {
+    System.out.println("Ashura nearby condition 2" );
     //hide hadith label boolean
     getHadith = false;
     //                                getFacebook = false;
     hadith_Label_visible = false;
     //show moon notification label boolean
     moon_hadith_Label_visible = true;
-
-
-    // 15 - 9 = 6 Ashura = fullMoon_plus1.setTime(fullMoon.getTime() - 5 * 24 * 60 * 60 * 1000);
-
-
-}
-
-
-if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now_Fullmoon <= 5 && days_Between_Now_Fullmoon >= 2 || debug)
-{
-//hide hadith label boolean
-getHadith = false;
-//                                getFacebook = false;
-hadith_Label_visible = false;
-//show moon notification label boolean
-moon_hadith_Label_visible = true;
-//                                try
-//                                {
-//                                    c = DBConnect.connect();
-//                                    SQL = "select hadith, translated_hadith from hadith WHERE day = '15' ORDER BY RAND( ) LIMIT 1";
-//                                    rs = c.createStatement().executeQuery(SQL);
-//                                    while (rs.next()) 
-//                                    {
-//                                        ar_full_moon_hadith = rs.getString("hadith");
-//                                        en_full_moon_hadith = rs.getString("translated_hadith");
-//                                    }
-//                                    c.close();
-//                                    System.out.format("Full Moon arabic hadith: %s\n", ar_full_moon_hadith );
-//                                    System.out.format("Full Moon english hadith: %s\n", en_full_moon_hadith );
-//                                }
-//                                catch (Exception e){logger.warn("Unexpected error", e);}
-
-//                                ﷺ
-
-ar_full_moon_hadith = " عَنْ جَرِيرِ بْنِ عَبْدِ اللَّهِ عَنْ النَّبِيِّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ قَالَ : صِيَامُ ثَلاثَةِ أَيَّامٍ مِنْ كُلِّ شَهْرٍ صِيَامُ الدَّهْرِ وَأَيَّامُ الْبِيضِ صَبِيحَةَ ثَلاثَ عَشْرَةَ وَأَرْبَعَ عَشْرَةَ وَخَمْسَ عَشْرَةَ َ ";
-en_full_moon_hadith = "The prophet -Pbuh- said \"Fasting three days of every month (13th, 14th & 15th) is equal to Fasting the life time” ";
-
-
-if ( days_Between_Now_Fullmoon == 5 && comparator.compare(fullMoon, maghrib_cal)<0 )
-{
-    fullMoon_plus1.setTime(fullMoon.getTime() - 2 * 24 * 60 * 60 * 1000);
-    String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
-    String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
-    String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
-    String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
-    ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
-    en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. (This is based on calendar calculations)";
-    facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
-//                                    try
-//                                    {
-//                                        String pageID = page_ID +"/feed";
-//                                        facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
-//                                    }
-//                                    catch (FacebookException e){logger.warn("Unexpected error", e);}                           
-//                                    System.out.println("Full Moon Notification Sent to Facebook:" );
-//                                    System.out.println(facebook_moon_notification_Msg);
-}
-
-else if ( days_Between_Now_Fullmoon == 5 )
-{
-    if (comparator.compare(fullMoon, maghrib_cal)>0)
+    // 15 - 9 = 6 Ashura = fullMoon_plus1.setTime(fullMoon.getTime() - 4 * 24 * 60 * 60 * 1000);
+    try
     {
-        fullMoon_plus1.setTime(fullMoon.getTime() - 1 * 24 * 60 * 60 * 1000);
-        String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
-        String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
-        String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
-        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
-        ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
-        en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. (This is based on calendar calculations)";
-        facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
-        if (facebook_notification_enable)
+        c = DBConnect.connect();
+        SQL = "select hadith, translated_hadith, reference, sanad_0, short_hadith, sanad_1, narated, short_translated_hadith from hadith_v2 WHERE (translated_hadith LIKE '%Ashura%') and CHAR_LENGTH(translated_hadith)<"+ "280" + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " and  CHAR_LENGTH(sanad_0) > 0 ORDER BY RAND( ) LIMIT 1";
+    //                                    SQL = "select hadith, translated_hadith from hadith WHERE ID = 1";
+    rs = c.createStatement().executeQuery(SQL);
+    while (rs.next())
+    {
+        hadith = rs.getString("hadith");
+        translated_hadith = rs.getString("translated_hadith");
+        hadith_reference = rs.getString("reference");
+        sanad_0 =  rs.getString("sanad_0");
+        short_hadith =  rs.getString("short_hadith");
+        sanad_1 =  rs.getString("sanad_1");
+
+        narated =  rs.getString("narated");
+        short_translated_hadith =  rs.getString("short_translated_hadith"); 
+    }
+    c.close();
+    //                                    System.out.println("Ashura arabic hadith length" + hadith.length());
+    //                                    System.out.println("Ashura english hadith length" + translated_hadith.length());
+    
+    System.out.println("narated before" + narated);
+    narated = narated.replaceAll("ﷺ", "PBUH");
+    System.out.println("narated after" + narated);
+
+    System.out.println("short_translated_hadith before" + short_translated_hadith);
+    short_translated_hadith = short_translated_hadith.replaceAll("ﷺ", "PBUH");
+    System.out.println("short_translated_hadith after" + short_translated_hadith);
+    }
+    catch (Exception e){logger.warn("Unexpected error", e);}
+
+    ashura.setTime(fullMoon.getTime() - 5 * 24 * 60 * 60 * 1000);
+    String Ashura_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(ashura);
+    String Ashura_dow_en = new SimpleDateFormat("EEEE").format(ashura);
+    String temp_ar_text1 = "نذكركم أيها الأحبة بصيام يوم عاشوراء يوم ";
+    String temp_ar_text2 = "إن شاء الله ويوم قبله اوبعده. إن استطعت الصيام فصم و ذكر أحبابك";
+    ar_moon_notification = temp_ar_text1 + Ashura_dow_ar + temp_ar_text2;
+    en_moon_notification = "A reminder that the 10th of Muharram \"Ashura\" will fall on " + Ashura_dow_en + ", It is recommended to fast either the 9th & 10th of Muharram or the 10th & 11th ";
+    facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
+    if (facebook_notification_enable)
+    {
+        try
         {
-            try
-            {
-                String pageID = page_ID +"/feed";
-                facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
-//                                                System.out.println("Full Moon Notification Sent to Facebook:" );
-//                                                System.out.println(facebook_moon_notification_Msg);
-            }
-            catch (FacebookException e){logger.warn("Unexpected error", e);}
-
+            String pageID = page_ID +"/feed";
+            facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
+    //                                        System.out.println("Full Moon Notification Sent to Facebook:" );
+    //                                        System.out.println(facebook_moon_notification_Msg);
         }
-
+        catch (FacebookException e){logger.warn("Unexpected error", e);} 
     }
 
-    else
+
+}
+
+
+else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now_Fullmoon <= 5 && days_Between_Now_Fullmoon >= 2 || debug)
+{
+    //hide hadith label boolean
+    System.out.println("full moon " );
+    System.out.println("days_Between_Now_Fullmoon: " + days_Between_Now_Fullmoon);
+    getHadith = false;
+    //                                getFacebook = false;
+    hadith_Label_visible = false;
+    //show moon notification label boolean
+    moon_hadith_Label_visible = true;
+    //                                try
+    //                                {
+    //                                    c = DBConnect.connect();
+    //                                    SQL = "select hadith, translated_hadith from hadith WHERE day = '15' ORDER BY RAND( ) LIMIT 1";
+    //                                    rs = c.createStatement().executeQuery(SQL);
+    //                                    while (rs.next()) 
+    //                                    {
+    //                                        ar_full_moon_hadith = rs.getString("hadith");
+    //                                        en_full_moon_hadith = rs.getString("translated_hadith");
+    //                                    }
+    //                                    c.close();
+    //                                    System.out.format("Full Moon arabic hadith: %s\n", ar_full_moon_hadith );
+    //                                    System.out.format("Full Moon english hadith: %s\n", en_full_moon_hadith );
+    //                                }
+    //                                catch (Exception e){logger.warn("Unexpected error", e);}
+
+    //                                ﷺ
+    narated = "";
+    
+    
+    
+//        sanad_0 =  rs.getString("sanad_0");
+//        short_hadith =  rs.getString("short_hadith");
+//        sanad_1 =  rs.getString("sanad_1");
+        
+        
+    sanad_0 = "عَنْ جَرِيرِ بْنِ عَبْدِ اللَّهِ عَنْ النَّبِيِّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ قَالَ :َ ";
+    short_hadith = "  صِيَامُ ثَلاثَةِ أَيَّامٍ مِنْ كُلِّ شَهْرٍ صِيَامُ الدَّهْرِ وَأَيَّامُ الْبِيضِ صَبِيحَةَ ثَلاثَ عَشْرَةَ وَأَرْبَعَ عَشْرَةَ وَخَمْسَ عَشْرَةَ َ ";
+    ar_full_moon_hadith = " عَنْ جَرِيرِ بْنِ عَبْدِ اللَّهِ عَنْ النَّبِيِّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ قَالَ : صِيَامُ ثَلاثَةِ أَيَّامٍ مِنْ كُلِّ شَهْرٍ صِيَامُ الدَّهْرِ وَأَيَّامُ الْبِيضِ صَبِيحَةَ ثَلاثَ عَشْرَةَ وَأَرْبَعَ عَشْرَةَ وَخَمْسَ عَشْرَةَ َ ";
+//    en_full_moon_hadith = "The prophet -Pbuh- said \"Fasting three days of every month (13th, 14th & 15th) is equal to Fasting the life time” ";
+    short_translated_hadith = "The prophet -Pbuh- said \"Fasting three days of every month (13th, 14th & 15th) is equal to Fasting the life time” ";
+    hadith_reference = "This is based on calendar calculations not local moon sightings";
+    
+
+    System.out.println("Changing to full moon Background...");
+    images = new ArrayList<String>();
+    String path ;
+//change on osx
+    if (platform.equals("osx"))
+    //        {directory = new File("/Users/ossama/Projects/Pi/javafx/prayertime/background/");}
     {
+        if (orientation.equals("vertical") )
+        {
+//                                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/vertical");
+            path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/full_moon/vertical";
+                directory = new File(path);
+        }
+        else if (orientation.equals("horizontal") )
+        {
+//                                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal");
+                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/full_moon/horizontal";
+                directory = new File(path);                                   
+        }
+        else 
+        {
+            if(custom_background)
+            {
+//                                    directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/custom");                                   
+                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/full_moon/custom";
+                directory = new File(path);                                                                
+            }
+            else
+            {
+                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/full_moon/horizontal_HD";
+                directory = new File(path);
+//                                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal_HD");
+            }
+//                                String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/ful_moon";
+//                                directory = new File(path);
+        }
+    }
+    //        {directory = new File("/Users/samia/NetBeansProjects/prayertime_files/background/");}
+    //change on Pi
+    if (platform.equals("pi"))
+    {
+        if (orientation.equals("vertical") )
+        {directory = new File("/home/pi/prayertime/Images/full_moon/vertical");}
+        else if (orientation.equals("horizontal") )
+        {directory = new File("/home/pi/prayertime/Images/full_moon/horizontal");}
+        else
+        {
+            if(custom_background){directory = new File("/home/pi/prayertime/Images/full_moon/custom");}
+            else
+            directory = new File("/home/pi/prayertime/Images/full_moon/horizontal_HD");}
+    }
+
+    files = directory.listFiles();
+    for(File f : files)
+    {if(!f.getName().startsWith(".")){images.add(f.getName());}}
+    //        System.out.println(images);
+    countImages = images.size();
+    imageNumber = (int) (Math.random() * countImages);
+    rand_Image_Path = directory + "/"+ images.get(imageNumber);
+    //        System.out.println(rand_Image_Path);
+    System.out.println(rand_Image_Path);
+    File file = new File(rand_Image_Path);
+
+    Platform.runLater(new Runnable() {
+        @Override public void run()
+        {
+            Mainpane.getStyleClass().clear();
+            Mainpane.getChildren().removeAll(background);
+
+            Image image = new Image(file.toURI().toString());
+            background = new ImageView(image);     
+            background.setFitWidth(1920);
+            background.setFitHeight(1080);
+            background.setPreserveRatio(true);
+            background.setTranslateY(525);  
+
+            Mainpane.getChildren().add(background);
+            background.toBack();
+
+        }
+    });     
+
+
+
+    if ( days_Between_Now_Fullmoon == 5 && comparator.compare(fullMoon, maghrib_cal)<0 )
+    {
+        
+        System.out.print("condition 1" );
         fullMoon_plus1.setTime(fullMoon.getTime() - 2 * 24 * 60 * 60 * 1000);
         String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
         String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
         String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
-        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
+        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك";
         ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
-        en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. (This is based on calendar calculations)";
-        facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;                          
-//                                        System.out.println("Full Moon Notification:" );
-//                                        System.out.println(facebook_moon_notification_Msg);
-    }
-}
-
-else if ( days_Between_Now_Fullmoon == 3 )
-{
-    if (comparator.compare(fullMoon, maghrib_cal)>0)
-    {
-        fullMoon_plus1.setTime(fullMoon.getTime() - 1 * 24 * 60 * 60 * 1000);
-        String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
-        String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
-        String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
-        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
-        ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
-        en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days. (This is based on calendar calculations)";
+        en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days.";
         facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
+    //                                    try
+    //                                    {
+    //                                        String pageID = page_ID +"/feed";
+    //                                        facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
+    //                                    }
+    //                                    catch (FacebookException e){logger.warn("Unexpected error", e);}                           
+    //                                    System.out.println("Full Moon Notification Sent to Facebook:" );
+    //                                    System.out.println(facebook_moon_notification_Msg);
     }
 
-    else
+    else if ( days_Between_Now_Fullmoon == 5 )
     {
+        System.out.print("condition 2" );
+        if (comparator.compare(fullMoon, maghrib_cal)>0)
+        {
+            fullMoon_plus1.setTime(fullMoon.getTime() - 1 * 24 * 60 * 60 * 1000);
+            String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
+            String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
+            String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
+            String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك";
+            ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
+            en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days.";
+            facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
+            if (facebook_notification_enable)
+            {
+                try
+                {
+                    String pageID = page_ID +"/feed";
+                    facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
+    //                                                System.out.println("Full Moon Notification Sent to Facebook:" );
+    //                                                System.out.println(facebook_moon_notification_Msg);
+                }
+                catch (FacebookException e){logger.warn("Unexpected error", e);}
+
+            }
+
+        }
+
+        else
+        {
+            fullMoon_plus1.setTime(fullMoon.getTime() - 2 * 24 * 60 * 60 * 1000);
+            String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
+            String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
+            String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
+            String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك";
+            ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
+            en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days.";
+            facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;                          
+    //                                        System.out.println("Full Moon Notification:" );
+    //                                        System.out.println(facebook_moon_notification_Msg);
+        }
+    }
+    
+    else if ( days_Between_Now_Fullmoon == 4 )
+    {
+        System.out.print("condition 3" );
+        if (comparator.compare(fullMoon, maghrib_cal)>0)
+        {
+            fullMoon_plus1.setTime(fullMoon.getTime() - 1 * 24 * 60 * 60 * 1000);
+            String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
+            String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
+            String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
+            String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك";
+            ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
+            en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days.";
+            facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
+            if (facebook_notification_enable)
+            {
+                try
+                {
+                    String pageID = page_ID +"/feed";
+                    facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
+    //                                                System.out.println("Full Moon Notification Sent to Facebook:" );
+    //                                                System.out.println(facebook_moon_notification_Msg);
+                }
+                catch (FacebookException e){logger.warn("Unexpected error", e);}
+
+            }
+
+        }
+
+        else
+        {
+            fullMoon_plus1.setTime(fullMoon.getTime() - 2 * 24 * 60 * 60 * 1000);
+            String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
+            String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
+            String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
+            String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك";
+            ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
+            en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days.";
+            facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;                          
+    //                                        System.out.println("Full Moon Notification:" );
+    //                                        System.out.println(facebook_moon_notification_Msg);
+        }
+    }
+
+    else if ( days_Between_Now_Fullmoon == 3 )
+    {
+        System.out.print("condition 4" );
+        if (comparator.compare(fullMoon, maghrib_cal)>0)
+        {
+            fullMoon_plus1.setTime(fullMoon.getTime() - 1 * 24 * 60 * 60 * 1000);
+            String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
+            String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
+            String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ يوم";
+            String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك";
+            ar_moon_notification = temp_ar_text1 + FullMoon_dow_ar + temp_ar_text2;
+            en_moon_notification = "We would like to remind you that this month's \"White days\" will start this " + FullMoon_dow_en + ", it is recommended to fast these days.";
+            facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
+        }
+
+        else
+        {
+            String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ غدا ";
+            String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك";
+            ar_moon_notification = temp_ar_text1 +  temp_ar_text2;
+            en_moon_notification = "We would like to remind you that this month's \"White days\" will start tomorrow, it is recommended to fast these days.";
+            facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
+            if (facebook_notification_enable)
+            {
+                try
+                {
+                    String pageID = page_ID +"/feed";
+                    facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
+    //                                                System.out.println("Full Moon Notification Sent to Facebook:" );
+    //                                                System.out.println(facebook_moon_notification_Msg);
+                }
+                catch (FacebookException e){logger.warn("Unexpected error", e);}
+            }
+
+        }
+    }
+
+    else if ( days_Between_Now_Fullmoon == 2 && comparator.compare(fullMoon, maghrib_cal)>0 || debug)
+    {
+        System.out.print("condition 5" );
         String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ غدا ";
-        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
+        String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك";
         ar_moon_notification = temp_ar_text1 +  temp_ar_text2;
-        en_moon_notification = "We would like to remind you that this month's \"White days\" will start tomorrow, it is recommended to fast these days. (This is based on calendar calculations)";
+    //                                        System.out.println(ar_moon_notification);
+        en_moon_notification = "We would like to remind you that this month's \"White days\" will start tomorrow, it is recommended to fast these days.";
+        //                                        System.out.println(en_moon_notification);
         facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
         if (facebook_notification_enable)
         {
@@ -2862,40 +3078,27 @@ else if ( days_Between_Now_Fullmoon == 3 )
             {
                 String pageID = page_ID +"/feed";
                 facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
-//                                                System.out.println("Full Moon Notification Sent to Facebook:" );
-//                                                System.out.println(facebook_moon_notification_Msg);
+        //                                                System.out.println("Full Moon Notification Sent to Facebook:" );
+        //                                                System.out.println(facebook_moon_notification_Msg);
             }
             catch (FacebookException e){logger.warn("Unexpected error", e);}
         }
 
     }
-}
-
-else if ( days_Between_Now_Fullmoon == 2 && comparator.compare(fullMoon, maghrib_cal)>0 || debug)
-{
-    String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ غدا ";
-    String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك. يرجى ملاحظة أن هذا يقوم على حسابات التقويم";
-    ar_moon_notification = temp_ar_text1 +  temp_ar_text2;
-//                                        System.out.println(ar_moon_notification);
-en_moon_notification = "We would like to remind you that this month's \"White days\" will start tomorrow, it is recommended to fast these days. (This is based on calendar calculations)";
-//                                        System.out.println(en_moon_notification);
-facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
-if (facebook_notification_enable)
-{
-    try
+    
+    else
     {
-        String pageID = page_ID +"/feed";
-        facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
-//                                                System.out.println("Full Moon Notification Sent to Facebook:" );
-//                                                System.out.println(facebook_moon_notification_Msg);
+        System.out.println("**********************" );
+        getHadith = true;
+        moon_hadith_Label_visible = false;
+        hadith_Label_visible = true;
+    //                                    System.out.println("moon else" );
     }
-    catch (FacebookException e){logger.warn("Unexpected error", e);}
-}
-
-}
 }
 else
 {
+
+    System.out.println("===========================" );
     getHadith = true;
     moon_hadith_Label_visible = false;
     hadith_Label_visible = true;
@@ -3117,21 +3320,21 @@ if (getHadith)
         
 //                                System.out.println("max arabic hadith length" + max_ar_hadith_len);
 
-if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()<19){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE topic = 'fasting' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
-//                                if (dtIslamic.getMonthOfYear()==9){SQL ="select hadith, translated_hadith from hadith WHERE ID = 2872";}
-else if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()>19){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE topic = 'Virtues of the Night of Qadr' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
-else if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()>28){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE translated_hadith LIKE '%fitr %' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
-else if (dtIslamic.getMonthOfYear()==10 && dtIslamic.getDayOfMonth()==1){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE translated_hadith LIKE '%fitr %' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()<19){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith), reference,sanad_0, short_hadith, sanad_1, narated, short_translated_hadith  from hadith_v2 WHERE book_en = 'fasting' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+//                                if (dtIslamic.getMonthOfYear()==9){SQL ="select hadith, translated_hadith from hadith_v2 WHERE ID = 2872";}
+else if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()>19){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith), reference, sanad_0, short_hadith, sanad_1, narated, short_translated_hadith  from hadith_v2 WHERE book_en = 'Virtues of the Night of Qadr' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+else if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()>28){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith) , reference, sanad_0, short_hadith, sanad_1, narated, short_translated_hadith from hadith_v2 WHERE translated_hadith LIKE '%fitr %' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+else if (dtIslamic.getMonthOfYear()==10 && dtIslamic.getDayOfMonth()==1){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith), reference, sanad_0, short_hadith, sanad_1, narated, short_translated_hadith  from hadith_v2 WHERE translated_hadith LIKE '%fitr %' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
 //SELECT * FROM hadith WHERE translated_hadith LIKE '%fitr %'
-else if(dtIslamic.getMonthOfYear()==12){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE topic = 'Hajj (Pilgrimage)' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
-else if (dayofweek_int == 6){SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE day = '5' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+else if(dtIslamic.getMonthOfYear()==12){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith), reference, sanad_0, short_hadith, sanad_1, narated, short_translated_hadith  from hadith_v2 WHERE book_en = 'Hajj (Pilgrimage)' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+else if (dayofweek_int == 6){SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith), reference, sanad_0, short_hadith, sanad_1, narated, short_translated_hadith  from hadith_v2 WHERE day = '5' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
 
-else if (dtIslamic.getMonthOfYear()==1 && dtIslamic.getDayOfMonth()>7 && dtIslamic.getDayOfMonth()<12 ){SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)  from hadith WHERE (translated_hadith LIKE '%Ashura%') and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+else if (dtIslamic.getMonthOfYear()==1 && dtIslamic.getDayOfMonth()>7 && dtIslamic.getDayOfMonth()<12 ){SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith), reference, sanad_0, short_hadith, sanad_1, narated, short_translated_hadith  from hadith_v2 WHERE (translated_hadith LIKE '%Ashura%') and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
 
 
 else
 {
-    SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith)   from hadith WHERE day = '0' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";
+    SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith), reference, sanad_0, short_hadith, sanad_1, narated, short_translated_hadith   from hadith_v2 WHERE day = '0' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";
 //                                    SQL = "select * from hadith where  CHAR_LENGTH(translated_hadith)>527"; // the bigest Hadith
 }
 
@@ -3151,7 +3354,14 @@ while (rs.next())
     translated_hadith = rs.getString("translated_hadith");
     ara_length = rs.getString("CHAR_LENGTH(hadith)");
     en_length = rs.getString("CHAR_LENGTH(translated_hadith)");
+    hadith_reference =  rs.getString("reference");
     
+    sanad_0 =  rs.getString("sanad_0");
+    short_hadith =  rs.getString("short_hadith");
+    sanad_1 =  rs.getString("sanad_1");
+            
+    narated =  rs.getString("narated");
+    short_translated_hadith =  rs.getString("short_translated_hadith"); 
     
 }
 c.close();
@@ -3159,9 +3369,25 @@ c.close();
                                 System.out.println(" english hadith length" + translated_hadith.length());
                                 System.out.println("mysql arabic hadith length" + ara_length);
                                 System.out.println("mysql english hadith length" + en_length);
+                                
+                                System.out.println("narated before" + narated);
+                                narated = narated.replaceAll("ﷺ", "PBUH");
+                                System.out.println("narated after" + narated);
+                                
+                                System.out.println("short_translated_hadith before" + short_translated_hadith);
+                                short_translated_hadith = short_translated_hadith.replaceAll("ﷺ", "PBUH");
+                                System.out.println("short_translated_hadith after" + short_translated_hadith);
+                                
+//                                byte[] emojiBytes = new byte[]{(byte)0xF0, (byte)0x9F, (byte)0x98, (byte)0x81};
+//                                byte[] emojiBytes = new byte[]{(byte)0xEF, (byte)0xB7, (byte)0xBA};
+//                                sanad_0 = new String(emojiBytes, Charset.forName("UTF-8"));
+//                                sanad_0 = " ﷰ     ‏ ‏ .‏ فَقَالَ لَهُ كَعْبٌ أَسَمِعْتَ هَذَا مِنْ رَسُولِ اللَّهِ صلى الله عليه وسلم قَالَ أَفَأُنْزِلَتْ عَلَىَّ التَّوْرَاةُ";
 
 // 528 length should be the max allowed for the hadith in english, generally arabic hadith  is smaller than english translation
 facebook_hadith = "Hadith of the Day:\n\n"+ hadith +"\n\n" + translated_hadith;
+
+
+//short_hadith = "  ‏.‏ قَالَ فَصِرْتُ إِلَى الَّذِي قَالَ لِيَ النَّبِيُّ صلى الله عليه وسلم فَلَمَّا كَبِرْتُ وَدِدْتُ أَنِّي كُنْتُ قَبِلْتُ رُخْصَةَ نَبِيِّ اللَّهِ صلى الله عليه وسلم ‏.‏";
 
 // check if a notification has already been sent, to avoid flooding users with notifications, i.e during system restarts
 c = DBConnect.connect();
@@ -3319,8 +3545,8 @@ if(weather_enabled)
     {
         
                 
-        String url = "http://api.wunderground.com/api/b28d047ca410515a/conditions/q/-33.912,151.013.json";
-        String url2 = "http://api.wunderground.com/api/b28d047ca410515a/forecast/q/-33.912,151.013.json";
+        String url = "http://api.wunderground.com/api/b28d047ca410515a/conditions/q/-33.924,151.188.json";
+        String url2 = "http://api.wunderground.com/api/b28d047ca410515a/forecast/q/-33.924,151.188.json";
         InputStream is = null; 
         
         System.out.println(" ... Weather Forecast Starting.....");
@@ -4049,43 +4275,71 @@ new Thread(() ->
                     
                         System.out.println("Changing Background...");
                         images = new ArrayList<String>();
-                        //change on osx
+                        String path ;
+//change on osx
                         if (platform.equals("osx"))
-                            //        {directory = new File("/Users/ossama/Projects/Pi/javafx/prayertime/background/");}
+                        //        {directory = new File("/Users/ossama/Projects/Pi/javafx/prayertime/background/");}
                         {
-                            
-                             
-                            
-                            if (vertical)
+
+                            if (orientation.equals("vertical") )
                             {
                                 directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/vertical");
                             }
-                            else {directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal_HD");}
-                            
+
+                            else if (orientation.equals("horizontal") )
+                            {
+                                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal");
+                            }
+
+                            else {
+
+                                if(custom_background)
+                                {directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/custom");}
+                                else
+                                {
+                                    path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/horizontal_HD";
+                                    directory = new File(path);
+//                                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal_HD");
+                                }
+
+//                                String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/ful_moon";
+//                                directory = new File(path);
+
+                            }
+
                         }
                         //        {directory = new File("/Users/samia/NetBeansProjects/prayertime_files/background/");}
                         //change on Pi
                         if (platform.equals("pi"))
                         {
-                            if (vertical) 
+                            if (orientation.equals("vertical") )
                             {
                                 directory = new File("/home/pi/prayertime/Images/vertical");
                             }
-                            else {directory = new File("/home/pi/prayertime/Images/horizontal");}
-                            
-                            
+                            else if (orientation.equals("horizontal") )
+                            {directory = new File("/home/pi/prayertime/Images/horizontal");}
+
+                            else
+                            {
+
+                                if(custom_background)
+                                {directory = new File("/home/pi/prayertime/Images/custom");}
+                                else
+                                directory = new File("/home/pi/prayertime/Images/horizontal_HD");}
+
                         }
-                        
+
                         files = directory.listFiles();
-                        for(File f : files) 
+                        for(File f : files)
                         {
                             if(!f.getName().startsWith(".")){images.add(f.getName());}
-                            
                         }
-//                        System.out.println(images);
+                        //        System.out.println(images);
                         countImages = images.size();
                         imageNumber = (int) (Math.random() * countImages);
                         rand_Image_Path = directory + "/"+ images.get(imageNumber);
+                        //        System.out.println(rand_Image_Path);
+
                         System.out.println(rand_Image_Path);
                         File file = new File(rand_Image_Path);
                         
@@ -4098,15 +4352,21 @@ new Thread(() ->
                         Platform.runLater(new Runnable() {
                             @Override public void run()
                             {
+                                Mainpane.getStyleClass().clear();
+                                Mainpane.getChildren().removeAll(background);
+                                
                                 Image image = new Image(file.toURI().toString());
                                 background = new ImageView(image);     
                                 background.setFitWidth(1920);
                                 background.setFitHeight(1080);
                                 background.setPreserveRatio(true);
-                                Mainpane.getChildren().removeAll(background);
-                                Mainpane.getChildren().add(background);
                                 background.setTranslateY(525);  
+                                
+                                
+                                Mainpane.getChildren().add(background);
                                 background.toBack();
+                                
+                                
                             }
                         });     }
                     
@@ -4294,26 +4554,49 @@ new Thread(() ->
                     {
                         c = DBConnect.connect();
                         
-                        if (dtIslamic.getMonthOfYear()==9){SQL ="select hadith, translated_hadith from hadith WHERE topic = 'fasting' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
-//                                if (dtIslamic.getMonthOfYear()==9){SQL ="select hadith, translated_hadith from hadith WHERE ID = 2872";}
-                        
-                        else if(dtIslamic.getMonthOfYear()==12){SQL ="select hadith, translated_hadith from hadith WHERE topic = 'Hajj (Pilgrimage)' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
-                        else if (dayofweek_int == 5 || dayofweek_int == 6){SQL = "select hadith, translated_hadith from hadith WHERE day = '5' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                        if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()<19){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith), reference ,sanad_0, short_hadith, sanad_1, narated, short_translated_hadith from hadith_v2 WHERE book_en = 'fasting' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+//                                if (dtIslamic.getMonthOfYear()==9){SQL ="select hadith, translated_hadith from hadith_v2 WHERE ID = 2872";}
+                        else if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()>19){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith), reference,sanad_0, short_hadith, sanad_1, narated, short_translated_hadith  from hadith_v2 WHERE book_en = 'Virtues of the Night of Qadr' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                        else if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()>28){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith) , reference,sanad_0, short_hadith, sanad_1, narated, short_translated_hadith from hadith_v2 WHERE translated_hadith LIKE '%fitr %' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                        else if (dtIslamic.getMonthOfYear()==10 && dtIslamic.getDayOfMonth()==1){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith), reference,sanad_0, short_hadith, sanad_1, narated, short_translated_hadith  from hadith_v2 WHERE translated_hadith LIKE '%fitr %' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                        //SELECT * FROM hadith WHERE translated_hadith LIKE '%fitr %'
+                        else if(dtIslamic.getMonthOfYear()==12){SQL ="select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith) , reference,sanad_0, short_hadith, sanad_1, narated, short_translated_hadith from hadith_v2 WHERE book_en = 'Hajj (Pilgrimage)' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                        else if (dayofweek_int == 6){SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith) , reference,sanad_0, short_hadith, sanad_1, narated, short_translated_hadith from hadith_v2 WHERE day = '5' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+
+                        else if (dtIslamic.getMonthOfYear()==1 && dtIslamic.getDayOfMonth()>7 && dtIslamic.getDayOfMonth()<12 ){SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith) , reference,sanad_0, short_hadith, sanad_1, narated, short_translated_hadith from hadith_v2 WHERE (translated_hadith LIKE '%Ashura%') and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+
+
                         else
                         {
-                            SQL = "select * from hadith WHERE day = '0' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";
-//                                    SQL = "select * from hadith where  CHAR_LENGTH(translated_hadith)>527"; // the bigest Hadith
+                            SQL = "select hadith, CHAR_LENGTH(hadith), translated_hadith,CHAR_LENGTH(translated_hadith) , reference,sanad_0, short_hadith, sanad_1, narated, short_translated_hadith  from hadith_v2 WHERE day = '0' and CHAR_LENGTH(translated_hadith)<"+ max_en_hadith_len + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";
+                        //                                    SQL = "select * from hadith where  CHAR_LENGTH(translated_hadith)>527"; // the bigest Hadith
                         }
                         rs = c.createStatement().executeQuery(SQL);
                         while (rs.next())
                         {
                             hadith = rs.getString("hadith");
                             translated_hadith = rs.getString("translated_hadith");
+                            hadith_reference =  rs.getString("reference");
+                            sanad_0 =  rs.getString("sanad_0");
+                            short_hadith =  rs.getString("short_hadith");
+                            sanad_1 =  rs.getString("sanad_1");
+
+                            narated =  rs.getString("narated");
+                            short_translated_hadith =  rs.getString("short_translated_hadith"); 
                             
                         }
                         c.close();
                         System.out.println("arabic hadith length" + hadith.length());
                         System.out.println(" english hadith length" + translated_hadith.length());
+                       
+                        
+                        System.out.println("narated before" + narated);
+                        narated = narated.replaceAll("ﷺ", "PBUH");
+                        System.out.println("narated after" + narated);
+
+                        System.out.println("short_translated_hadith before" + short_translated_hadith);
+                        short_translated_hadith = short_translated_hadith.replaceAll("ﷺ", "PBUH");
+                        System.out.println("short_translated_hadith after" + short_translated_hadith);
                         
                     } 
                     catch (Exception e){logger.warn("Unexpected error", e);}
@@ -5065,7 +5348,7 @@ new Thread(() ->
             scene = new Scene(root, 1920, 1080);
 //            scene = new Scene(root, 320, 240);
 
-            if(custom_background){scene.getStylesheets().addAll(this.getClass().getResource("style_HD_custom.css").toExternalForm());}
+            if(custom_background){scene.getStylesheets().addAll(this.getClass().getResource("style_HD_custom.css").toExternalForm()); System.out.println("style_HD_custom.css Selected");}
             else {scene.getStylesheets().addAll(this.getClass().getResource("style_HD.css").toExternalForm());}
             
                 
@@ -5781,20 +6064,44 @@ public void update_labels() throws Exception{
 //                System.out.println("en hadith_Label_visible");
 
                 
-                hadith_Label.setVisible(true);
-                hadith_Label.setText(translated_hadith);
-                hadith_Label.setId("hadith-text-english");
-                hadithPane.setValignment(hadith_Label,VPos.TOP);
-                ar_moon_hadith_Label_L1.setVisible(false);
-                ar_moon_hadith_Label_L2.setVisible(false);
-                en_moon_hadith_Label_L1.setVisible(false);
-                en_moon_hadith_Label_L2.setVisible(false);
+//                hadith_Label.setVisible(true);
+//                hadith_Label.setText(translated_hadith);
+//                hadith_Label.setId("hadith-text-english");
+//                hadithPane.setValignment(hadith_Label,VPos.TOP);
                 
-                en_moon_hadith_Label_L2.setText("");
-                ar_moon_hadith_Label_L2.setText("");
-                ar_moon_hadith_Label_L2.setMinHeight(0);
-                en_moon_hadith_Label_L2.setMinHeight(0);
-                hadith_Label.setMinHeight(0);
+//                sanad_0 =  rs.getString("sanad_0");
+//    short_hadith =  rs.getString("short_hadith");
+//    sanad_1 =  rs.getString("sanad_1");
+//            
+//    narated =  rs.getString("narated");
+//    short_translated_hadith 
+            
+                //hadith_Label.setVisible(false);
+                
+                hadith_flow.getChildren().clear();
+                text1=new Text(narated +" ");
+                text1.setStyle("-fx-font-size: 40; -fx-fill: white;   ");
+                text2=new Text(short_translated_hadith);
+                text2.setStyle("-fx-font-size: 40; -fx-fill: goldenrod; ");
+                text3 = new Text(" ");
+                text3.setStyle("-fx-font-size: 40; -fx-fill: white;  ");
+                text4 = new Text("\n" + hadith_reference);
+                text4.setStyle("-fx-font-size: 25; -fx-fill: white;  ");
+                hadith_flow.setTextAlignment(TextAlignment.LEFT);
+                hadith_flow.setStyle("-fx-line-spacing: 25px; fitToWidth: true;");
+                hadith_flow.getChildren().addAll(text1, text2,text3, text4);
+                
+        
+//                ar_moon_hadith_Label_L1.setVisible(false);
+//                ar_moon_hadith_Label_L2.setVisible(false);
+//                en_moon_hadith_Label_L1.setVisible(false);
+//                en_moon_hadith_Label_L2.setVisible(false);
+//                
+//                en_moon_hadith_Label_L2.setText("");
+//                ar_moon_hadith_Label_L2.setText("");
+//                ar_moon_hadith_Label_L2.setMinHeight(0);
+//                en_moon_hadith_Label_L2.setMinHeight(0);
+//                hadith_Label.setMinHeight(0);
  
             }
             
@@ -5802,25 +6109,69 @@ public void update_labels() throws Exception{
             {
 
 //                System.out.println("en moon_hadith_Label_visible");
-                en_moon_hadith_Label_L1.setVisible(true);
-                en_moon_hadith_Label_L1.setText(en_full_moon_hadith);
-                en_moon_hadith_Label_L1.setId("en_moon-notification-text1");
-//                en_moon_hadith_Label_L1.setTranslateY(5);
                 
-                en_moon_hadith_Label_L2.setVisible(true);
-                en_moon_hadith_Label_L2.setText(en_moon_notification);
-                en_moon_hadith_Label_L2.setId("en_moon-notification-text2");
-                hadithPane.setHalignment(en_moon_hadith_Label_L2,HPos.LEFT);
-
-                
-                ar_moon_hadith_Label_L1.setVisible(false);
-                ar_moon_hadith_Label_L1.setText("");
-                ar_moon_hadith_Label_L1.setMinHeight(0);
-                hadith_Label.setVisible(false);
-                hadith_Label.setMinHeight(0);
-                hadith_Label.setText("");
-                ar_moon_hadith_Label_L2.setVisible(false);
+//                en_moon_hadith_Label_L1.setVisible(true);
+//                en_moon_hadith_Label_L1.setText(en_full_moon_hadith);
+//                en_moon_hadith_Label_L1.setId("en_moon-notification-text1");
+////                en_moon_hadith_Label_L1.setTranslateY(5);
+//                
+//                en_moon_hadith_Label_L2.setVisible(true);
+//                en_moon_hadith_Label_L2.setText(en_moon_notification);
+//                en_moon_hadith_Label_L2.setId("en_moon-notification-text2");
+//                hadithPane.setHalignment(en_moon_hadith_Label_L2,HPos.LEFT);
+//
+//                
+//                ar_moon_hadith_Label_L1.setVisible(false);
+//                ar_moon_hadith_Label_L1.setText("");
+//                ar_moon_hadith_Label_L1.setMinHeight(0);
+//                hadith_Label.setVisible(false);
+//                hadith_Label.setMinHeight(0);
+//                hadith_Label.setText("");
+//                ar_moon_hadith_Label_L2.setVisible(false);
 //                divider1_Label.setMinHeight(50);
+
+
+                hadith_flow.getChildren().clear();
+//                text1=new Text(en_full_moon_hadith);
+//                text1.setStyle("-fx-font-size: 40; -fx-fill: white;   ");
+//                text2=new Text("\n" + en_moon_notification);
+//                text2.setStyle("-fx-font-size: 40; -fx-fill: goldenrod; ");
+//                text3 = new Text(" ");
+//                text3.setStyle("-fx-font-size: 40; -fx-fill: white;  ");
+//                text4 = new Text("\n This is based on calendar calculations not local moon sightings");
+//                text4.setStyle("-fx-font-size: 25; -fx-fill: white;  ");
+//                hadith_flow.setTextAlignment(TextAlignment.LEFT);
+//                hadith_flow.setStyle("-fx-line-spacing: 25px; fitToWidth: true;");
+//                hadith_flow.getChildren().addAll(text1, text2,text3, text4);
+                
+                text1=new Text(narated +" ");
+                text1.setStyle("-fx-font-size: 35; -fx-fill: white;   ");
+                text2=new Text(short_translated_hadith);
+                text2.setStyle("-fx-font-size: 35; -fx-fill: goldenrod; ");
+                text3 = new Text("  " + hadith_reference);
+                text3.setStyle("-fx-font-size: 25; -fx-fill: white;  ");
+                text4 = new Text("\n" + en_moon_notification);
+                text4.setStyle("-fx-font-size: 35; -fx-fill: white;  ");
+                text5 = new Text("\n" + "This is based on calendar calculations not local moon sightings");
+                text5.setStyle("-fx-font-size: 25; -fx-fill: white;  ");
+                
+                hadith_flow.setTextAlignment(TextAlignment.LEFT);
+                hadith_flow.setStyle("-fx-line-spacing: 20px; fitToWidth: true;");
+                
+                
+                
+                
+                
+                if (days_Between_Now_Fullmoon <=9 && days_Between_Now_Fullmoon >=6 )
+                {        
+                    hadith_flow.getChildren().addAll(text1, text2,text3, text4);
+                }
+                else
+                {
+                    hadith_flow.getChildren().addAll(text1, text2,text3, text4, text5);
+                }
+                
+ 
             }
             
             
@@ -5861,10 +6212,6 @@ public void update_labels() throws Exception{
 
             }
                         
-            
-            
-            
-            
             if(newMoon != null && fullMoon != null)
             {
                 if (newMoon.before(fullMoon))
@@ -6100,48 +6447,102 @@ public void update_labels() throws Exception{
             if (hadith_Label_visible)
             {
 //                System.out.println("ar hadith_Label_visible");
-                hadith_Label.setVisible(true);
-                hadith_Label.setText("");
-                hadith_Label.setMinHeight(0);
-                hadith_Label.setText(hadith);
-                hadith_Label.setId("hadith-text-arabic");
-                ar_moon_hadith_Label_L1.setVisible(false);
-                ar_moon_hadith_Label_L2.setVisible(false);
-                en_moon_hadith_Label_L1.setVisible(false);
-                en_moon_hadith_Label_L2.setVisible(false);
-                en_moon_hadith_Label_L2.setText("");
-                ar_moon_hadith_Label_L2.setText("");
-                ar_moon_hadith_Label_L2.setMinHeight(0);
-                en_moon_hadith_Label_L2.setMinHeight(0);
+                
+//                hadith_Label.setVisible(true);
+//                hadith_Label.setText("");
+//                hadith_Label.setMinHeight(0);
+//                hadith_Label.setText(hadith);
+//                hadith_Label.setId("hadith-text-arabic");
+//                ar_moon_hadith_Label_L1.setVisible(false);
+//                ar_moon_hadith_Label_L2.setVisible(false);
+//                en_moon_hadith_Label_L1.setVisible(false);
+//                en_moon_hadith_Label_L2.setVisible(false);
+//                en_moon_hadith_Label_L2.setText("");
+//                ar_moon_hadith_Label_L2.setText("");
+//                ar_moon_hadith_Label_L2.setMinHeight(0);
+//                en_moon_hadith_Label_L2.setMinHeight(0);              
+                
+                //hadith_Label.setVisible(false);
+                hadith_flow.getChildren().clear();
+                
+                text1=new Text(sanad_0);
+                text1.setStyle("-fx-font-size: 40; -fx-fill: white; ");
+                text2=new Text(short_hadith);
+                text2.setStyle("-fx-font-size: 40; -fx-fill: goldenrod; ");
+                text3 = new Text(sanad_1);
+                text3.setStyle("-fx-font-size: 40; -fx-fill: white;  ");
+                text4 = new Text("\n" + hadith_reference);
+                text4.setStyle("-fx-font-size: 25; -fx-fill: white;  ");
+                
+                hadith_flow.setTextAlignment(TextAlignment.RIGHT);
+//                hadith_flow.setTextOrigin(VPos.TOP);
+                hadith_flow.setStyle("-fx-line-spacing: 25px; fitToWidth: true;");
+
+                hadith_flow.getChildren().addAll(text1, text2,text3, text4);
+                
+                
                 
             }
             
             if (moon_hadith_Label_visible)
             {
-//                System.out.println("ar moon hadith_Label_visible");
-                ar_moon_hadith_Label_L1.setVisible(true);
-                ar_moon_hadith_Label_L1.setText(ar_full_moon_hadith);
-                ar_moon_hadith_Label_L1.setId("ar_moon-notification-text1");
-                hadithPane.setHalignment(ar_moon_hadith_Label_L1,HPos.RIGHT);
-//                ar_moon_hadith_Label_L1.setTranslateY(5);
+                System.out.println("ar moon hadith_Label_visible");
+                System.out.println("ar_full_moon_hadith:  " + ar_full_moon_hadith);
+//                ar_moon_hadith_Label_L1.setVisible(true);
+//                ar_moon_hadith_Label_L1.setText(ar_full_moon_hadith);
+//                ar_moon_hadith_Label_L1.setId("ar_moon-notification-text1");
+//                hadithPane.setHalignment(ar_moon_hadith_Label_L1,HPos.RIGHT);
+////                ar_moon_hadith_Label_L1.setTranslateY(5);
+//                
+//                ar_moon_hadith_Label_L2.setVisible(true);
+//                ar_moon_hadith_Label_L2.setText(ar_moon_notification);
+//                ar_moon_hadith_Label_L2.setId("ar_moon-notification-text2");
+//                hadithPane.setHalignment(ar_moon_hadith_Label_L2,HPos.RIGHT);
+//                
+////                facebook_Label.setVisible(false);
+////                facebook_Label.setText("");
+////                facebook_Label.setGraphic(null);
+////                facebook_Label.setMinHeight(0);
+//                en_moon_hadith_Label_L1.setVisible(false);
+//                en_moon_hadith_Label_L1.setText("");
+//                en_moon_hadith_Label_L1.setMinHeight(0);
+//                hadith_Label.setVisible(false);
+//                hadith_Label.setMinHeight(0);
+//                hadith_Label.setText("");
+//                en_moon_hadith_Label_L2.setVisible(false);
+////                divider1_Label.setMinHeight(50);
+
+
+//**********remember to remove unused labels
+                hadith_flow.getChildren().clear();
                 
-                ar_moon_hadith_Label_L2.setVisible(true);
-                ar_moon_hadith_Label_L2.setText(ar_moon_notification);
-                ar_moon_hadith_Label_L2.setId("ar_moon-notification-text2");
-                hadithPane.setHalignment(ar_moon_hadith_Label_L2,HPos.RIGHT);
+                text1=new Text(sanad_0);
+                text1.setStyle("-fx-font-size: 59;  -fx-fill: white; ");
+                text2=new Text( short_hadith + "\n");
+                text2.setStyle("-fx-font-size: 59; -fx-fill: goldenrod ; ");
+                text3=new Text(hadith_reference + "\n");
+                text3.setStyle("-fx-font-size: 25; -fx-fill: white; ");
+                text4 = new Text(ar_moon_notification + "\n");
+                text4.setStyle("-fx-font-size: 40; -fx-fill: white;  ");
+                text5 = new Text("يرجى ملاحظة أن هذا يقوم على حسابات التقويم");
+                text5.setStyle("-fx-font-size: 25; -fx-fill: white;  ");
                 
-//                facebook_Label.setVisible(false);
-//                facebook_Label.setText("");
-//                facebook_Label.setGraphic(null);
-//                facebook_Label.setMinHeight(0);
-                en_moon_hadith_Label_L1.setVisible(false);
-                en_moon_hadith_Label_L1.setText("");
-                en_moon_hadith_Label_L1.setMinHeight(0);
-                hadith_Label.setVisible(false);
-                hadith_Label.setMinHeight(0);
-                hadith_Label.setText("");
-                en_moon_hadith_Label_L2.setVisible(false);
-//                divider1_Label.setMinHeight(50);
+
+
+                hadith_flow.setTextAlignment(TextAlignment.RIGHT);
+//                hadith_flow.setTextOrigin(VPos.TOP);
+                hadith_flow.setStyle("-fx-line-spacing: 20px; fitToWidth: true;");
+
+                if (days_Between_Now_Fullmoon <=9 && days_Between_Now_Fullmoon >=6 )
+                {        
+                    hadith_flow.getChildren().addAll(text1, text2,text3, text4);
+                }
+                else
+                {
+                    hadith_flow.getChildren().addAll(text1, text2, text4, text5);
+                }
+                
+                
             }
             
             
@@ -6495,11 +6896,12 @@ public void update_labels() throws Exception{
                 
                 if(null != facebook_Post_Url && !"".equals(facebook_Post_Url)){facebook_image_fade_in.playFromStart();}
                 
-                ar_moon_hadith_Label_L1.setVisible(false);
-                ar_moon_hadith_Label_L2.setVisible(false);
-                en_moon_hadith_Label_L1.setVisible(false);
-                en_moon_hadith_Label_L2.setVisible(false);
-                hadith_Label.setVisible(false);
+//                ar_moon_hadith_Label_L1.setVisible(false);
+//                ar_moon_hadith_Label_L2.setVisible(false);
+//                en_moon_hadith_Label_L1.setVisible(false);
+//                en_moon_hadith_Label_L2.setVisible(false);
+//                hadith_Label.setVisible(false);
+                hadith_flow.getChildren().clear();
                 facebook_turn = false;
                 arabic = true;
 
@@ -9563,60 +9965,25 @@ public void update_labels() throws Exception{
         else {hadithPane.setId("hadithpane_friday"); System.out.println("hadith pane using friday css");}
         
         
-        hadithPane.setVgap(0);
+        hadithPane.setVgap(0);          
+        
+        text1=new Text("Loading sanad 0");
+        text2=new Text("Loading short hadith");
+        text3=new Text("Loading sanad 1");
+        text4=new Text(" Loading reference");
+//        text2.setId("hadith-reference");
+        
 
-        hadith_Label.setId("hadith-text-arabic");
-        hadith_Label.setWrapText(true);
-        hadith_Label.setMinHeight(0);
-        hadithPane.setConstraints(hadith_Label, 0, 0,1,10);
-        hadithPane.getChildren().add(hadith_Label);
+        hadith_flow.getChildren().addAll(text1,text2, text3, text4);
+        hadithPane.setConstraints(hadith_flow, 0, 1,1,10);
+        hadithPane.getChildren().add(hadith_flow);
         
-        
-        en_moon_hadith_Label_L1.setId("en_moon-notification-text1");
-        en_moon_hadith_Label_L1.setWrapText(true);
-        en_moon_hadith_Label_L1.setText("Loading.....");
-        en_moon_hadith_Label_L1.setMinHeight(0);
-        hadithPane.setConstraints(en_moon_hadith_Label_L1, 0, 0,1,5);
-        hadithPane.getChildren().add(en_moon_hadith_Label_L1);
-        
-        en_moon_hadith_Label_L2.setWrapText(true);
-        en_moon_hadith_Label_L2.setMinHeight(0);
-        hadithPane.setConstraints(en_moon_hadith_Label_L2, 0, 5,1,5);
-        hadithPane.getChildren().add(en_moon_hadith_Label_L2);
-        
-        ar_moon_hadith_Label_L1.setId("ar_moon-notification-text1");
-        ar_moon_hadith_Label_L1.setWrapText(true);
-        ar_moon_hadith_Label_L1.setMinHeight(0);
-        hadithPane.setConstraints(ar_moon_hadith_Label_L1, 0, 0,1,5);
-        hadithPane.getChildren().add(ar_moon_hadith_Label_L1);
-        
-        ar_moon_hadith_Label_L2.setWrapText(true);
-        ar_moon_hadith_Label_L2.setMinHeight(0);
-        hadithPane.setConstraints(ar_moon_hadith_Label_L2, 0, 5,1,5);
-        hadithPane.getChildren().add(ar_moon_hadith_Label_L2);
-        
-//        if (orientation.equals("horizontal_HD") )
-//        {
-//            ar_moon_hadith_Label_L1.setTranslateY(35);
-//            ar_moon_hadith_Label_L2.setTranslateY(30);
-//        }
-
-        
+         
         facebook_Label.setWrapText(true);
         facebook_Label.setAlignment(Pos.CENTER);
         hadithPane.setConstraints(facebook_Label, 0, 0,1,10);
         hadithPane.getChildren().add(facebook_Label);
         
-//        athan_Change_Label_L1.setWrapText(true);
-//        athan_Change_Label_L1.setMinHeight(0);
-//        hadithPane.setConstraints(athan_Change_Label_L1, 0, 3);
-//        hadithPane.getChildren().add(athan_Change_Label_L1);
-//        
-//        athan_Change_Label_L2.setWrapText(true);
-//        athan_Change_Label_L2.setMinHeight(0);
-//        hadithPane.setConstraints(athan_Change_Label_L2, 0, 4);
-//        hadithPane.getChildren().add(athan_Change_Label_L2);
-
         return hadithPane;
     }    
 
