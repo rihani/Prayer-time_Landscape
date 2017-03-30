@@ -2067,8 +2067,11 @@ else
                         cal.add(Calendar.MINUTE, 60);
                         future_isha_jamaat_time = cal.getTime();
                     } 
+                    
+                    
 
                 }
+                zuhr_custom_notification_set = false;
             }
 
             else 
@@ -2110,8 +2113,10 @@ else
                     
                     
                     diff = isha_jamaat_temp.getTime() - future_isha_time.getTime();
-                    long diffMinutes = diff / (60 * 1000) % 60;      
-                    System.out.print("future isha gap from initial");    
+                    long diffMinutes = diff / (60 * 1000) % 60;
+                    long diffHours = diff / (60 * 60 * 1000);
+                    System.out.println(diffHours); 
+                    System.out.print("future isha gap from initial: ");    
                     System.out.println(diffMinutes);  
                     
                     if (diffMinutes>isha_summer_min_gap)
@@ -2147,7 +2152,7 @@ else
                     }
                     
                     
-                    if (diffMinutes<=isha_summer_min_gap && diffMinutes>=0 || (diffMinutes<=-1 && diffMinutes>=-20))
+                    if (diffMinutes<=isha_summer_min_gap && diffMinutes>=0 && diffHours==0 || (diffMinutes<=-1 && diffMinutes>=-20))
                     {                        
                         future_isha_jamaat_cal = future_prayer_cal.getInstance();
                         future_isha_jamaat_cal.setTime(isha_jamaat_temp);
