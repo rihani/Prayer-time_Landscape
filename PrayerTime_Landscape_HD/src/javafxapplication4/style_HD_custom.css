@@ -61,10 +61,10 @@ and open the template in the editor.
    
        #prayer-label-arabic {
         
-        -fx-font-size: 48px;
+        -fx-font-size: 53px;
         /*-fx-font-family: 'B Majid Shadow';*/
-        -fx-font-family: 'Old Antic Outline Shaded';
-        /*-fx-font-family: 'B Jadid';*/
+        /*-fx-font-family: 'Old Antic Outline Shaded';*/
+        -fx-font-family: 'B Jadid';
         /*-fx-font-family: 'Arial Bold';*/
         -fx-text-fill: white;
         
@@ -77,7 +77,7 @@ and open the template in the editor.
    
     #prayer-label-english {
         
-        -fx-font-size: 37px;
+        -fx-font-size: 45px;
         /*-fx-font-family: 'B Majid Shadow';*/
 /*        -fx-font-family: 'Old Antic Outline Shaded';*/
         /*-fx-font-family: 'B Jadid';*/

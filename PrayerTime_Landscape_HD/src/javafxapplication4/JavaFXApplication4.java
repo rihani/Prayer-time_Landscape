@@ -162,6 +162,7 @@ import org.joda.time.format.DateTimeFormatter;
 import eu.hansolo.enzo.common.Section;
 import eu.hansolo.enzo.gauge.SimpleGauge;
 import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
+import java.awt.event.MouseEvent;
 import javafx.stage.StageStyle;
 //import org.json.simple.JSONArray;
 //import org.json.simple.JSONObject;
@@ -169,9 +170,10 @@ import javafx.stage.StageStyle;
 //import org.joda.time.chrono.JulianChronology;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import javafx.scene.Cursor;
 import org.joda.time.Chronology;
 import org.joda.time.chrono.ISOChronology;
-
+import javafx.stage.StageStyle;
 
 
 
@@ -208,7 +210,7 @@ import org.joda.time.chrono.ISOChronology;
     private Toolkit tk;
     private Dimension screenDimension;
     private String en_Marquee_Notification_string, ar_Marquee_Notification_string;
-    private Text en_Marquee_Notification_Text, ar_Marquee_Notification_Text, text1, text2, text3, text4, text5;
+    private Text en_Marquee_Notification_Text,en_Marquee_Notification_Text1, ar_Marquee_Notification_Text,ar_Marquee_Notification_Text1, text1, text2, text3, text4, text5;
     
     private Canvas canvas;
     private GraphicsContext canvasgc;
@@ -235,14 +237,26 @@ import org.joda.time.chrono.ISOChronology;
        
     private FadeTransition facebook_image_fade_in = new FadeTransition(Duration.millis(500));
     private FadeTransition facebook_image_fade_out = new FadeTransition(Duration.millis(500));
+    private FadeTransition Sunrisepane_fade_in = new FadeTransition(Duration.millis(500));
+    private FadeTransition Sunrisepane_fade_out = new FadeTransition(Duration.millis(500));
+    private FadeTransition Moonpane_fade_in = new FadeTransition(Duration.millis(500));
+    private FadeTransition Moonpane_fade_out = new FadeTransition(Duration.millis(500));
+    private FadeTransition Weatherpane_fade_in = new FadeTransition(Duration.millis(500));
+    private FadeTransition Weatherpane_fade_out = new FadeTransition(Duration.millis(500));
+    
+    
+            
+            
     
     private FadeTransition hadith_arabic_fade_out = new FadeTransition(Duration.millis(500));
     private FadeTransition hadith_arabic_fade_in = new FadeTransition(Duration.millis(500));
     private FadeTransition hadith_en_fade_out = new FadeTransition(Duration.millis(500));
     private FadeTransition hadith_en_fade_in = new FadeTransition(Duration.millis(500));
     
-    private FadeTransition ft_ar = new FadeTransition(Duration.millis(2000));
-    private FadeTransition ft_en = new FadeTransition(Duration.millis(2000));
+    private FadeTransition ft_ar1 = new FadeTransition(Duration.millis(4000));
+    private FadeTransition ft_ar = new FadeTransition(Duration.millis(4000));
+    private FadeTransition ft_en1 = new FadeTransition(Duration.millis(4000));
+    private FadeTransition ft_en = new FadeTransition(Duration.millis(4000));
     
     private Process p;
     static final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
@@ -253,6 +267,8 @@ import org.joda.time.chrono.ISOChronology;
 //    double timezone = 10;
 
     
+    private double xOffset = 0;
+    private double yOffset = 0;
     
     double latitude;
     double longitude;
@@ -322,6 +338,10 @@ import org.joda.time.chrono.ISOChronology;
     private boolean manual_Camera = false;
     private boolean manual_radar_display = false;
     private boolean weather_enabled = false;
+    private boolean moon_view_blocked_sunrise_in_progress = false;
+    
+    private boolean vertical_Marquee_Notification_alt = false;
+    
     boolean send_Broadcast_msg = false;
     boolean camera = false;
     boolean Button_activated = false;
@@ -334,10 +354,12 @@ import org.joda.time.chrono.ISOChronology;
     boolean zuhr_adj_enable, asr_settime, isha_settime;
     boolean custom_background, zuhr_custom;
     
-    boolean isha_ramadan_bool;
+    boolean isha_ramadan_bool,fajr_ramadan_bool;
+    boolean fajr_ramadan_custom = false;
    
     boolean weather_retrieve_fault = false;
     boolean weather_image_wrong = false;
+    boolean weather_visible = true;
     
             
     private String hadith, translated_hadith,hadith_reference,sanad_0, short_hadith, sanad_1, narated, short_translated_hadith, ar_full_moon_hadith, en_full_moon_hadith, ar_moon_notification, en_moon_notification, announcement, en_notification_Msg, ar_notification_Msg, device_name, device_location;
@@ -365,7 +387,7 @@ import org.joda.time.chrono.ISOChronology;
     private int sonar_distance =50000;
     private int sonar_active_distance;
     
-    private int id, fajr_adj, zuhr_adj, asr_adj,maghrib_adj,isha_summer_adj, isha_winter_adj, isha_summer_increment_initial, isha_summer_increment, isha_summer_min_gap;        
+    private int id, fajr_adj, fajr_ramadan_inc, zuhr_adj, asr_adj,maghrib_adj,isha_summer_adj, isha_winter_adj, isha_summer_increment_initial, isha_summer_increment, isha_summer_min_gap;        
                 
     private int AsrJuristic,calcMethod;
     private int max_ar_hadith_len, max_en_hadith_len;
@@ -421,9 +443,10 @@ import org.joda.time.chrono.ISOChronology;
     int dayofweek_int, days_Between_Now_Fullmoon;
     
     
-    private long moonPhase_lastTimerCall,translate_lastTimerCall, clock_update_lastTimerCall ,sensor_lastTimerCall,sonar_lastTimerCall, sensor1_lastTimerCall, debug_lastTimerCall, radarwidget_lastTimerCall, delay_Manual_switch_to_cam_lastTimerCall, weather_lastTimerCall;
+    private long moonPhase_lastTimerCall,translate_lastTimerCall,Marquee_Notification_Text_lastTimerCall, clock_update_lastTimerCall, moon_weather_flip_update_lastTimerCall ,sensor_lastTimerCall,sonar_lastTimerCall, sensor1_lastTimerCall, debug_lastTimerCall, radarwidget_lastTimerCall, delay_Manual_switch_to_cam_lastTimerCall, weather_lastTimerCall;
                        
                                    
+
 //    public long delay_Manual_switch_to_cam = 30000000000L; // 30 seconds  
     public long delay_Manual_switch_to_cam = 2700000000000L; // 45 minutes
     
@@ -441,15 +464,15 @@ import org.joda.time.chrono.ISOChronology;
     
     public long delay_turnOffTV_after_inactivity = 1500000000000L; // 25minutes
 //    public long delay_turnOffTV_after_inactivity = 280000000000L; // 1minutes
-    private AnimationTimer moonPhase_timer, translate_timer, clock_update_timer ,debug_timer, radar_gauge_anninmation ;
+    private AnimationTimer moonPhase_timer, translate_timer, clock_update_timer ,moon_weather_flip ,debug_timer, radar_gauge_anninmation ;
     
         
     DateFormat dateFormat = new SimpleDateFormat("hh:mm");
     
     
-    GridPane Glasspane, Mainpane, Moonpane, Logopane, Weatherpane, Sunrisepane, prayertime_pane, clockPane, hadithPane;
+    GridPane Mainpane, Moonpane, Logopane, Weatherpane, Sunrisepane, prayertime_pane, clockPane, hadithPane;
     Stage stage;
-    Pane text_Box;
+    Pane text_Box, Glasspane;
     char[] arabicChars = {'٠','١','٢','٣','٤','٥','٦','٧','٨','٩'};
     static String[] suffixes =
     //    0     1     2     3     4     5     6     7     8     9
@@ -476,6 +499,8 @@ import org.joda.time.chrono.ISOChronology;
     File file = new File("/home/pi/prayertime/Images/");
     private Text newsFeedText;
     Pushover push = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
+    //Pushover push = new Pushover("API Token/Key ", "User Key");
+    Pushover push1 = new Pushover("aamhejcb7hazpu36ee6bexm8ro5zrh", "ukt6acpccrx844dx4ymk6z1bu37esy");
     
     private double toCelcium(double temp) {
 		return Math.round((5 * (temp - 32.0)) / 9);
@@ -595,6 +620,7 @@ try
 //    SQL = "Select * from settings_al_takwa";
 //    SQL = "Select * from settings_ESCA";
 //    SQL = "Select * from settings";
+//    SQL = "Select * from settings_al_hidayah";
 //      SQL = "Select * from settings_arncliffe"; 
     SQL = "Select * from settings_MIA";
     
@@ -647,6 +673,11 @@ try
         isha_winter_adj  =              rs.getInt("isha_winter_adj");
         isha_ramadan_bool =             rs.getBoolean("isha_ramadan_bool");
         isha_ramadan =                  rs.getTime("isha_ramadan");
+        
+        fajr_ramadan_bool =             rs.getBoolean("fajr_ramadan_bool");
+        fajr_ramadan_inc =              rs.getInt("fajr_ramadan_inc");
+          
+                
         isha_settime   =                rs.getBoolean("isha_settime");
         isha_winter =                   rs.getTime("isha_winter");
         isha_summer_start_time =        rs.getTime("isha_summer_start_time");
@@ -708,8 +739,7 @@ FacebookClient facebookClient = new DefaultFacebookClient(fb_Access_token);
 
 String temp_msg = device_name + " at "+ device_location + " is starting";
 try {push.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
-
-
+ 
 
 
 //        test
@@ -733,14 +763,14 @@ if (platform.equals("osx"))
     if (orientation.equals("vertical") )
     {
 //        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/vertical");
-        String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/vertical";
+        String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/vertical";
             directory = new File(path);
     }
     
     else if (orientation.equals("horizontal") )
     {
 //        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal");
-        String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/horizontal";
+        String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/horizontal";
             directory = new File(path);
     }
     
@@ -749,13 +779,13 @@ if (platform.equals("osx"))
         if(custom_background)
         {
 //            directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/custom");
-            String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/custom";
+            String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/custom";
             directory = new File(path);
         }
         else
         {
 //        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal_HD");
-            String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/horizontal_HD";
+            String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/horizontal_HD";
             directory = new File(path);
         }
          
@@ -835,20 +865,13 @@ Font.loadFont(JavaFXApplication4.class.getResource("Fonts/Arial_Bold.ttf").toExt
 Font.loadFont(JavaFXApplication4.class.getResource("Fonts/timeburner_regular.ttf").toExternalForm(),30);
 Font.loadFont(JavaFXApplication4.class.getResource("Fonts/Pinstripe_Limo.ttf").toExternalForm(),30);
 Font.loadFont(JavaFXApplication4.class.getResource("Fonts/LateefRegOT.ttf").toExternalForm(),30);
-
-
 //        tk = Toolkit.getDefaultToolkit();
 //        screenDimension = tk.getScreenSize();
 
-
-
-
 data = FXCollections.observableArrayList();
-
 
 Mainpane = new GridPane();
 Glasspane = new GridPane();
-
 
 footer_Label = new Label();
 like_Label = new Label();
@@ -883,7 +906,6 @@ hadith_flow = new TextFlow();
 announcement_Label = new Label();
 athan_Change_Label_L1 = new Label();
 athan_Change_Label_L2 = new Label();
-
 
 
 hour_Label = new Label();
@@ -1255,10 +1277,16 @@ if(jammat_from_database)
     {
         c = DBConnect.connect();
         //                            System.out.println("connected");
+//***********************************************************************************
+//********************* change prayer time database too******************************
 //        SQL = "select * from ESCA_prayertimes where DATE(date) = DATE(NOW())";
         SQL = "select * from " +  prayertime_database +  " where DATE(date) = DATE(NOW())";
         
 //        SQL = "select * from prayertimes where DATE(date) = DATE(NOW())";
+//********************* change prayer time database too******************************
+//***********************************************************************************
+
+
         rs = c.createStatement().executeQuery(SQL);
         while (rs.next())
         {
@@ -1281,18 +1309,65 @@ if(jammat_from_database)
     }
     catch (Exception e){ logger.warn("Unexpected error", e); }
     
-    Date fajr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_jamaat);
-    cal.setTime(fajr_jamaat_temp);
-    cal.add(Calendar.MINUTE, 5);
-    Date fajr_jamaat = cal.getTime();
-    fajr_jamaat_update_cal = Calendar.getInstance();
-    fajr_jamaat_update_cal.setTime(fajr_jamaat);
-    fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-    fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
+    Chronology iso = ISOChronology.getInstanceUTC();
+    Chronology hijri = IslamicChronology.getInstanceUTC();
+    DateTime dtHijri = new DateTime(dtIslamic.getYear(),9,1,9,22,hijri);
+    DateTime dtIso = new DateTime(dtHijri, iso);
+    Date dtIso_date = dtIso.toDate();
+    Calendar dtIso_cal = Calendar.getInstance();;
+    dtIso_cal.setTime(dtIso_date);
+
+    dtIso_cal.set(Calendar.MILLISECOND, 0);
+    dtIso_cal.set(Calendar.SECOND, 0);
+    dtIso_cal.set(Calendar.MINUTE, 0);
+    dtIso_cal.set(Calendar.HOUR_OF_DAY, 0);
+
+    DateTime dtHijri_shawal = new DateTime(dtIslamic.getYear(),10,1,1,00,hijri);
+    DateTime dtIso_shawal = new DateTime(dtHijri_shawal, iso);
+    Date dtIso_date_shawal = dtIso_shawal.toDate();
+    Calendar dtIso_cal_shawal = Calendar.getInstance();;
+    dtIso_cal_shawal.setTime(dtIso_date_shawal);
+
+    dtIso_cal_shawal.set(Calendar.MILLISECOND, 0);
+    dtIso_cal_shawal.set(Calendar.SECOND, 0);
+    dtIso_cal_shawal.set(Calendar.MINUTE, 0);
+    dtIso_cal_shawal.set(Calendar.HOUR_OF_DAY, 0);
+    System.out.print("notification calcs: shawal on: "); 
+    System.out.println(dtIso_cal_shawal.getTime());
+            
+    if ( fajr_ramadan_bool && (Calendar_now.compareTo(dtIso_cal)==0 || dtIslamic.getMonthOfYear()==9) && !(Calendar_now.compareTo(dtIso_cal_shawal)==0))
+    {
+        
+        fajr_ramadan_custom = true;
+        fajr_jamaat_cal = (Calendar)fajr_cal.clone();
+        fajr_jamaat_cal.add(Calendar.MINUTE, fajr_ramadan_inc);
+        fajr_jamaat_update_cal = (Calendar)fajr_jamaat_cal.clone();
+        fajr_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
+        
+    }
     
-    fajr_jamaat_cal = (Calendar)fajr_jamaat_update_cal.clone();
-    fajr_jamaat_cal.add(Calendar.MINUTE, -5);
+    
+            
+    else
+    {        
+        fajr_ramadan_custom = false;
+        Date fajr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_jamaat);
+        cal.setTime(fajr_jamaat_temp);
+        cal.add(Calendar.MINUTE, 5);
+        Date fajr_jamaat = cal.getTime();
+        fajr_jamaat_update_cal = Calendar.getInstance();
+        fajr_jamaat_update_cal.setTime(fajr_jamaat);
+        fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
+
+        fajr_jamaat_cal = (Calendar)fajr_jamaat_update_cal.clone();
+        fajr_jamaat_cal.add(Calendar.MINUTE, -5);
     //                            System.out.println("fajr Jamaat update scheduled at:" + fajr_jamaat_update_cal.getTime());
+    }
+    System.out.println(dtIslamic.getMonthOfYear());
+    
     
     
     Date zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + zuhr_jamaat);
@@ -1621,7 +1696,7 @@ else
 //                isha_cal.add(Calendar.MINUTE, 27);
 //                isha_begins_time = isha_cal.getTime();
                 
-                isha_jamaat_current = isha_summer_start_time.toString();
+                isha_jamaat_current = isha_summer_start_time.toString(); //9pm
                 Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat_current);
                 
                 
@@ -1631,8 +1706,11 @@ else
                 isha_jamaat_temp = isha_jamaat_temp_cal.getTime();
                 
                 long diff = isha_jamaat_temp.getTime() - isha_begins_time.getTime();
-                long diffMinutes = diff / (60 * 1000) % 60;      
-                System.out.print("isha gap from initial");    
+                System.out.println(diff); 
+//                long diffMinutes = diff / (60 * 1000) % 60; 
+                long diffMinutes = diff / (60 * 1000);
+ 
+                System.out.println("isha gap from initial");    
                 System.out.println(diffMinutes); 
                 
 //                System.out.print("isha_begins_time");    
@@ -1742,9 +1820,10 @@ else
 
 
 
-//==============Prayer time change notification logic + 7days
+//==============Prayer time change notification logic + xdays
 // check excel file in documentation folder for a flow chart
-if(jammat_from_database)
+if(jammat_from_database && prayer_change_notification)
+
 {
     // check if a notification has already been sent, to avoid flooding users with notifications, i.e during a system restart
     ar_notification_Msg_Lines = null;
@@ -1771,19 +1850,29 @@ if(jammat_from_database)
     notification_Date_cal.set(Calendar.MILLISECOND, 0);
     notification_Date_cal.set(Calendar.SECOND, 0);
     
-    //                            System.out.println("notification_Date_cal:" + notification_Date_cal.getTime());
-    //                            System.out.println("Calendar_now:         " + Calendar_now.getTime());
+                                System.out.println("notification_Date_cal:" + notification_Date_cal.getTime());
+                                System.out.println("Calendar_now:         " + Calendar_now.getTime());
     
     if (Calendar_now.compareTo(notification_Date_cal) <0 )  //&& !notification_Sent
     {
+        System.out.println("using already stored next prayer time change message");
         en_notification_Msg = en_message_String;
         ar_notification_Msg = ar_message_String;
         ar_notification_Msg_Lines = ar_notification_Msg.split("\\r?\\n");
         en_notification_Msg_Lines = en_notification_Msg.split("\\r?\\n");
         
         en_Marquee_Notification_string = "Prayer Time Change from " + new SimpleDateFormat("EEEE").format(notification_Date) +":   " + en_notification_Msg_Lines[1];
+        if (orientation.equals("vertical") )
+        {
+            en_Marquee_Notification_string =  "Prayer Time Change from " + new SimpleDateFormat("EEEE").format(notification_Date) +"\n" + en_notification_Msg_Lines[1];
+        }
+
         ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(notification_Date) + "ستتغير اوقات الصلاة   " + ar_notification_Msg_Lines[1];
         
+        if (orientation.equals("vertical") )
+        {
+            ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(notification_Date) + "ستتغير اوقات الصلاة  \n " + ar_notification_Msg_Lines[1];
+        }
 //                                    System.out.format(en_Marquee_Notification_string);
 //                                    System.out.format(ar_Marquee_Notification_string);
 
@@ -1792,10 +1881,13 @@ if(jammat_from_database)
 //                                getFacebook = false;
         }
 
-    if (Calendar_now.compareTo(notification_Date_cal) >=0 )  //&& !notification_Sent
+    else if (Calendar_now.compareTo(notification_Date_cal) >=0 )  //&& !notification_Sent
     {
+        
+        System.out.println("no prayer changes notifications stored in datebase, going to calculate");
         athan_Change_Label_visible = false;
         notification_Marquee_visible = false;
+        zuhr_custom_notification_set = false;
         try
         {
             c = DBConnect.connect();
@@ -1816,29 +1908,100 @@ if(jammat_from_database)
             // print the results
 //                                            System.out.format("%s,%s,%s,%s \n", future_prayer_date, future_fajr_jamaat_time, future_asr_jamaat_time, future_isha_jamaat_time );
 
+            Chronology iso = ISOChronology.getInstanceUTC();
+            Chronology hijri = IslamicChronology.getInstanceUTC();
+            DateTime dtHijri = new DateTime(dtIslamic.getYear(),9,1,9,22,hijri);
+            DateTime dtIso = new DateTime(dtHijri, iso);
+            Date dtIso_date = dtIso.toDate();
+            Calendar dtIso_cal = Calendar.getInstance();;
+            dtIso_cal.setTime(dtIso_date);
 
-        if (!fajr_jamaat_time.equals(future_fajr_jamaat_time))
-        {
+            dtIso_cal.set(Calendar.MILLISECOND, 0);
+            dtIso_cal.set(Calendar.SECOND, 0);
+            dtIso_cal.set(Calendar.MINUTE, 0);
+            dtIso_cal.set(Calendar.HOUR_OF_DAY, 0);
+            System.out.print("notification calcs: Ramadan on: "); 
+            System.out.println(dtIso_cal.getTime());
+            
+            DateTime dtHijri_shawal = new DateTime(dtIslamic.getYear(),10,1,1,00,hijri);
+            DateTime dtIso_shawal = new DateTime(dtHijri_shawal, iso);
+            Date dtIso_date_shawal = dtIso_shawal.toDate();
+            Calendar dtIso_cal_shawal = Calendar.getInstance();;
+            dtIso_cal_shawal.setTime(dtIso_date_shawal);
+            
+            dtIso_cal_shawal.set(Calendar.MILLISECOND, 0);
+            dtIso_cal_shawal.set(Calendar.SECOND, 0);
+            dtIso_cal_shawal.set(Calendar.MINUTE, 0);
+            dtIso_cal_shawal.set(Calendar.HOUR_OF_DAY, 0);
+            System.out.print("notification calcs: shawal on: "); 
+            System.out.println(dtIso_cal_shawal.getTime());
+            
 
-        //                                            System.out.println("Fajr Prayer Time Difference" );
-            fajr_jamma_time_change =true;
-            notification = true;
-
-            java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-            c = DBConnect.connect();
-            PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-            ps.setDate(1, sqlDate);
-            ps.executeUpdate();
-            c.close();
-        }
-
-
-        if (!asr_jamaat_time.equals(future_asr_jamaat_time) )
-        {
-        //                                            System.out.println("asr Prayer Time Difference" );
-            asr_jamma_time_change =true;
-            if(!notification)
+    
+            Calendar future_prayer_cal = Calendar.getInstance();
+            future_prayer_cal.add(Calendar.DAY_OF_MONTH, +3);
+            future_prayer_cal.set(Calendar.MILLISECOND, 0);
+            future_prayer_cal.set(Calendar.SECOND, 0);
+            future_prayer_cal.set(Calendar.MINUTE, 0);
+            future_prayer_cal.set(Calendar.HOUR_OF_DAY, 0);
+            System.out.println ("looking for changes in the next 3 days : " + future_prayer_cal.getTime());
+            
+                
+            if ( fajr_ramadan_bool && future_prayer_cal.compareTo(dtIso_cal)==0)
+                    
             {
+                prayerTimes = getprayertime.getPrayerTimes(future_prayer_cal, latitude, longitude, timezone);
+                prayerNames = getprayertime.getTimeNames();
+            
+                formatter = new SimpleDateFormat("HH:mm");
+                Date future_fajr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(0)).getTime()));
+                Calendar future_fajr_jammat_cal = future_prayer_cal.getInstance();
+                future_fajr_jammat_cal.setTime(future_fajr_temp);
+                future_fajr_jammat_cal.add(Calendar.MINUTE, fajr_ramadan_inc);
+                Date future_fajr_jamaat_time = future_fajr_jammat_cal.getTime();
+
+                System.out.println(" future fajr jamaat time " + future_fajr_jamaat_time);
+ 
+                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                c = DBConnect.connect();
+                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                ps.setDate(1, sqlDate);
+                ps.executeUpdate();
+                c.close();
+                                        
+                fajr_jamma_time_change =true;
+                notification = true;
+                
+
+            }
+            
+            else if ( fajr_ramadan_bool && future_prayer_cal.compareTo(dtIso_cal_shawal)==0)
+                    
+            {
+
+                System.out.println(":) future fajr jamaat time " + future_fajr_jamaat_time);
+ 
+                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                c = DBConnect.connect();
+                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                ps.setDate(1, sqlDate);
+                ps.executeUpdate();
+                c.close();
+                                        
+                fajr_jamma_time_change =true;
+                notification = true;
+                
+
+            }
+
+
+            else if (!fajr_jamaat_time.equals(future_fajr_jamaat_time) && !(( fajr_ramadan_bool && (Calendar_now.compareTo(dtIso_cal)==0 || dtIslamic.getMonthOfYear()==9) && !(Calendar_now.compareTo(dtIso_cal_shawal)==0))))
+            {
+
+                System.out.println("Fajr Prayer Time Difference" );
+                fajr_jamma_time_change =true;
+                notification = true;
+
                 java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
                 c = DBConnect.connect();
                 PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
@@ -1846,30 +2009,12 @@ if(jammat_from_database)
                 ps.executeUpdate();
                 c.close();
             }
-            notification = true;
-        }
 
-        if (!maghrib_jamaat_time.equals(future_maghrib_jamaat_time) && maghrib_adj == 60)
-        {
-        //                                            System.out.println("asr Prayer Time Difference" );
-            maghrib_jamma_time_change =true;
-            if(!notification)
+
+            if (!asr_jamaat_time.equals(future_asr_jamaat_time) )
             {
-                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                c = DBConnect.connect();
-                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                ps.setDate(1, sqlDate);
-                ps.executeUpdate();
-                c.close();
-            }
-            notification = true;
-            }
-
-
-            if (!isha_jamaat_time.equals(future_isha_jamaat_time) )
-            {
-            //                                            System.out.println("isha Prayer Time Difference" );
-                isha_jamma_time_change =true;
+            //                                            System.out.println("asr Prayer Time Difference" );
+                asr_jamma_time_change =true;
                 if(!notification)
                 {
                     java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
@@ -1881,10 +2026,43 @@ if(jammat_from_database)
                 }
                 notification = true;
             }
-            }
-            catch (Exception e){logger.warn("Unexpected error", e);}
 
+            if (!maghrib_jamaat_time.equals(future_maghrib_jamaat_time) && maghrib_adj == 60)
+            {
+            //                                            System.out.println("asr Prayer Time Difference" );
+                maghrib_jamma_time_change =true;
+                if(!notification)
+                {
+                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                    c = DBConnect.connect();
+                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                    ps.setDate(1, sqlDate);
+                    ps.executeUpdate();
+                    c.close();
+                }
+                notification = true;
+                }
+
+
+                if (!isha_jamaat_time.equals(future_isha_jamaat_time) )
+                {
+                //                                            System.out.println("isha Prayer Time Difference" );
+                    isha_jamma_time_change =true;
+                    if(!notification)
+                    {
+                        java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                        c = DBConnect.connect();
+                        PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                        ps.setDate(1, sqlDate);
+                        ps.executeUpdate();
+                        c.close();
+                    }
+                    notification = true;
+                }
         }
+        catch (Exception e){logger.warn("Unexpected error", e);}
+
+   }
 }
 
 else
@@ -1932,8 +2110,17 @@ else
             en_notification_Msg_Lines = en_notification_Msg.split("\\r?\\n");
 
             en_Marquee_Notification_string = "Prayer Time Change from " + new SimpleDateFormat("EEEE").format(notification_Date) +":   " + en_notification_Msg_Lines[1];
+            if (orientation.equals("vertical") )
+            {
+                en_Marquee_Notification_string =  "Prayer Time Change from " + new SimpleDateFormat("EEEE").format(notification_Date) +"\n" + en_notification_Msg_Lines[1];
+            }
+                    
             ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(notification_Date) + "ستتغير اوقات الصلاة   " + ar_notification_Msg_Lines[1];
-
+            if (orientation.equals("vertical") )
+            {
+                ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(notification_Date) + "ستتغير اوقات الصلاة  \n " + ar_notification_Msg_Lines[1];
+            }
+        
                                         System.out.format(en_Marquee_Notification_string);
                                         System.out.format(ar_Marquee_Notification_string);
 
@@ -2280,7 +2467,70 @@ else
                     dtIso_cal_minus_one.set(Calendar.HOUR_OF_DAY, 0);
                     dtIso_cal_minus_one.add(Calendar.DAY_OF_MONTH, -1);
                     
+                    //.......
                     
+                    DateTime dtHijri_end = new DateTime(dtIslamic.getYear(),10,01,00,00,hijri);
+
+                    DateTime dtIso_end = new DateTime(dtHijri_end, iso);
+                    System.out.println("1st day of Shawal");
+                    System.out.println(dtIso_end);
+                    Date dtIso_end_date = dtIso_end.toDate();
+                    Calendar dtIso_end_cal = Calendar.getInstance();;
+                    dtIso_end_cal.setTime(dtIso_end_date);
+                    System.out.println("1st day of Shawal");
+                    System.out.println(dtIso_end_cal.getTime());
+                    
+                    Date dtIso_end_date_minus_four = dtIso_end.toDate();
+                    Calendar dtIso_end_cal_minus_four = Calendar.getInstance();;
+                    dtIso_end_cal_minus_four.setTime(dtIso_end_date_minus_four);
+                    dtIso_end_cal_minus_four.add(Calendar.DAY_OF_MONTH, -3);
+                    
+                    dtIso_end_cal_minus_four.set(Calendar.MILLISECOND, 0);
+                    dtIso_end_cal_minus_four.set(Calendar.SECOND, 0);
+                    dtIso_end_cal_minus_four.set(Calendar.MINUTE, 0);
+                    dtIso_end_cal_minus_four.set(Calendar.HOUR_OF_DAY, 0);
+                    System.out.println(dtIso_end_cal_minus_four.getTime()); 
+                    System.out.print("Ramadan end -3 day: "); 
+                    System.out.println(dtIso_end_cal_minus_four.getTime());
+                    
+
+                                        
+                    if (Calendar_now.compareTo(dtIso_end_cal_minus_four)==0  && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )) 
+                    {
+                        System.out.println("Ramadan end -3"); 
+                        future_prayer_date = dtIso_end_cal.getTime();
+                         
+                        isha_jamaat = isha_winter.toString();
+                        Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
+                        cal.setTime(isha_jamaat_temp);
+                        future_isha_jamaat_time = cal.getTime();
+                        Calendar isha_ramadan_cal;
+                        isha_ramadan_cal = Calendar.getInstance();
+                        isha_ramadan_cal.setTime(future_isha_jamaat_time);
+                        
+                        System.out.println(isha_ramadan_cal.getTime());
+                        System.out.println(isha_jamaat_cal.getTime());
+                        
+                        
+                        if(isha_ramadan_cal.compareTo(isha_jamaat_cal)<0 || isha_ramadan_cal.compareTo(isha_jamaat_cal)>0)
+                        {   
+                            System.out.println("Ramadan Isha notification");
+                        
+                            isha_jamma_time_change =true;
+                            if(!notification)
+                            {
+                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                c = DBConnect.connect();
+                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                ps.setDate(1, sqlDate);
+                                ps.executeUpdate();
+                                c.close();
+                            }
+                            notification = true;
+                        }
+                        
+                        
+                    }
                        
                     if (Calendar_now.compareTo(dtIso_cal_minus_four)==0  ) 
                     {
@@ -2591,12 +2841,24 @@ notification = false;
 notification_Marquee_visible = true;
 //                            getFacebook = false;
 
-
 notification_Msg = ar_notification_Msg_Lines[0] + "\n" + ar_notification_Msg_Lines[1] + "\n\n" + en_notification_Msg_Lines[0] + "\n" + en_notification_Msg_Lines[1];
 //                            System.out.println(notification_Msg );
 
-en_Marquee_Notification_string = "Prayer Time Change on " + new SimpleDateFormat("EEEE").format(future_prayer_date) +":   " + en_notification_Msg_Lines[1];
-ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(future_prayer_date) + "ستتغير اوقات الصلاة   " + ar_notification_Msg_Lines[1];
+
+        en_Marquee_Notification_string = "Prayer Time Change on " + new SimpleDateFormat("EEEE").format(future_prayer_date) +":   " + en_notification_Msg_Lines[1];
+
+        if (orientation.equals("vertical") )
+        {
+            en_Marquee_Notification_string = "Prayer Time Change on " + new SimpleDateFormat("EEEE").format(future_prayer_date) + "\n" + en_notification_Msg_Lines[1];
+        }
+        
+        
+        ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(future_prayer_date) + "ستتغير اوقات الصلاة   " + ar_notification_Msg_Lines[1];
+ 
+        if (orientation.equals("vertical") )
+        {
+            ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(future_prayer_date) + "ستتغير اوقات الصلاة  \n " + ar_notification_Msg_Lines[1];
+        }
 
 en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);
 ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
@@ -2622,8 +2884,14 @@ if (facebook_notification_enable)
     catch (Exception e){logger.warn("Unexpected error", e);}
 }
 
-try {push.sendMessage(en_notification_Msg);}
+try {push.sendMessage(device_name + " at "+ device_location + ": \n" + en_notification_Msg);}
 catch (Exception e){{logger.warn("Unexpected error", e);}}
+
+if (device_location.equals("Parramatta") )
+{
+    try {push1.sendMessage(device_name + " at "+ device_location + ": \n" + en_notification_Msg);} catch (IOException e){e.printStackTrace();}
+}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -2671,6 +2939,7 @@ if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fu
     // 15 - 9 = 6 Ashura = fullMoon_plus1.setTime(fullMoon.getTime() - 4 * 24 * 60 * 60 * 1000);
     try
     {
+        
         c = DBConnect.connect();
         SQL = "select hadith, translated_hadith, reference, sanad_0, short_hadith, sanad_1, narated, short_translated_hadith from hadith_v2 WHERE (translated_hadith LIKE '%Ashura%') and CHAR_LENGTH(translated_hadith)<"+ "280" + " and CHAR_LENGTH(hadith)<" + max_ar_hadith_len + " and  CHAR_LENGTH(sanad_0) > 0 ORDER BY RAND( ) LIMIT 1";
     //                                    SQL = "select hadith, translated_hadith from hadith WHERE ID = 1";
@@ -2789,7 +3058,7 @@ else if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_N
 }
 
 
-else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now_Fullmoon <= 5 && days_Between_Now_Fullmoon >= 2 || debug)
+else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now_Fullmoon <= 5 && days_Between_Now_Fullmoon >= 2 )
 {
     //hide hadith label boolean
     System.out.println("full moon " );
@@ -2830,7 +3099,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
     ar_full_moon_hadith = " عَنْ جَرِيرِ بْنِ عَبْدِ اللَّهِ عَنْ النَّبِيِّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ قَالَ : صِيَامُ ثَلاثَةِ أَيَّامٍ مِنْ كُلِّ شَهْرٍ صِيَامُ الدَّهْرِ وَأَيَّامُ الْبِيضِ صَبِيحَةَ ثَلاثَ عَشْرَةَ وَأَرْبَعَ عَشْرَةَ وَخَمْسَ عَشْرَةَ َ ";
 //    en_full_moon_hadith = "The prophet -Pbuh- said \"Fasting three days of every month (13th, 14th & 15th) is equal to Fasting the life time” ";
     short_translated_hadith = "The prophet -Pbuh- said \"Fasting three days of every month (13th, 14th & 15th) is equal to Fasting the life time” ";
-    hadith_reference = "This is based on calendar calculations not local moon sightings";
+    hadith_reference = " ";
     
 
     System.out.println("Changing to full moon Background...");
@@ -2843,13 +3112,13 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
         if (orientation.equals("vertical") )
         {
 //                                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/vertical");
-            path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/full_moon/vertical";
+            path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/vertical";
                 directory = new File(path);
         }
         else if (orientation.equals("horizontal") )
         {
 //                                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal");
-                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/full_moon/horizontal";
+                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/horizontal";
                 directory = new File(path);                                   
         }
         else 
@@ -2857,12 +3126,12 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
             if(custom_background)
             {
 //                                    directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/custom");                                   
-                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/full_moon/custom";
+                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/custom";
                 directory = new File(path);                                                                
             }
             else
             {
-                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/Pi/javafx/prayertime/background/full_moon/horizontal_HD";
+                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/horizontal_HD";
                 directory = new File(path);
 //                                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal_HD");
             }
@@ -2903,11 +3172,22 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
             Mainpane.getChildren().removeAll(background);
 
             Image image = new Image(file.toURI().toString());
-            background = new ImageView(image);     
-            background.setFitWidth(1920);
-            background.setFitHeight(1080);
+            background = new ImageView(image); 
+            
+            if (orientation.equals("vertical") ){
+            background.setFitWidth(1080);
+            background.setFitHeight(1920);
             background.setPreserveRatio(true);
-            background.setTranslateY(525);  
+            background.setTranslateY(924); 
+            }
+            
+            
+            else if (orientation.equals("horizontal_HD") ){
+                background.setFitWidth(1920);
+                background.setFitHeight(1080);
+                background.setPreserveRatio(true);
+                background.setTranslateY(525);
+            }
 
             Mainpane.getChildren().add(background);
             background.toBack();
@@ -2920,7 +3200,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
     if ( days_Between_Now_Fullmoon == 5 && comparator.compare(fullMoon, maghrib_cal)<0 )
     {
         
-        System.out.print("condition 1" );
+        System.out.print("condition 1 mate" );
         fullMoon_plus1.setTime(fullMoon.getTime() - 2 * 24 * 60 * 60 * 1000);
         String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
         String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
@@ -3478,9 +3758,54 @@ clock_update_timer = new AnimationTimer() {
     @Override public void handle(long now) {
         if (now > clock_update_lastTimerCall + 1000_000_000l)
         {
-            try {play_athan();}
+            try {
+                play_athan();
+                            
+            }
             catch (Exception e) {logger.warn("Unexpected error", e);}
             clock_update_lastTimerCall = now;
+        }
+    }
+};
+
+
+moon_weather_flip= new AnimationTimer() {
+    @Override public void handle(long now) {
+        if (now > moon_weather_flip_update_lastTimerCall + 5000_000_000l)
+        {
+            try 
+            {                
+//                if (!Weatherpane.isVisible())
+                if (!weather_visible)    
+                {
+                    Weatherpane_fade_in.playFromStart();
+                    weather_visible = true;
+//                    Weatherpane.setVisible(true);
+
+                    if(moon_view_blocked_sunrise_in_progress){Sunrisepane.setVisible(false);}
+                    else Moonpane_fade_out.playFromStart();
+                    
+                }
+                
+//                else if (Weatherpane.isVisible())
+                else if (weather_visible)
+                {
+//                    Weatherpane.setVisible(true);
+                    Weatherpane_fade_out.playFromStart();
+                    weather_visible = false;
+//                    Weatherpane.setVisible(false);
+                    if(moon_view_blocked_sunrise_in_progress){Sunrisepane.setVisible(true);}
+                    else Moonpane_fade_in.playFromStart();
+                    
+                }
+   
+//        moon_calcs_display = true;
+//        weather_enabled = true;
+ 
+            
+            }
+            catch (Exception e) {logger.warn("Unexpected error", e);}
+            moon_weather_flip_update_lastTimerCall = now;
         }
     }
 };
@@ -3491,35 +3816,6 @@ hour_Label.textProperty().bind(hour);
 minute_Label.textProperty().bind(minute);
 second_Label.textProperty().bind(second);
 date_Label.textProperty().bind(date);
-//        day_Label.textProperty().bind(day_date);
-//        new Thread(() -> 
-//        {
-//
-//             for (;;)
-//             {
-//                try
-//                { 
-//                    final SimpleDateFormat simpledate_hour = new SimpleDateFormat("h");
-//                    final SimpleDateFormat simpledate_minute = new SimpleDateFormat("mm");
-//                    final SimpleDateFormat simpledate_second = new SimpleDateFormat("s");
-//                    Platform.runLater(new Runnable() {
-//                        @Override public void run() 
-//                        {
-//                                hour.set(simpledate_hour.format(new Date()));
-//                                minute.set(simpledate_minute.format(new Date()));
-//                                second.set(simpledate_second.format(new Date()));
-// 
-//                        }
-//                    });
-//                    Thread.sleep(200);
-//                            
-//                }
-//                catch (Exception e){logger.warn("Unexpected error", e); Thread.currentThread().interrupt(); Platform.exit(); System.exit(0);}
-//                        
-//             }
-//
-//        }).start();
-
 
 
 Timeline clock = new Timeline(
@@ -3531,6 +3827,7 @@ Timeline clock = new Timeline(
             second.set(String.format("%d", now.getSecond()));
             date.set(new SimpleDateFormat("EEEE, MMM d").format(Calendar_now_hourpane.getTime()));
 //        day_date.set(new SimpleDateFormat("EEEE").format(Calendar_now_hourpane.getTime()));
+
         
         }),
         new KeyFrame(Duration.seconds(1))
@@ -4045,7 +4342,6 @@ for (;;)
     catch(SerialPortException ex)
     {
         System.out.println(" ==>> SERIAL SETUP FAILED : " + ex.getMessage());
-        try {push.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
         Thread.currentThread().interrupt();
     } catch (InterruptedException ex) {
         java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
@@ -4325,7 +4621,9 @@ new Thread(() ->
                                 if(custom_background)
                                 {directory = new File("/home/pi/prayertime/Images/custom");}
                                 else
-                                directory = new File("/home/pi/prayertime/Images/horizontal_HD");}
+                                directory = new File("/home/pi/prayertime/Images/horizontal_HD");
+                            }
+                            
 
                         }
 
@@ -4342,13 +4640,7 @@ new Thread(() ->
 
                         System.out.println(rand_Image_Path);
                         File file = new File(rand_Image_Path);
-                        
-            
-            
-                                    
-                        
-                        
-                        
+                                
                         Platform.runLater(new Runnable() {
                             @Override public void run()
                             {
@@ -4356,23 +4648,30 @@ new Thread(() ->
                                 Mainpane.getChildren().removeAll(background);
                                 
                                 Image image = new Image(file.toURI().toString());
-                                background = new ImageView(image);     
-                                background.setFitWidth(1920);
-                                background.setFitHeight(1080);
-                                background.setPreserveRatio(true);
-                                background.setTranslateY(525);  
+                                background = new ImageView(image); 
                                 
+                                if (orientation.equals("vertical") )
+                                {
+                                    background.setFitWidth(1080);
+                                    background.setFitHeight(1920);
+                                    background.setPreserveRatio(true);
+                                    background.setTranslateY(924);  
+                                }
                                 
+                                else if (orientation.equals("horizontal_HD") )
+                                {
+                                    background.setFitWidth(1920);
+                                    background.setFitHeight(1080);
+                                    background.setPreserveRatio(true);
+                                    background.setTranslateY(525);  
+                                }                                
+                              
                                 Mainpane.getChildren().add(background);
                                 background.toBack();
-                                
-                                
+  
                             }
                         });     }
-                    
-                    
-                
-                
+
                 
                 else if(received.equals("hide mainpain"))
                 {
@@ -4414,7 +4713,7 @@ new Thread(() ->
                             
                             if (orientation.equals("horizontal") )
                             {
-                                background.setTranslateY(232);
+                                background.setTranslateY(924);;
                             }
                             else if (orientation.equals("horizontal_HD") )
                             {
@@ -4819,33 +5118,30 @@ new Thread(() ->
         if (orientation.equals("vertical") )
         {
             scene = new Scene(root, 1080, 1920);
-            scene.getStylesheets().addAll(this.getClass().getResource("style_90.css").toExternalForm());
-            try
-            {
-                String image = new File(rand_Image_Path).toURI().toURL().toString();
-//                System.out.println("image string: " + image);
-                Mainpane = new GridPane();
-                Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 1080 1920;-fx-background-position: bottom left;");  
-            }
-            catch (IOException e) {logger.warn("Unexpected error", e);}
             
-            stage.setScene(scene);
-            stage.initStyle(StageStyle.TRANSPARENT);
+            if(custom_background){scene.getStylesheets().addAll(this.getClass().getResource("style_90.css").toExternalForm()); System.out.println("style_90.css Selected");}
+            else {scene.getStylesheets().addAll(this.getClass().getResource("style_90.css").toExternalForm());}
+            
+                
+                Mainpane = new GridPane();
+
             
             Mainpane.getColumnConstraints().setAll(
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build(),
-                ColumnConstraintsBuilder.create().percentWidth(100/13.0).build()       
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build(),
+                ColumnConstraintsBuilder.create().percentWidth(100/15.0).build()       
             );
             Mainpane.getRowConstraints().setAll(
                     RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
@@ -4878,88 +5174,248 @@ new Thread(() ->
                     RowConstraintsBuilder.create().percentHeight(100/24.0).build(),
                     RowConstraintsBuilder.create().percentHeight(100/24.0).build()
             );
-    //        Mainpane.setGridLinesVisible(true);
-            Mainpane.setId("Mainpane");
+ 
+            
+//              Mainpane.setGridLinesVisible(true);
+//            Mainpane.setId("Mainpane");
+            Glasspane = new Pane();
+            Glasspane.setId("glass");
+            
+            
             prayertime_pane = prayertime_pane();    
-            if(moon_calcs_display)
-            {
-                    Moonpane =   moonpane();
-            }
-            if(moon_calcs_display)
-            {Sunrisepane =   sunrise();}
-            if(weather_enabled){
-                Weatherpane =   weatherpane();
-                Weatherpane.setVisible(false);
-            }
-            if(moon_calcs_display)
-            {Sunrisepane.setVisible(false);}
-            hadithPane = hadithPane();
+            hadithPane = hadithPane();      
             clockPane =   clockPane();
             GridPane footerPane =   footerPane();
 
-            ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
-            ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.RIGHT);
-            ar_Marquee_Notification_Text.setY(35);
-            ar_Marquee_Notification_Text_textSize = 38;
-            ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
-            ar_Marquee_Notification_Text.setFill(Color.WHITE);
-            ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
-            ar_Marquee_Notification_Text_XPos = 320;
-            ar_Marquee_Notification_Text.setX(1920/2 - ar_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
-            en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
-            en_Marquee_Notification_Text.setTextAlignment(TextAlignment.LEFT);                    
-            en_Marquee_Notification_Text.setY(40);
-            en_Marquee_Notification_Text_textSize = 37;
-            en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
-            en_Marquee_Notification_Text.setFill(Color.WHITE);
-            en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
-            en_Marquee_Notification_Text.setX(1920/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);  
-
-
-//            ImageView notification_image = new ImageView(new Image(getClass().getResourceAsStream("/Images/notification.png")));
-//            notification_image.setTranslateY(0);
-//            notification_image.setFitHeight(25);
-//            notification_image.setPreserveRatio(true);
             text_Box = new Pane();
             text_Box.setMinWidth(640);
-            text_Box.setMinHeight(23);
-            text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text);
-            text_Box.setId("notification"); 
+            text_Box.setMinHeight(50);
+
+            ft_ar1.setNode(ar_Marquee_Notification_Text1);
+            ft_ar1.setFromValue(1.0);
+            ft_ar1.setToValue(0);
+            ft_ar1.setCycleCount(Timeline.INDEFINITE);
+            ft_ar1.setAutoReverse(true);
+
+            ft_en1.setNode(en_Marquee_Notification_Text1);
+            ft_en1.setFromValue(1.0);
+            ft_en1.setToValue(0);
+            ft_en1.setCycleCount(2);
+            ft_en1.setAutoReverse(true);
+        
+            File file = new File(rand_Image_Path);
+            Image image = new Image(file.toURI().toString());
+            background = new ImageView(image);     
+            background.setFitWidth(1080);
+            background.setFitHeight(1920);
+            background.setPreserveRatio(true);
+            
+            Mainpane.getChildren().add(background);
+//            background.setTranslateX(400);
+            background.setTranslateY(924);
+            
+            
+            
+            if (notification_Marquee_visible)
+            {
+                
+                prayertime_pane.setTranslateY(20); 
+                hadithPane.setTranslateY(20); 
+                
+                
+                text_Box.setMinHeight(100);
+                
+                Glasspane.setMinHeight(280);
+                Mainpane.add(Glasspane, 0, 1,15,3);
+                
+                clockPane.setTranslateY(80); 
+                Mainpane.add(clockPane, 0, 0,9,2);
+                
+                ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
+                ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.CENTER);
+                ar_Marquee_Notification_Text.setY(50);
+                ar_Marquee_Notification_Text_textSize = 28;
+                ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
+                ar_Marquee_Notification_Text.setFill(Color.WHITE);
+                ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+                ar_Marquee_Notification_Text_XPos = 320;
+                ar_Marquee_Notification_Text.setX(1080/2 - ar_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
 
 
-                Mainpane.add(text_Box,0,0,30,1);
-                text_Box.setTranslateY(5);
+                en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
+                en_Marquee_Notification_Text.setTextAlignment(TextAlignment.CENTER);                    
+                en_Marquee_Notification_Text.setY(50);
+                en_Marquee_Notification_Text_textSize = 28;
+                en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
+                en_Marquee_Notification_Text.setFill(Color.WHITE);
+                en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+                en_Marquee_Notification_Text.setX(1080/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
+                
+                text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text);
+                text_Box.setId("notification");
+                if(weather_enabled)
+                {
+                    Weatherpane =   weatherpane();
+                    Weatherpane.setTranslateY(22); 
+                    Mainpane.add(Weatherpane, 10, 2);    
+                    Weatherpane.setTranslateX(15); 
+                    if(moon_calcs_display) { Weatherpane.setVisible(true);}
+                    else Weatherpane.setVisible(true);
+                }
 
-      //============================================
+                if(moon_calcs_display) 
+                {
+                    Moonpane =   moonpane();
+                    Moonpane.setVisible(true);
+                    Moonpane.setTranslateY(22); 
+                    Moonpane.setTranslateX(-20);
+                    Mainpane.add(Moonpane,8, 2); 
+
+                    Sunrisepane =   sunrise();
+                    Sunrisepane.setVisible(false);
+                    Sunrisepane.setTranslateY(22); 
+                    Sunrisepane.setTranslateX(30); 
+                    Mainpane.add(Sunrisepane, 8, 2); 
+
+                }
+            
+            }
+            
+            else
+            {
+                Mainpane.add(Glasspane, 0, 0,15,4);
+                clockPane.setTranslateY(30); 
+                Mainpane.add(clockPane, 0, 0,9,2);
+                ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
+                ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.CENTER);
+                ar_Marquee_Notification_Text.setY(25);
+                ar_Marquee_Notification_Text_textSize = 30;
+                ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
+                ar_Marquee_Notification_Text.setFill(Color.WHITE);
+                ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+                ar_Marquee_Notification_Text_XPos = 320;
+                ar_Marquee_Notification_Text.setX(1080/2 - ar_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
+
+
+                en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);   
+                en_Marquee_Notification_Text.setTextAlignment(TextAlignment.CENTER);                    
+                en_Marquee_Notification_Text.setY(28);
+                en_Marquee_Notification_Text_textSize = 29;
+                en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
+                en_Marquee_Notification_Text.setFill(Color.WHITE);
+                en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
+                en_Marquee_Notification_Text.setX(1080/2 - en_Marquee_Notification_Text.getBoundsInLocal().getWidth()/2);
+                
+                text_Box.getChildren().addAll(ar_Marquee_Notification_Text, en_Marquee_Notification_Text);
+                text_Box.setId("notification"); 
+
+                if(weather_enabled)
+                {
+                    Weatherpane =   weatherpane();
+                    Weatherpane.setTranslateY(-10); 
+                    Mainpane.add(Weatherpane, 10, 2);    
+                    Weatherpane.setTranslateX(15); 
+                    if(moon_calcs_display) { Weatherpane.setVisible(true);}
+                    else Weatherpane.setVisible(true);
+                }
+
+                if(moon_calcs_display) 
+                {
+                    Moonpane =   moonpane();
+                    Moonpane.setVisible(true);
+                    Moonpane.setTranslateY(-10);
+                    Moonpane.setTranslateX(-30);
+                    Mainpane.add(Moonpane,8, 2); 
+
+                    Sunrisepane =   sunrise();
+                    Sunrisepane.setVisible(false);
+                    Sunrisepane.setTranslateY(-10); 
+                    Sunrisepane.setTranslateX(20); 
+                    Mainpane.add(Sunrisepane, 8, 2); 
+
+                }
+            }
+                        
+            
+            
+            if(moon_calcs_display && weather_enabled) 
+            {
+                
+                Sunrisepane_fade_in = new FadeTransition(Duration.millis(2000), Sunrisepane);
+                Sunrisepane_fade_in.setFromValue(0);
+                Sunrisepane_fade_in.setToValue(1);
+                Sunrisepane_fade_in.setCycleCount(1);
+
+                Sunrisepane_fade_out = new FadeTransition(Duration.millis(2000), Sunrisepane);
+                Sunrisepane_fade_out.setFromValue(1);
+                Sunrisepane_fade_out.setToValue(0);
+                Sunrisepane_fade_out.setCycleCount(1);
+
+                Moonpane_fade_in = new FadeTransition(Duration.millis(2000), Moonpane);
+                Moonpane_fade_in.setFromValue(0);
+                Moonpane_fade_in.setToValue(1);
+                Moonpane_fade_in.setCycleCount(1);
+
+                Moonpane_fade_out = new FadeTransition(Duration.millis(2000), Moonpane);
+                Moonpane_fade_out.setFromValue(1);
+                Moonpane_fade_out.setToValue(0);
+                Moonpane_fade_out.setCycleCount(1);
+
+                Weatherpane_fade_in = new FadeTransition(Duration.millis(2000), Weatherpane);
+                Weatherpane_fade_in.setFromValue(0);
+                Weatherpane_fade_in.setToValue(1);
+                Weatherpane_fade_in.setCycleCount(1);
+
+                Weatherpane_fade_out = new FadeTransition(Duration.millis(2000), Weatherpane);
+                Weatherpane_fade_out.setFromValue(1);
+                Weatherpane_fade_out.setToValue(0);
+                Weatherpane_fade_out.setCycleCount(1);
+                
+                weather_visible = true;
+                moon_weather_flip.start(); 
+
+            }
+            
+            
+            if(show_logo) 
+            {
+                Logopane =   logopane();
+                Mainpane.add(Logopane, 13, 2); 
+                Logopane.setTranslateX(-75);
+            }
+            if(show_friday)
+            {   
+                Mainpane.add(prayertime_pane, 1, 5,13,12); 
+//                prayertime_pane.setTranslateY(30); 
+//                hadithPane.setTranslateY(15); 
+                Mainpane.add(hadithPane, 1,18,13,10);
+            }
+            else
+            {   
+                Mainpane.add(prayertime_pane, 16, 8,13,21); 
+                prayertime_pane.setTranslateY(10);
+                Mainpane.add(hadithPane, 1,8,14,21);
+            }
+            
+
+            Mainpane.add(text_Box,0,0,15,1);
+//            text_Box.setTranslateY(-5);
+
 
             DropShadow ds = new DropShadow();
             ds.setOffsetY(10.0);
             ds.setOffsetX(10.0);
             ds.setColor(Color.BLACK);
 
-    //        clock.setEffect(ds);
-            if(moon_calcs_display) {Moonpane.setEffect(ds);}
-            if(moon_calcs_display)
-            {Sunrisepane.setEffect(ds);}
+            if(moon_calcs_display) {Moonpane.setEffect(ds); Sunrisepane.setEffect(ds);}
+            if(show_logo) {Logopane.setEffect(ds);}
             if(weather_enabled){Weatherpane.setEffect(ds);}
             prayertime_pane.setEffect(ds);
             hadithPane.setEffect(ds);
             clockPane.setEffect(ds);
-    //        footerPane.setEffect(ds);
-      //============================================
-            Mainpane.add(clockPane, 1, 1,5,1);
-            if(moon_calcs_display) {Mainpane.add(Moonpane, 7, 1);}
-            if(weather_enabled){Mainpane.add(Weatherpane, 7, 1);}
-            if(moon_calcs_display)
-            {Mainpane.add(Sunrisepane, 7, 1);}
-            Mainpane.add(prayertime_pane, 1, 5,11,7);  
-            Mainpane.add(hadithPane, 1, 15,11,13);
-            prayertime_pane.setTranslateY(30);
-    //        hadithPane.setTranslateY(0);
-            Mainpane.add(footerPane, 1, 20,11,1);
-    //        footerPane.setTranslateY(514);
-    //        Mainpane.setCache(true);
-
+//            Glasspane.setEffect(ds);
+            footerPane.setEffect(ds);
+//            Mainpane.setGridLinesVisible(true);
         }
         
         
@@ -5346,14 +5802,11 @@ new Thread(() ->
         else 
         {
             scene = new Scene(root, 1920, 1080);
-//            scene = new Scene(root, 320, 240);
-
             if(custom_background){scene.getStylesheets().addAll(this.getClass().getResource("style_HD_custom.css").toExternalForm()); System.out.println("style_HD_custom.css Selected");}
             else {scene.getStylesheets().addAll(this.getClass().getResource("style_HD.css").toExternalForm());}
             
                 
-                Mainpane = new GridPane();
-//                Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 1920 1080; -fx-background-position: bottom left;");  
+            Mainpane = new GridPane();
 
             Mainpane.getColumnConstraints().setAll(
                     ColumnConstraintsBuilder.create().percentWidth(100/30.0).build(),
@@ -5536,6 +5989,8 @@ new Thread(() ->
             footerPane.setEffect(ds);
         }
         
+
+        
         ft_ar.setNode(ar_Marquee_Notification_Text);
         ft_ar.setFromValue(1.0);
         ft_ar.setToValue(0);
@@ -5548,8 +6003,9 @@ new Thread(() ->
         ft_en.setCycleCount(Timeline.INDEFINITE);
         ft_en.setAutoReverse(true);
         
-        facebook_image_fade_in = new FadeTransition(Duration.millis(500), facebook_Label);
         
+        
+        facebook_image_fade_in = new FadeTransition(Duration.millis(500), facebook_Label);
         facebook_image_fade_in.setFromValue(0);
         facebook_image_fade_in.setToValue(1);
         facebook_image_fade_in.setCycleCount(1);
@@ -5559,39 +6015,43 @@ new Thread(() ->
         facebook_image_fade_out.setToValue(0);
         facebook_image_fade_out.setCycleCount(1);
         
-        hadith_arabic_fade_out = new FadeTransition(Duration.millis(500), facebook_Label);
-        hadith_arabic_fade_out.setFromValue(1);
-        hadith_arabic_fade_out.setToValue(0);
-        hadith_arabic_fade_out.setCycleCount(1);
-        
-        hadith_arabic_fade_in = new FadeTransition(Duration.millis(500), facebook_Label);
-        hadith_arabic_fade_in.setFromValue(1);
-        hadith_arabic_fade_in.setToValue(0);
-        hadith_arabic_fade_in.setCycleCount(1);
-        
-        hadith_en_fade_out = new FadeTransition(Duration.millis(500), facebook_Label);
-        hadith_en_fade_out.setFromValue(1);
-        hadith_en_fade_out.setToValue(0);
-        hadith_en_fade_out.setCycleCount(1);
-        
-        hadith_en_fade_in = new FadeTransition(Duration.millis(500), facebook_Label);
-        hadith_en_fade_in.setFromValue(1);
-        hadith_en_fade_in.setToValue(0);
-        hadith_en_fade_in.setCycleCount(1);
-        
-        
+       
 //        facebook_Label.setVisible(true);
         scene.setFill(Color.TRANSPARENT);
             
         scene.setRoot(Mainpane);
         stage.setScene(scene);
         stage.initStyle(StageStyle.TRANSPARENT);
+//        stage.initStyle(StageStyle.UNDECORATED);
         
 //        if (platform.equals("osx")){stage.setAlwaysOnTop(true);}
 //        stage.setAlwaysOnTop(true);
-        
+        stage.setX(0);
+        stage.setY(3);
         stage.show();
         
+        final Delta dragDelta = new Delta();
+        Mainpane.setOnMousePressed(new EventHandler<javafx.scene.input.MouseEvent>() {
+      @Override public void handle(javafx.scene.input.MouseEvent mouseEvent) {
+        // record a delta distance for the drag and drop operation.
+        dragDelta.x = stage.getX() - mouseEvent.getScreenX();
+        dragDelta.y = stage.getY() - mouseEvent.getScreenY();
+        scene.setCursor(Cursor.MOVE);
+      }
+    });
+    Mainpane.setOnMouseReleased(new EventHandler<javafx.scene.input.MouseEvent>() {
+      @Override public void handle(javafx.scene.input.MouseEvent mouseEvent) {
+        scene.setCursor(Cursor.HAND);
+      }
+    });
+    Mainpane.setOnMouseDragged(new EventHandler<javafx.scene.input.MouseEvent>() {
+      @Override public void handle(javafx.scene.input.MouseEvent mouseEvent) {
+        stage.setX(mouseEvent.getScreenX() + dragDelta.x);
+        stage.setY(mouseEvent.getScreenY() + dragDelta.y);
+      }
+    });
+        
+
         translate_timer.start(); 
         clock_update_timer.start();
         
@@ -5681,26 +6141,7 @@ public void play_athan() throws Exception{
         
         
         
-//        hour_in_hour_Label = new SimpleDateFormat("hh").format(Calendar_now.getTime());
-//        minute_in_minute_Label = new SimpleDateFormat(":mm").format(Calendar_now.getTime());
-//        clock_minute = Calendar_now.get(Calendar.MINUTE);
-//        
-//        if(clock_minute != old_clock_minute)
-//        {
-//            old_clock_minute = clock_minute;
-//            hour_Label.setText(hour_in_hour_Label);
-//            minute_Label.setText(minute_in_minute_Label);
-//            date = new SimpleDateFormat("EEEE, d MMMM").format(Calendar_now.getTime());
-//            date_Label.setText(date);
-//            
-//        }
-        
-//       SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-//	String dateInString = "21-07-2014 22:05:56";
-//	Date date2 = sdf.parse(dateInString);
-//        fajr_diffsec = (int) ((date2.getTime() - date_now.getTime() ) / (1000));
-        
-        
+       
         fajr_diffsec = (int) ((fajr_begins_time.getTime() - date_now.getTime() ) / (1000));
         
 //        System.out.println("difference between seconds: " + fajr_diffsec); 
@@ -5873,8 +6314,7 @@ public void play_athan() throws Exception{
         
         if (duha_cal.equals(Calendar_now) && duha_athan_enable) 
         {
-            if(moon_calcs_display) {Moonpane.setVisible(true);}
-            if(moon_calcs_display) {Sunrisepane.setVisible(false);}
+            if(moon_calcs_display) {Moonpane.setVisible(true); Sunrisepane.setVisible(false); moon_view_blocked_sunrise_in_progress = false;}
             duha_athan_enable = false;
             System.out.println("Duha Time");
 //            String image = JavaFXApplication4.class.getResource("/Images/sunrise.png").toExternalForm();
@@ -5893,8 +6333,7 @@ public void play_athan() throws Exception{
         {
             
             
-            if(moon_calcs_display) {Moonpane.setVisible(false);}
-            if(moon_calcs_display) {Sunrisepane.setVisible(true);}
+            if(moon_calcs_display  ) {Moonpane.setVisible(false); Sunrisepane.setVisible(true); moon_view_blocked_sunrise_in_progress = true;}
             
             fajr_prayer_In_Progress_notification = true;
             fajr_athan_enable = false;
@@ -6060,24 +6499,7 @@ public void update_labels() throws Exception{
                                 
             if (hadith_Label_visible)
             {
-                
-//                System.out.println("en hadith_Label_visible");
-
-                
-//                hadith_Label.setVisible(true);
-//                hadith_Label.setText(translated_hadith);
-//                hadith_Label.setId("hadith-text-english");
-//                hadithPane.setValignment(hadith_Label,VPos.TOP);
-                
-//                sanad_0 =  rs.getString("sanad_0");
-//    short_hadith =  rs.getString("short_hadith");
-//    sanad_1 =  rs.getString("sanad_1");
-//            
-//    narated =  rs.getString("narated");
-//    short_translated_hadith 
-            
-                //hadith_Label.setVisible(false);
-                
+ 
                 hadith_flow.getChildren().clear();
                 text1=new Text(narated +" ");
                 text1.setStyle("-fx-font-size: 40; -fx-fill: white;   ");
@@ -6090,59 +6512,23 @@ public void update_labels() throws Exception{
                 hadith_flow.setTextAlignment(TextAlignment.LEFT);
                 hadith_flow.setStyle("-fx-line-spacing: 25px; fitToWidth: true;");
                 hadith_flow.getChildren().addAll(text1, text2,text3, text4);
-                
-        
-//                ar_moon_hadith_Label_L1.setVisible(false);
-//                ar_moon_hadith_Label_L2.setVisible(false);
-//                en_moon_hadith_Label_L1.setVisible(false);
-//                en_moon_hadith_Label_L2.setVisible(false);
-//                
-//                en_moon_hadith_Label_L2.setText("");
-//                ar_moon_hadith_Label_L2.setText("");
-//                ar_moon_hadith_Label_L2.setMinHeight(0);
-//                en_moon_hadith_Label_L2.setMinHeight(0);
-//                hadith_Label.setMinHeight(0);
- 
+
             }
             
             if (moon_hadith_Label_visible)
             {
-
-//                System.out.println("en moon_hadith_Label_visible");
-                
-//                en_moon_hadith_Label_L1.setVisible(true);
-//                en_moon_hadith_Label_L1.setText(en_full_moon_hadith);
-//                en_moon_hadith_Label_L1.setId("en_moon-notification-text1");
-////                en_moon_hadith_Label_L1.setTranslateY(5);
-//                
-//                en_moon_hadith_Label_L2.setVisible(true);
-//                en_moon_hadith_Label_L2.setText(en_moon_notification);
-//                en_moon_hadith_Label_L2.setId("en_moon-notification-text2");
-//                hadithPane.setHalignment(en_moon_hadith_Label_L2,HPos.LEFT);
-//
-//                
-//                ar_moon_hadith_Label_L1.setVisible(false);
-//                ar_moon_hadith_Label_L1.setText("");
-//                ar_moon_hadith_Label_L1.setMinHeight(0);
-//                hadith_Label.setVisible(false);
-//                hadith_Label.setMinHeight(0);
-//                hadith_Label.setText("");
-//                ar_moon_hadith_Label_L2.setVisible(false);
-//                divider1_Label.setMinHeight(50);
-
-
                 hadith_flow.getChildren().clear();
-//                text1=new Text(en_full_moon_hadith);
-//                text1.setStyle("-fx-font-size: 40; -fx-fill: white;   ");
-//                text2=new Text("\n" + en_moon_notification);
-//                text2.setStyle("-fx-font-size: 40; -fx-fill: goldenrod; ");
-//                text3 = new Text(" ");
-//                text3.setStyle("-fx-font-size: 40; -fx-fill: white;  ");
-//                text4 = new Text("\n This is based on calendar calculations not local moon sightings");
-//                text4.setStyle("-fx-font-size: 25; -fx-fill: white;  ");
-//                hadith_flow.setTextAlignment(TextAlignment.LEFT);
-//                hadith_flow.setStyle("-fx-line-spacing: 25px; fitToWidth: true;");
-//                hadith_flow.getChildren().addAll(text1, text2,text3, text4);
+                
+                
+//                sanad_0 = "عَنْ جَرِيرِ بْنِ عَبْدِ اللَّهِ عَنْ النَّبِيِّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ قَالَ :َ ";
+//    short_hadith = "  صِيَامُ ثَلاثَةِ أَيَّامٍ مِنْ كُلِّ شَهْرٍ صِيَامُ الدَّهْرِ وَأَيَّامُ الْبِيضِ صَبِيحَةَ ثَلاثَ عَشْرَةَ وَأَرْبَعَ عَشْرَةَ وَخَمْسَ عَشْرَةَ َ ";
+//    ar_full_moon_hadith = " عَنْ جَرِيرِ بْنِ عَبْدِ اللَّهِ عَنْ النَّبِيِّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ قَالَ : صِيَامُ ثَلاثَةِ أَيَّامٍ مِنْ كُلِّ شَهْرٍ صِيَامُ الدَّهْرِ وَأَيَّامُ الْبِيضِ صَبِيحَةَ ثَلاثَ عَشْرَةَ وَأَرْبَعَ عَشْرَةَ وَخَمْسَ عَشْرَةَ َ ";
+////    en_full_moon_hadith = "The prophet -Pbuh- said \"Fasting three days of every month (13th, 14th & 15th) is equal to Fasting the life time” ";
+//    short_translated_hadith = "The prophet -Pbuh- said \"Fasting three days of every month (13th, 14th & 15th) is equal to Fasting the life time” ";
+//    hadith_reference = "This is based on calendar calculations not local moon sightings";
+    
+                
+                
                 
                 text1=new Text(narated +" ");
                 text1.setStyle("-fx-font-size: 35; -fx-fill: white;   ");
@@ -6152,19 +6538,15 @@ public void update_labels() throws Exception{
                 text3.setStyle("-fx-font-size: 25; -fx-fill: white;  ");
                 text4 = new Text("\n" + en_moon_notification);
                 text4.setStyle("-fx-font-size: 35; -fx-fill: white;  ");
-                text5 = new Text("\n" + "This is based on calendar calculations not local moon sightings");
+                text5 = new Text("\n" + "This is based on calendar calculations");
                 text5.setStyle("-fx-font-size: 25; -fx-fill: white;  ");
                 
                 hadith_flow.setTextAlignment(TextAlignment.LEFT);
                 hadith_flow.setStyle("-fx-line-spacing: 20px; fitToWidth: true;");
-                
-                
-                
-                
-                
+
                 if (days_Between_Now_Fullmoon <=9 && days_Between_Now_Fullmoon >=6 )
                 {        
-                    hadith_flow.getChildren().addAll(text1, text2,text3, text4);
+                    hadith_flow.getChildren().addAll(text1, text2, text4);
                 }
                 else
                 {
@@ -6200,14 +6582,16 @@ public void update_labels() throws Exception{
                 
                 if (!camera)
                 {
-                    text_Box.setVisible(true);
-                    ar_Marquee_Notification_Text.setVisible(false);
-//                    ar_timeline.stop();
-//                    en_Marquee_Notification_Text_XPos = 320;
-                    ft_en.playFromStart();
-                    ft_ar.stop();
-//                    en_Animate();
-                    en_Marquee_Notification_Text.setVisible(true);
+                        text_Box.setVisible(true);
+                        ar_Marquee_Notification_Text.setVisible(false);
+    //                    ar_timeline.stop();
+    //                    en_Marquee_Notification_Text_XPos = 320;
+                        ft_en.playFromStart();
+                        ft_ar.stop();
+    //                    en_Animate();
+                        en_Marquee_Notification_Text.setVisible(true);
+                    
+                    
                 }
 
             }
@@ -6232,9 +6616,10 @@ public void update_labels() throws Exception{
                         Moon_Date_Label.setId("moon-text-english");
 
                         if (comparator.compare(newMoon, maghrib_cal)>0){Moon_Date_Label.setText("New moon is on next\n" + newMoon_date_en + " night "  + dayStr + newMoon_date_en1);}
-                        else{Moon_Date_Label.setText("New moon is on next\n" + newMoon_date_en + " "  + dayStr  + newMoon_date_en1);}
+                        else{Moon_Date_Label.setText("New moon on next\n" + newMoon_date_en + " "  + dayStr  + newMoon_date_en1);}
 
-                        Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
+                        Moonpane.setHalignment(Moon_Date_Label,HPos.CENTER);
+                        if (orientation.equals("vertical") ){Moon_Date_Label.setTranslateX(20);}
 
                     }
 
@@ -6245,7 +6630,8 @@ public void update_labels() throws Exception{
                         if (comparator.compare(newMoon, maghrib_cal)>0){Moon_Date_Label.setText("The moon is new tonight" );}
                         else{Moon_Date_Label.setText("The moon is new today" );}
 
-                        Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
+                        Moonpane.setHalignment(Moon_Date_Label,HPos.CENTER);
+                        if (orientation.equals("vertical") ){Moon_Date_Label.setTranslateX(20);}
 //                        arabic = false;
 //                        if (facebook_Label_visible && !facebook_turn && arabic)
 //                        {
@@ -6259,8 +6645,9 @@ public void update_labels() throws Exception{
                     {
                         Moon_Date_Label.setId("moon-text-english");
                         if (comparator.compare(newMoon, maghrib_cal)>0){Moon_Date_Label.setText("New moon is on\n"+ "tomorrow night");}
-                        else{Moon_Date_Label.setText("New moon is on\n"+ "tomorrow");}
-                        Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
+                        else{Moon_Date_Label.setText("New moon on\n"+ "tomorrow");}
+                        Moonpane.setHalignment(Moon_Date_Label,HPos.CENTER);
+                        if (orientation.equals("vertical") ){Moon_Date_Label.setTranslateX(20);}
 //                        arabic = false;
 //                        if (facebook_Label_visible && !facebook_turn && arabic)
 //                        {
@@ -6275,8 +6662,9 @@ public void update_labels() throws Exception{
                         String newMoon_date_en = new SimpleDateFormat("EEEE").format(newMoon);
                         String newMoon_date_en1 = new SimpleDateFormat("' of ' MMMM").format(newMoon);
                         Moon_Date_Label.setId("moon-text-english");
-                        Moon_Date_Label.setText("New moon is on\n" + newMoon_date_en + " "  + dayStr  + newMoon_date_en1);
-                        Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
+                        Moon_Date_Label.setText("New moon on\n" + newMoon_date_en + " "  + dayStr  + newMoon_date_en1);
+                        Moonpane.setHalignment(Moon_Date_Label,HPos.CENTER);
+                        if (orientation.equals("vertical") ){Moon_Date_Label.setTranslateX(20);}
 //                        arabic = false;
 //                        if (facebook_Label_visible && !facebook_turn && arabic)
 //                        {
@@ -6292,7 +6680,8 @@ public void update_labels() throws Exception{
                         String newMoon_date_en1 = new SimpleDateFormat("' of ' MMMM").format(newMoon);
                         Moon_Date_Label.setId("moon-text-english");
                         Moon_Date_Label.setText("Next new Moon is on\n" + newMoon_date_en  + " "  + dayStr  + newMoon_date_en1);
-                        Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
+                        Moonpane.setHalignment(Moon_Date_Label,HPos.CENTER);
+                        if (orientation.equals("vertical") ){Moon_Date_Label.setTranslateX(20);}
 //                        arabic = false;
 //                        if (facebook_Label_visible && !facebook_turn && arabic)
 //                        {
@@ -6325,9 +6714,10 @@ public void update_labels() throws Exception{
                         Moon_Date_Label.setId("moon-text-english");
 
                         if (comparator.compare(fullMoon, maghrib_cal)>0){Moon_Date_Label.setText("Full moon is on next\n" + FullMoon_date_en + " night");}
-                        else{Moon_Date_Label.setText("Full moon is on next\n" + FullMoon_date_en + " "  + dayStr  + FullMoon_date_en1);}
+                        else{Moon_Date_Label.setText("Full moon on next\n" + FullMoon_date_en + " "  + dayStr  + FullMoon_date_en1);}
 
-                        Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
+                        Moonpane.setHalignment(Moon_Date_Label,HPos.CENTER);
+                        if (orientation.equals("vertical") ){Moon_Date_Label.setTranslateX(20);}
 //                        arabic = false;
 //                        if (facebook_Label_visible && !facebook_turn && arabic)
 //                        {
@@ -6344,7 +6734,8 @@ public void update_labels() throws Exception{
                         if (comparator.compare(fullMoon, maghrib_cal)>0){Moon_Date_Label.setText("The moon is full tonight" );}
                         else{Moon_Date_Label.setText("The moon is full today" );}
 
-                        Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
+                        Moonpane.setHalignment(Moon_Date_Label,HPos.CENTER);
+                        if (orientation.equals("vertical") ){Moon_Date_Label.setTranslateX(20);}
 //                        arabic = false;
 //                        if (facebook_Label_visible && !facebook_turn && arabic)
 //                        {
@@ -6358,8 +6749,9 @@ public void update_labels() throws Exception{
                     {
                         Moon_Date_Label.setId("moon-text-english");
                         if (comparator.compare(fullMoon, maghrib_cal)>0){Moon_Date_Label.setText("Full moon is on\n"+ "tomorrow night");}
-                        else{Moon_Date_Label.setText("Full moon is on\n"+ "tomorrow");}
-                        Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
+                        else{Moon_Date_Label.setText("Full moon on\n"+ "tomorrow");}
+                        Moonpane.setHalignment(Moon_Date_Label,HPos.CENTER);
+                        if (orientation.equals("vertical") ){Moon_Date_Label.setTranslateX(20);}
 //                        arabic = false;
 //                        if (facebook_Label_visible && !facebook_turn && arabic)
 //                        {
@@ -6374,8 +6766,9 @@ public void update_labels() throws Exception{
                         String FullMoon_date_en = new SimpleDateFormat("EEEE").format(fullMoon);
                         String FullMoon_date_en1 = new SimpleDateFormat("' of ' MMMM").format(fullMoon);
                         Moon_Date_Label.setId("moon-text-english");
-                        Moon_Date_Label.setText("Full moon is on\n" + FullMoon_date_en + " "  + dayStr  + FullMoon_date_en1);
-                        Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
+                        Moon_Date_Label.setText("Full moon on\n" + FullMoon_date_en + " "  + dayStr  + FullMoon_date_en1);
+                        Moonpane.setHalignment(Moon_Date_Label,HPos.CENTER);
+                        if (orientation.equals("vertical") ){Moon_Date_Label.setTranslateX(20);}
 //                        arabic = false;
 //                        if (facebook_Label_visible && !facebook_turn && arabic)
 //                        {
@@ -6390,8 +6783,10 @@ public void update_labels() throws Exception{
                         String FullMoon_date_en = new SimpleDateFormat("EEEE").format(fullMoon);
                         String FullMoon_date_en1 = new SimpleDateFormat("' of ' MMMM").format(fullMoon);
                         Moon_Date_Label.setId("moon-text-english");
-                        Moon_Date_Label.setText("Next Full Moon is on\n" + FullMoon_date_en  + " "  + dayStr  + FullMoon_date_en1);
-                        Moonpane.setHalignment(Moon_Date_Label,HPos.LEFT);
+                        Moon_Date_Label.setText("Next Full Moon on\n" + FullMoon_date_en  + " "  + dayStr  + FullMoon_date_en1);
+                        Moonpane.setHalignment(Moon_Date_Label,HPos.CENTER);
+                        
+                        if (orientation.equals("vertical") ){Moon_Date_Label.setTranslateX(20);}
 //                        arabic = false;
 //                        if (facebook_Label_visible && !facebook_turn && arabic)
 //                        {
@@ -6488,38 +6883,13 @@ public void update_labels() throws Exception{
             {
                 System.out.println("ar moon hadith_Label_visible");
                 System.out.println("ar_full_moon_hadith:  " + ar_full_moon_hadith);
-//                ar_moon_hadith_Label_L1.setVisible(true);
-//                ar_moon_hadith_Label_L1.setText(ar_full_moon_hadith);
-//                ar_moon_hadith_Label_L1.setId("ar_moon-notification-text1");
-//                hadithPane.setHalignment(ar_moon_hadith_Label_L1,HPos.RIGHT);
-////                ar_moon_hadith_Label_L1.setTranslateY(5);
-//                
-//                ar_moon_hadith_Label_L2.setVisible(true);
-//                ar_moon_hadith_Label_L2.setText(ar_moon_notification);
-//                ar_moon_hadith_Label_L2.setId("ar_moon-notification-text2");
-//                hadithPane.setHalignment(ar_moon_hadith_Label_L2,HPos.RIGHT);
-//                
-////                facebook_Label.setVisible(false);
-////                facebook_Label.setText("");
-////                facebook_Label.setGraphic(null);
-////                facebook_Label.setMinHeight(0);
-//                en_moon_hadith_Label_L1.setVisible(false);
-//                en_moon_hadith_Label_L1.setText("");
-//                en_moon_hadith_Label_L1.setMinHeight(0);
-//                hadith_Label.setVisible(false);
-//                hadith_Label.setMinHeight(0);
-//                hadith_Label.setText("");
-//                en_moon_hadith_Label_L2.setVisible(false);
-////                divider1_Label.setMinHeight(50);
 
-
-//**********remember to remove unused labels
                 hadith_flow.getChildren().clear();
                 
                 text1=new Text(sanad_0);
-                text1.setStyle("-fx-font-size: 59;  -fx-fill: white; ");
+                text1.setStyle("-fx-font-size: 45;  -fx-fill: white; ");
                 text2=new Text( short_hadith + "\n");
-                text2.setStyle("-fx-font-size: 59; -fx-fill: goldenrod ; ");
+                text2.setStyle("-fx-font-size: 45; -fx-fill: goldenrod ; ");
                 text3=new Text(hadith_reference + "\n");
                 text3.setStyle("-fx-font-size: 25; -fx-fill: white; ");
                 text4 = new Text(ar_moon_notification + "\n");
@@ -6548,16 +6918,9 @@ public void update_labels() throws Exception{
             
             if (!athan_Change_Label_visible | !notification_Marquee_visible)
             {
-
                 text_Box.setVisible(false);
                 en_Marquee_Notification_Text.setVisible(false);
                 ar_Marquee_Notification_Text.setVisible(false);
-//                athan_Change_Label_L1.setVisible(false);
-//                athan_Change_Label_L2.setVisible(false);
-//                athan_Change_Label_L1.setMaxHeight(0);
-//                athan_Change_Label_L2.setMaxHeight(0);
-//                divider1_Label.setVisible(false);
-//                divider1_Label.setMaxHeight(0);
             }
             
             if (athan_Change_Label_visible | notification_Marquee_visible)
@@ -6565,35 +6928,19 @@ public void update_labels() throws Exception{
                 
                 if (!camera)
                 {
-                    text_Box.setVisible(true);
-//                    en_timeline.stop();
-//                    ft_en.stop();
-                    ft_ar.playFromStart();
-                    ft_en.stop();
-                    
-                    
-//                    ar_Marquee_Notification_Text_XPos = -320;
-//                    ar_Animate();
-                    ar_Marquee_Notification_Text.setVisible(true);
-                    en_Marquee_Notification_Text.setVisible(false);
-                }
-                
-//                athan_Change_Label_L1.setVisible(true);
-//                athan_Change_Label_L2.setVisible(true);
-//                athan_Change_Label_L1.setMaxHeight(200);
-//                athan_Change_Label_L2.setMaxHeight(200);
-//                divider1_Label.setVisible(true);
-//                divider1_Label.setMaxHeight(50);
-//                athan_Change_Label_L1.setText(ar_notification_Msg_Lines[0]);
-//                athan_Change_Label_L1.setId("ar_athan-change-ar_notification_Msg_Linestext");
-//                athan_Change_Label_L2.setText(ar_notification_Msg_Lines[1]);
-//                athan_Change_Label_L2.setId("ar_athan-change-textL2");
-//                hadithPane.setHalignment(athan_Change_Label_L2,HPos.RIGHT);
 
-//                facebook_Label.setVisible(false);
-//                facebook_Label.setText("");
-//                facebook_Label.setGraphic(null);
-//                facebook_Label.setMinHeight(0);
+                        text_Box.setVisible(true);
+    //                    en_timeline.stop();
+    //                    ft_en.stop();
+                        ft_ar.playFromStart();
+                        ft_en.stop();
+
+    //                    ar_Marquee_Notification_Text_XPos = -320;
+    //                    ar_Animate();
+                        ar_Marquee_Notification_Text.setVisible(true);
+                        en_Marquee_Notification_Text.setVisible(false);
+                    
+                }
             }
             
             
@@ -6922,7 +7269,7 @@ public void update_labels() throws Exception{
 //        System.out.println(fajr_jamaat_update_cal.getTime());
         if (jammat_from_database)
         {
-            if ( fajr_jamaat_update_cal.equals(Calendar_now) && fajr_jamaat_update_enable )         
+            if ( fajr_jamaat_update_cal.equals(Calendar_now) && fajr_jamaat_update_enable && !fajr_ramadan_custom)         
             {       
                 fajr_jamaat_update_enable = false;
                 new Thread(new Runnable() 
@@ -7209,10 +7556,12 @@ public void update_labels() throws Exception{
             
             else
             {
-                zuhr_jamma_hourLeft.setText(zuhr_jamaat.substring(0, 1));
-                zuhr_jamma_hourRight.setText(zuhr_jamaat.substring(1, 2));
-                zuhr_jamma_minLeft.setText(zuhr_jamaat.substring(3, 4));
-                zuhr_jamma_minRight.setText(zuhr_jamaat.substring(4, 5));
+                zuhrjamaatdate = zuhr_jamaat_cal.getTime();
+                formattedDateTime = dateFormat.format(zuhrjamaatdate);
+                zuhr_jamma_hourLeft.setText(formattedDateTime.substring(0, 1));
+                zuhr_jamma_hourRight.setText(formattedDateTime.substring(1, 2));
+                zuhr_jamma_minLeft.setText(formattedDateTime.substring(3, 4));
+                zuhr_jamma_minRight.setText(formattedDateTime.substring(4, 5));
             }
              
             
@@ -7224,13 +7573,26 @@ public void update_labels() throws Exception{
             asr_jamma_minLeft.setText(formattedDateTime.substring(3, 4));
             asr_jamma_minRight.setText(formattedDateTime.substring(4, 5));
             
+
+            
+            if(device_location.equals("Al hidayah"))
+            {
+                maghrib_jamma_hourLeft.setId("special_alhidaya");
+                maghrib_jamma_hourLeft.setText("On Time");
+                System.out.println("Maghrib special" );
+            }
+            
+            else
+            {
 //            maghribjamaatdate = maghrib_cal.getTime();
-            maghribjamaatdate = maghrib_jamaat_cal.getTime();
-            formattedDateTime = dateFormat.format(maghribjamaatdate);
-            maghrib_jamma_hourLeft.setText(formattedDateTime.substring(0, 1));
-            maghrib_jamma_hourRight.setText(formattedDateTime.substring(1, 2));
-            maghrib_jamma_minLeft.setText(formattedDateTime.substring(3, 4));
-            maghrib_jamma_minRight.setText(formattedDateTime.substring(4, 5));
+                maghribjamaatdate = maghrib_jamaat_cal.getTime();
+                formattedDateTime = dateFormat.format(maghribjamaatdate);
+                maghrib_jamma_hourLeft.setText(formattedDateTime.substring(0, 1));
+                maghrib_jamma_hourRight.setText(formattedDateTime.substring(1, 2));
+                maghrib_jamma_minLeft.setText(formattedDateTime.substring(3, 4));
+                maghrib_jamma_minRight.setText(formattedDateTime.substring(4, 5));
+            }
+            
             
             ishajamaatdate = isha_jamaat_cal.getTime();
             formattedDateTime = dateFormat.format(ishajamaatdate);
@@ -7955,43 +8317,104 @@ public void update_labels() throws Exception{
      
    if (orientation.equals("vertical") )
     {
-        prayertime_pane.setId("prayertime_pane");
+        if (show_friday)
+        
+        {
+            prayertime_pane.getRowConstraints().setAll(
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(130).build(),
+                RowConstraintsBuilder.create().minHeight(115).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(115).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(115).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(115).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(115).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(115).build(),
+                RowConstraintsBuilder.create().minHeight(10).build()
+            );
+        }
+     
+       prayertime_pane.getColumnConstraints().setAll(
+                ColumnConstraintsBuilder.create().build(),
+                ColumnConstraintsBuilder.create().build(),
+                ColumnConstraintsBuilder.create().build()    
+   
+        );
+        if (!show_friday){prayertime_pane.setId("prayertime_pane");}
+        else {prayertime_pane.setId("prayertime_pane_friday");}
+        
         prayertime_pane.setCache(false);       
-//        prayertime_pane.setGridLinesVisible(false);
-        prayertime_pane.setPadding(new Insets(0, 0, 20, 20));
+//        prayertime_pane.setGridLinesVisible(true);
+//        prayertime_pane.setPadding(new Insets(0, 0, 3, 0));
         prayertime_pane.setAlignment(Pos.BASELINE_CENTER);
-//        prayertime_pane.setVgap(20);
-        prayertime_pane.setHgap(80);
+//        prayertime_pane.setVgap(5);
+        prayertime_pane.setHgap(70);
         
         prayertime_pane.setConstraints(jamaat_Label_eng, 0, 1);
+//        jamaat_Label_eng.setMaxHeight(1);
         prayertime_pane.getChildren().add(jamaat_Label_eng);      
         prayertime_pane.setConstraints(jamaat_Label_ar, 0, 1);
         prayertime_pane.getChildren().add(jamaat_Label_ar);
         
-        prayertime_pane.setConstraints(athan_Label_eng, 1, 1);
-        prayertime_pane.getChildren().add(athan_Label_eng);      
-        prayertime_pane.setConstraints(athan_Label_ar, 1, 1);
+        prayertime_pane.setConstraints(athan_Label_eng, 2, 1);
+//        athan_Label_eng.setMaxHeight(1);
+        prayertime_pane.getChildren().add(athan_Label_eng); 
+        
+        prayertime_pane.setConstraints(athan_Label_ar, 2, 1);
         prayertime_pane.getChildren().add(athan_Label_ar);
 //=============================  
         HBox fajrBox = new HBox();
-        fajrBox.setSpacing(0);
-        fajrBox.setMaxSize(180,60);
-        fajrBox.setMinSize(180,60);
-        fajrBox.setPrefSize(180,60);
+//        fajrBox.setSpacing(0);
+        fajrBox.setMaxSize(80,1);
+//        fajrBox.setMinSize(100,40);
+//        fajrBox.setPrefSize(100,15);
         
-        fajr_hourLeft.setId("hourLeft");
-        fajr_hourRight.setId("hourLeft");
-        time_Separator1.setId("hourLeft");
-        fajr_minLeft.setId("hourLeft");
-        fajr_minRight.setId("hourLeft");
+
+        if (show_friday)
+        
+        {
+            fajr_hourLeft.setId("hourLeft_friday_row");
+            fajr_hourRight.setId("hourLeft_friday_row");
+            time_Separator1.setId("hourLeft_friday_row");
+            fajr_minLeft.setId("hourLeft_friday_row");
+            fajr_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            fajr_hourLeft.setId("hourLeft");
+            fajr_hourRight.setId("hourLeft");
+            time_Separator1.setId("hourLeft");
+            fajr_minLeft.setId("hourLeft");
+            fajr_minRight.setId("hourLeft");
+        }
+        
+        
         
         fajrBox.getChildren().addAll(fajr_hourLeft, fajr_hourRight, time_Separator1, fajr_minLeft, fajr_minRight);
-        prayertime_pane.setConstraints(fajrBox, 1, 2);
+        prayertime_pane.setConstraints(fajrBox, 2, 2);
         prayertime_pane.getChildren().add(fajrBox);
         
-        prayertime_pane.setConstraints(fajr_Label_eng, 2, 2);
+//        fajr_Label_eng.setMaxSize(100,40);
+//        fajr_Label_eng.setMinSize(70,17);
+//        fajr_Label_eng.setPrefSize(100,40);
+        
+//        fajr_Label_ar.setAlignment(Pos.TOP_LEFT);
+//        fajr_Label_eng.setAlignment(Pos.TOP_LEFT);
+        fajr_Label_ar.setTranslateY(-10);
+//        fajr_Label_ar.setMaxSize(100,40);
+//        fajr_Label_ar.setMinSize(70,17);
+//        fajr_Label_ar.setPrefSize(100,40);
+                
+                
+        prayertime_pane.setConstraints(fajr_Label_eng, 1, 2);
         prayertime_pane.getChildren().add(fajr_Label_eng);      
-        prayertime_pane.setConstraints(fajr_Label_ar, 2, 2);
+        prayertime_pane.setConstraints(fajr_Label_ar, 1, 2);
         prayertime_pane.getChildren().add(fajr_Label_ar);
         
         fajr_hourLeft.setText("-");
@@ -8003,22 +8426,43 @@ public void update_labels() throws Exception{
 
 //============================= 
         HBox zuhrBox = new HBox();
-        zuhrBox.setSpacing(0);
-        zuhrBox.setMaxSize(180,60);
-        zuhrBox.setMinSize(180,60);
-        zuhrBox.setPrefSize(180,60);
-        zuhr_hourLeft.setId("hourLeft");
-        zuhr_hourRight.setId("hourLeft");
-        time_Separator3.setId("hourLeft");
-        zuhr_minLeft.setId("hourLeft");
-        zuhr_minRight.setId("hourLeft");
+//        zuhrBox.setSpacing(0);
+        zuhrBox.setMaxSize(80,1);
+//        zuhrBox.setMinSize(100,15);
+//        zuhrBox.setPrefSize(100,15);
+        
+        if (show_friday)
+        
+        {
+            zuhr_hourLeft.setId("hourLeft_friday_row");
+            zuhr_hourRight.setId("hourLeft_friday_row");
+            time_Separator3.setId("hourLeft_friday_row");
+            zuhr_minLeft.setId("hourLeft_friday_row");
+            zuhr_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            zuhr_hourLeft.setId("hourLeft");
+            zuhr_hourRight.setId("hourLeft");
+            time_Separator3.setId("hourLeft");
+            zuhr_minLeft.setId("hourLeft");
+            zuhr_minRight.setId("hourLeft");
+        }
         zuhrBox.getChildren().addAll(zuhr_hourLeft, zuhr_hourRight, time_Separator3, zuhr_minLeft, zuhr_minRight);
-        prayertime_pane.setConstraints(zuhrBox, 1, 4);
+        prayertime_pane.setConstraints(zuhrBox, 2, 4);
         prayertime_pane.getChildren().add(zuhrBox);
         
-        prayertime_pane.setConstraints(zuhr_Label_eng, 2, 4);
+//        zuhr_Label_eng.setMaxSize(100,45);
+//        zuhr_Label_eng.setMinSize(100,45);
+//        zuhr_Label_eng.setPrefSize(100,45);
+//        zuhr_Label_ar.setMaxSize(100,45);
+//        zuhr_Label_ar.setMinSize(100,45);
+//        zuhr_Label_ar.setPrefSize(100,45);
+        
+        prayertime_pane.setConstraints(zuhr_Label_eng, 1, 4);
         prayertime_pane.getChildren().add(zuhr_Label_eng);      
-        prayertime_pane.setConstraints(zuhr_Label_ar, 2, 4);
+        prayertime_pane.setConstraints(zuhr_Label_ar, 1, 4);
         prayertime_pane.getChildren().add(zuhr_Label_ar);
         
         zuhr_hourLeft.setText("-");
@@ -8029,22 +8473,45 @@ public void update_labels() throws Exception{
 
 //============================= 
         HBox asrBox = new HBox();
-        asrBox.setSpacing(0);
-        asrBox.setMaxSize(180,60);
-        asrBox.setMinSize(180,60);
-        asrBox.setPrefSize(180,60);
-        asr_hourLeft.setId("hourLeft");
-        asr_hourRight.setId("hourLeft");
-        time_Separator4.setId("hourLeft");
-        asr_minLeft.setId("hourLeft");
-        asr_minRight.setId("hourLeft");
+//        asrBox.setSpacing(0);
+        asrBox.setMaxSize(80,1);
+//        asrBox.setMinSize(100,15);
+//        asrBox.setPrefSize(100,15);
+
+        
+        if (show_friday)
+        
+        {
+            asr_hourLeft.setId("hourLeft_friday_row");
+            asr_hourRight.setId("hourLeft_friday_row");
+            time_Separator4.setId("hourLeft_friday_row");
+            asr_minLeft.setId("hourLeft_friday_row");
+            asr_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            asr_hourLeft.setId("hourLeft");
+            asr_hourRight.setId("hourLeft");
+            time_Separator4.setId("hourLeft");
+            asr_minLeft.setId("hourLeft");
+            asr_minRight.setId("hourLeft");
+        }
+        
         asrBox.getChildren().addAll(asr_hourLeft, asr_hourRight, time_Separator4, asr_minLeft, asr_minRight);
-        prayertime_pane.setConstraints(asrBox, 1, 6);
+        prayertime_pane.setConstraints(asrBox, 2, 6);
         prayertime_pane.getChildren().add(asrBox);
         
-        prayertime_pane.setConstraints(asr_Label_eng, 2, 6);
+//        asr_Label_eng.setMaxSize(100,40);
+//        asr_Label_eng.setMinSize(100,40);
+//        asr_Label_eng.setPrefSize(100,40);
+//        asr_Label_ar.setMaxSize(100,40);
+//        asr_Label_ar.setMinSize(100,40);
+//        asr_Label_ar.setPrefSize(100,40);
+        
+        prayertime_pane.setConstraints(asr_Label_eng, 1, 6);
         prayertime_pane.getChildren().add(asr_Label_eng);      
-        prayertime_pane.setConstraints(asr_Label_ar, 2, 6);
+        prayertime_pane.setConstraints(asr_Label_ar, 1, 6);
         prayertime_pane.getChildren().add(asr_Label_ar);
         
         asr_hourLeft.setText("-");
@@ -8056,22 +8523,47 @@ public void update_labels() throws Exception{
 //============================= 
         
         HBox maghribBox = new HBox();
-        maghribBox.setSpacing(0);
-        maghribBox.setMaxSize(180,60);
-        maghribBox.setMinSize(180,60);
-        maghribBox.setPrefSize(180,60);
-        maghrib_hourLeft.setId("hourLeft");
-        maghrib_hourRight.setId("hourLeft");
-        time_Separator5.setId("hourLeft");
-        maghrib_minLeft.setId("hourLeft");
-        maghrib_minRight.setId("hourLeft");
+//        maghribBox.setSpacing(0);
+        maghribBox.setMaxSize(80,1);
+//        maghribBox.setMinSize(100,15);
+//        maghribBox.setPrefSize(100,15);
+
+        
+        
+        if (show_friday)
+        
+        {
+            maghrib_hourLeft.setId("hourLeft_friday_row");
+            maghrib_hourRight.setId("hourLeft_friday_row");
+            time_Separator5.setId("hourLeft_friday_row");
+            maghrib_minLeft.setId("hourLeft_friday_row");
+            maghrib_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            maghrib_hourLeft.setId("hourLeft");
+            maghrib_hourRight.setId("hourLeft");
+            time_Separator5.setId("hourLeft");
+            maghrib_minLeft.setId("hourLeft");
+            maghrib_minRight.setId("hourLeft");
+        }
+        
+        
         maghribBox.getChildren().addAll(maghrib_hourLeft, maghrib_hourRight, time_Separator5, maghrib_minLeft, maghrib_minRight);
-        prayertime_pane.setConstraints(maghribBox, 1, 8);
+        prayertime_pane.setConstraints(maghribBox, 2, 8);
         prayertime_pane.getChildren().add(maghribBox);
         
-        prayertime_pane.setConstraints(maghrib_Label_eng, 2, 8);
+//        maghrib_Label_eng.setMaxSize(100,40);
+//        maghrib_Label_eng.setMinSize(100,40);
+//        maghrib_Label_eng.setPrefSize(100,40);
+//        maghrib_Label_ar.setMaxSize(100,40);
+//        maghrib_Label_ar.setMinSize(100,40);
+//        maghrib_Label_ar.setPrefSize(100,40);
+        
+        prayertime_pane.setConstraints(maghrib_Label_eng, 1, 8);
         prayertime_pane.getChildren().add(maghrib_Label_eng);      
-        prayertime_pane.setConstraints(maghrib_Label_ar, 2, 8);
+        prayertime_pane.setConstraints(maghrib_Label_ar, 1, 8);
         prayertime_pane.getChildren().add(maghrib_Label_ar);
         
         maghrib_hourLeft.setText("-");
@@ -8083,22 +8575,50 @@ public void update_labels() throws Exception{
 //============================= 
         
         HBox ishaBox = new HBox();
-        ishaBox.setSpacing(0);
-        ishaBox.setMaxSize(180,60);
-        ishaBox.setMinSize(180,60);
-        ishaBox.setPrefSize(180,60);
+//        ishaBox.setSpacing(0);
+        ishaBox.setMaxSize(80,1);
+//        ishaBox.setMinSize(100,15);
+//        ishaBox.setPrefSize(100,15);
         isha_hourLeft.setId("hourLeft");
         isha_hourRight.setId("hourLeft");
         time_Separator6.setId("hourLeft");
         isha_minLeft.setId("hourLeft");
         isha_minRight.setId("hourLeft");
+        
+        if (show_friday)
+        
+        {
+            isha_hourLeft.setId("hourLeft_friday_row");
+            isha_hourRight.setId("hourLeft_friday_row");
+            time_Separator6.setId("hourLeft_friday_row");
+            isha_minLeft.setId("hourLeft_friday_row");
+            isha_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            isha_hourLeft.setId("hourLeft");
+            isha_hourRight.setId("hourLeft");
+            time_Separator6.setId("hourLeft");
+            isha_minLeft.setId("hourLeft");
+            isha_minRight.setId("hourLeft");
+        }
+        
+        
         ishaBox.getChildren().addAll(isha_hourLeft, isha_hourRight, time_Separator6, isha_minLeft, isha_minRight);
-        prayertime_pane.setConstraints(ishaBox, 1, 10);
+        prayertime_pane.setConstraints(ishaBox, 2, 10);
         prayertime_pane.getChildren().add(ishaBox);
         
-        prayertime_pane.setConstraints(isha_Label_eng, 2, 10);
+//        isha_Label_eng.setMaxSize(100,40);
+//        isha_Label_eng.setMinSize(100,40);
+//        isha_Label_eng.setPrefSize(100,40);
+//        isha_Label_ar.setMaxSize(100,40);
+//        isha_Label_ar.setMinSize(100,40);
+//        isha_Label_ar.setPrefSize(100,40);
+        
+        prayertime_pane.setConstraints(isha_Label_eng, 1, 10);
         prayertime_pane.getChildren().add(isha_Label_eng);      
-        prayertime_pane.setConstraints(isha_Label_ar, 2, 10);
+        prayertime_pane.setConstraints(isha_Label_ar, 1, 10);
         prayertime_pane.getChildren().add(isha_Label_ar);
         
         isha_hourLeft.setText("-");
@@ -8106,85 +8626,122 @@ public void update_labels() throws Exception{
         isha_minLeft.setText("-");
         isha_minRight.setText("-");
         time_Separator6.setText(":");
-
+        
+        
+        //=============================  
          
-        HBox fridayBox = new HBox();
-        fridayBox.setSpacing(0);
-        fridayBox.setMaxSize(180,60);
-        fridayBox.setMinSize(180,60);
-        fridayBox.setPrefSize(180,60);
-        friday_hourLeft.setId("hourLeft");
-        friday_hourRight.setId("hourLeft");
-        time_Separator8.setId("hourLeft");
-        friday_minLeft.setId("hourLeft");
-        friday_minRight.setId("hourLeft");
-        fridayBox.getChildren().addAll(friday_hourLeft, friday_hourRight, time_Separator8, friday_minLeft, friday_minRight);
-        prayertime_pane.setConstraints(fridayBox, 1, 12);
-        prayertime_pane.getChildren().add(fridayBox);
-//        
+        if (show_friday)
         
-        prayertime_pane.setConstraints(friday_Label_eng, 2, 12);
-        prayertime_pane.getChildren().add(friday_Label_eng);
-        prayertime_pane.setConstraints(friday_Label_ar, 2, 12);
-        prayertime_pane.getChildren().add(friday_Label_ar);
+        {
+            HBox fridayBox = new HBox();
+    //        fridayBox.setSpacing(0);
+            fridayBox.setMaxSize(80,1);
+    //        fridayBox.setMinSize(100,15);
+    //        fridayBox.setPrefSize(100,15);
+            
+            
+            friday_hourLeft.setId("hourLeft_friday_row");
+            friday_hourRight.setId("hourLeft_friday_row");
+            time_Separator8.setId("hourLeft_friday_row");
+            friday_minLeft.setId("hourLeft_friday_row");
+            friday_minRight.setId("hourLeft_friday_row");
+            
+            fridayBox.getChildren().addAll(friday_hourLeft, friday_hourRight, time_Separator8, friday_minLeft, friday_minRight);
+            prayertime_pane.setConstraints(fridayBox, 0, 13);
+            prayertime_pane.getChildren().add(fridayBox);
+
+    //        friday_Label_eng.setMaxSize(100,40);
+    //        friday_Label_eng.setMinSize(100,40);
+    //        friday_Label_eng.setPrefSize(100,40);
+    //        friday_Label_ar.setMaxSize(100,40);
+    //        friday_Label_ar.setMinSize(100,40);
+    //        friday_Label_ar.setPrefSize(100,40);
+
+            prayertime_pane.setConstraints(friday_Label_eng, 1, 13);
+            prayertime_pane.getChildren().add(friday_Label_eng);
+            prayertime_pane.setConstraints(friday_Label_ar, 1, 13);
+            prayertime_pane.getChildren().add(friday_Label_ar);
+
+            friday_hourLeft.setText("-");
+            friday_hourRight.setText("-");
+            friday_minLeft.setText("-");
+            friday_minRight.setText("-");
+            time_Separator8.setText(":");
+
+            final Separator sepHor5 = new Separator();
+            prayertime_pane.setValignment(sepHor5,VPos.CENTER);
+            prayertime_pane.setConstraints(sepHor5, 0, 12);
+            prayertime_pane.setColumnSpan(sepHor5, 3);
+//            sepHor5.setMinHeight(1);
+            prayertime_pane.getChildren().add(sepHor5);
         
-        friday_hourLeft.setText("-");
-        friday_hourRight.setText("-");
-        friday_minLeft.setText("-");
-        friday_minRight.setText("-");
-        time_Separator8.setText(":");
-        
-        
+        }
  //============================= 
         
         final Separator sepHor1 = new Separator();
         prayertime_pane.setValignment(sepHor1,VPos.CENTER);
         prayertime_pane.setConstraints(sepHor1, 0, 3);
         prayertime_pane.setColumnSpan(sepHor1, 3);
+//        sepHor1.setMaxSize(100,15);
+//        sepHor1.setMinSize(100,15);
+//        sepHor1.setMinHeight(1);
         prayertime_pane.getChildren().add(sepHor1);   
         
         final Separator sepHor2 = new Separator();
         prayertime_pane.setValignment(sepHor2,VPos.CENTER);
         prayertime_pane.setConstraints(sepHor2, 0, 5);
         prayertime_pane.setColumnSpan(sepHor2, 3);
+//        sepHor2.setMinHeight(1);
         prayertime_pane.getChildren().add(sepHor2);
         
         final Separator sepHor3 = new Separator();
         prayertime_pane.setValignment(sepHor3,VPos.CENTER);
         prayertime_pane.setConstraints(sepHor3, 0, 7);
         prayertime_pane.setColumnSpan(sepHor3, 3);
+//        sepHor3.setMinHeight(1);
         prayertime_pane.getChildren().add(sepHor3);
         
         final Separator sepHor4 = new Separator();
         prayertime_pane.setValignment(sepHor4,VPos.CENTER);
         prayertime_pane.setConstraints(sepHor4, 0, 9);
         prayertime_pane.setColumnSpan(sepHor4, 3);
+//        sepHor4.setMinHeight(1);
         prayertime_pane.getChildren().add(sepHor4);
         
-        final Separator sepHor5 = new Separator();
-        prayertime_pane.setValignment(sepHor5,VPos.CENTER);
-        prayertime_pane.setConstraints(sepHor5, 0, 11);
-        prayertime_pane.setColumnSpan(sepHor5, 3);
-        prayertime_pane.getChildren().add(sepHor5);
         
-//        final Separator sepHor6 = new Separator();
-//        prayertime_pane.setValignment(sepHor6,VPos.CENTER);
-//        prayertime_pane.setConstraints(sepHor6, 1, 14);
-//        prayertime_pane.setColumnSpan(sepHor6, 2);
-//        prayertime_pane.getChildren().add(sepHor6);
+        
+        
 
 //========= Jamama=======
-        
-        
+               
 //=============================  
         HBox fajr_jamma_Box = new HBox();
-        fajr_jamma_Box.setSpacing(0);
-        fajr_jamma_Box.setMaxSize(180,60);
-        fajr_jamma_hourLeft.setId("hourLeft");
-        fajr_jamma_hourRight.setId("hourLeft");
-        time_jamma_Separator1.setId("hourLeft");
-        fajr_jamma_minLeft.setId("hourLeft");
-        fajr_jamma_minRight.setId("hourLeft");
+//        fajr_jamma_Box.setSpacing(0);
+        fajr_jamma_Box.setMaxSize(80,1);
+//        fajr_jamma_Box.setMinSize(100,40);
+//        fajr_jamma_Box.setPrefSize(100,15);
+
+        
+        if (show_friday)
+        
+        {
+            fajr_jamma_hourLeft.setId("hourLeft_friday_row");
+            fajr_jamma_hourRight.setId("hourLeft_friday_row");
+            time_jamma_Separator1.setId("hourLeft_friday_row");
+            fajr_jamma_minLeft.setId("hourLeft_friday_row");
+            fajr_jamma_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            fajr_jamma_hourLeft.setId("hourLeft");
+            fajr_jamma_hourRight.setId("hourLeft");
+            time_jamma_Separator1.setId("hourLeft");
+            fajr_jamma_minLeft.setId("hourLeft");
+            fajr_jamma_minRight.setId("hourLeft");
+        }
+        
+        
         fajr_jamma_Box.getChildren().addAll(fajr_jamma_hourLeft, fajr_jamma_hourRight, time_jamma_Separator1, fajr_jamma_minLeft, fajr_jamma_minRight);
         prayertime_pane.setConstraints(fajr_jamma_Box, 0, 2);
         prayertime_pane.getChildren().add(fajr_jamma_Box);
@@ -8197,13 +8754,32 @@ public void update_labels() throws Exception{
         
 //============================= 
         HBox zuhr_jamma_Box = new HBox();
-        zuhr_jamma_Box.setSpacing(0);
-        zuhr_jamma_Box.setMaxSize(180,60);
-        zuhr_jamma_hourLeft.setId("hourLeft");
-        zuhr_jamma_hourRight.setId("hourLeft");
-        time_jamma_Separator2.setId("hourLeft");
-        zuhr_jamma_minLeft.setId("hourLeft");
-        zuhr_jamma_minRight.setId("hourLeft");
+//        zuhr_jamma_Box.setSpacing(0);
+        zuhr_jamma_Box.setMaxSize(80,1);
+//        zuhr_jamma_Box.setMinSize(100,15);
+//        zuhr_jamma_Box.setPrefSize(100,15);
+
+        
+        if (show_friday)
+        
+        {
+            zuhr_jamma_hourLeft.setId("hourLeft_friday_row");
+            zuhr_jamma_hourRight.setId("hourLeft_friday_row");
+            time_jamma_Separator2.setId("hourLeft_friday_row");
+            zuhr_jamma_minLeft.setId("hourLeft_friday_row");
+            zuhr_jamma_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            zuhr_jamma_hourLeft.setId("hourLeft");
+            zuhr_jamma_hourRight.setId("hourLeft");
+            time_jamma_Separator2.setId("hourLeft");
+            zuhr_jamma_minLeft.setId("hourLeft");
+            zuhr_jamma_minRight.setId("hourLeft");
+        }
+        
+        
         zuhr_jamma_Box.getChildren().addAll(zuhr_jamma_hourLeft, zuhr_jamma_hourRight, time_jamma_Separator2, zuhr_jamma_minLeft, zuhr_jamma_minRight);
         prayertime_pane.setConstraints(zuhr_jamma_Box, 0, 4);
         prayertime_pane.getChildren().add(zuhr_jamma_Box);
@@ -8216,13 +8792,32 @@ public void update_labels() throws Exception{
 
 //============================= 
         HBox asr_jamma_Box = new HBox();
-        asr_jamma_Box.setSpacing(0);
-        asr_jamma_Box.setMaxSize(180,60);
-        asr_jamma_minRight.setId("hourLeft");
-        asr_jamma_minLeft.setId("hourLeft");
-        time_jamma_Separator3.setId("hourLeft");
-        asr_jamma_hourRight.setId("hourLeft");
-        asr_jamma_hourLeft.setId("hourLeft");
+//        asr_jamma_Box.setSpacing(0);
+        asr_jamma_Box.setMaxSize(80,1);
+//        asr_jamma_Box.setMinSize(100,15);
+//        asr_jamma_Box.setPrefSize(100,15);
+ 
+        
+        if (show_friday)
+        
+        {
+            asr_jamma_minRight.setId("hourLeft_friday_row");
+            asr_jamma_minLeft.setId("hourLeft_friday_row");
+            time_jamma_Separator3.setId("hourLeft_friday_row");
+            asr_jamma_hourRight.setId("hourLeft_friday_row");
+            asr_jamma_hourLeft.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            asr_jamma_minRight.setId("hourLeft");
+            asr_jamma_minLeft.setId("hourLeft");
+            time_jamma_Separator3.setId("hourLeft");
+            asr_jamma_hourRight.setId("hourLeft");
+            asr_jamma_hourLeft.setId("hourLeft");
+        }
+        
+        
         asr_jamma_Box.getChildren().addAll(asr_jamma_hourLeft, asr_jamma_hourRight, time_jamma_Separator3, asr_jamma_minLeft, asr_jamma_minRight);
         prayertime_pane.setConstraints(asr_jamma_Box, 0, 6);
         prayertime_pane.getChildren().add(asr_jamma_Box);
@@ -8236,15 +8831,37 @@ public void update_labels() throws Exception{
 //============================= 
         
         HBox maghrib_jamma_Box = new HBox();
-        maghrib_jamma_Box.setSpacing(0);
-        maghrib_jamma_Box.setMaxSize(180,60);
-        maghrib_jamma_minRight.setId("hourLeft");
-        maghrib_jamma_minLeft.setId("hourLeft");
-        time_jamma_Separator4.setId("hourLeft");
-        maghrib_jamma_hourRight.setId("hourLeft");
-        maghrib_jamma_hourLeft.setId("hourLeft");
-        maghrib_jamma_Box.getChildren().addAll(maghrib_jamma_hourLeft, maghrib_jamma_hourRight, time_jamma_Separator4, maghrib_jamma_minLeft, maghrib_jamma_minRight);
+//        maghrib_jamma_Box.setSpacing(0);
+        maghrib_jamma_Box.setMaxSize(80,1);
+        
+//        maghrib_jamma_Box.setMinSize(100,15);
+//        maghrib_jamma_Box.setPrefSize(100,15);
+
+        if (show_friday)
+        
+        {
+            maghrib_jamma_minRight.setId("hourLeft_friday_row");
+            maghrib_jamma_minLeft.setId("hourLeft_friday_row");
+            time_jamma_Separator4.setId("hourLeft_friday_row");
+            maghrib_jamma_hourRight.setId("hourLeft_friday_row");
+            maghrib_jamma_hourLeft.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            maghrib_jamma_minRight.setId("hourLeft");
+            maghrib_jamma_minLeft.setId("hourLeft");
+            time_jamma_Separator4.setId("hourLeft");
+            maghrib_jamma_hourRight.setId("hourLeft");
+            maghrib_jamma_hourLeft.setId("hourLeft");
+        }
+        
+        if(device_location.equals("Al hidayah"))
+            {maghrib_jamma_Box.setMaxSize(275,1); maghrib_jamma_Box.getChildren().addAll(maghrib_jamma_hourLeft);}
+        
+        else maghrib_jamma_Box.getChildren().addAll(maghrib_jamma_hourLeft, maghrib_jamma_hourRight, time_jamma_Separator4, maghrib_jamma_minLeft, maghrib_jamma_minRight);
         prayertime_pane.setConstraints(maghrib_jamma_Box, 0, 8);
+        
         prayertime_pane.getChildren().add(maghrib_jamma_Box);
         
         maghrib_jamma_hourLeft.setText("-");
@@ -8255,13 +8872,33 @@ public void update_labels() throws Exception{
 //============================= 
         
         HBox isha_jamma_Box = new HBox();
-        isha_jamma_Box.setSpacing(0);
-        isha_jamma_Box.setMaxSize(180,60);
-        isha_jamma_hourLeft.setId("hourLeft");
-        isha_jamma_hourRight.setId("hourLeft");
-        time_jamma_Separator5.setId("hourLeft");
-        isha_jamma_minLeft.setId("hourLeft");
-        isha_jamma_minRight.setId("hourLeft");
+//        isha_jamma_Box.setSpacing(0);
+        isha_jamma_Box.setMaxSize(80,1);
+//        isha_jamma_Box.setMinSize(100,15);
+//        isha_jamma_Box.setPrefSize(100,15);
+
+        
+        
+        if (show_friday)
+        
+        {
+            isha_jamma_hourLeft.setId("hourLeft_friday_row");
+            isha_jamma_hourRight.setId("hourLeft_friday_row");
+            time_jamma_Separator5.setId("hourLeft_friday_row");
+            isha_jamma_minLeft.setId("hourLeft_friday_row");
+            isha_jamma_minRight.setId("hourLeft_friday_row");   
+        }
+        
+        else
+        {
+            isha_jamma_hourLeft.setId("hourLeft");
+            isha_jamma_hourRight.setId("hourLeft");
+            time_jamma_Separator5.setId("hourLeft");
+            isha_jamma_minLeft.setId("hourLeft");
+            isha_jamma_minRight.setId("hourLeft");
+        }
+        
+        
         isha_jamma_Box.getChildren().addAll(isha_jamma_hourLeft, isha_jamma_hourRight, time_jamma_Separator5, isha_jamma_minLeft, isha_jamma_minRight);
         prayertime_pane.setConstraints(isha_jamma_Box, 0, 10);
         prayertime_pane.getChildren().add(isha_jamma_Box);
@@ -8271,26 +8908,32 @@ public void update_labels() throws Exception{
         isha_jamma_minLeft.setText("-");
         isha_jamma_minRight.setText("-");
         time_jamma_Separator5.setText(":");
-
-        HBox fridayBox2 = new HBox();
-        fridayBox2.setSpacing(0);
-        fridayBox2.setMaxSize(180,60);
-        fridayBox2.setMinSize(180,60);
-        fridayBox2.setPrefSize(180,60);
-        friday2_hourLeft.setId("hourLeft");
-        friday2_hourRight.setId("hourLeft");
-        time_Separator9.setId("hourLeft");
-        friday2_minLeft.setId("hourLeft");
-        friday2_minRight.setId("hourLeft");
-        fridayBox2.getChildren().addAll(friday2_hourLeft, friday2_hourRight, time_Separator9, friday2_minLeft, friday2_minRight);
-        prayertime_pane.setConstraints(fridayBox2, 0, 12);
-        prayertime_pane.getChildren().add(fridayBox2);
         
-        friday2_hourLeft.setText("-");
-        friday2_hourRight.setText("-");
-        friday2_minLeft.setText("-");
-        friday2_minRight.setText("-");
-        time_Separator9.setText(":");
+        if(show_friday && double_friday)
+            
+        {
+            HBox fridayBox2 = new HBox();
+            fridayBox2.setMaxSize(80,1);
+            friday2_hourLeft.setId("hourLeft_friday_row");
+            friday2_hourRight.setId("hourLeft_friday_row");
+            time_Separator9.setId("hourLeft_friday_row");
+            friday2_minLeft.setId("hourLeft_friday_row");
+            friday2_minRight.setId("hourLeft_friday_row");
+            fridayBox2.getChildren().addAll(friday2_hourLeft, friday2_hourRight, time_Separator9, friday2_minLeft, friday2_minRight);
+            prayertime_pane.setConstraints(fridayBox2, 2, 13);
+            prayertime_pane.getChildren().add(fridayBox2);
+
+            friday2_hourLeft.setText("-");
+            friday2_hourRight.setText("-");
+            friday2_minLeft.setText("-");
+            friday2_minRight.setText("-");
+            time_Separator9.setText(":");
+        
+        
+        }
+       
+        
+        
 
     }
    
@@ -8929,25 +9572,640 @@ public void update_labels() throws Exception{
     }
    
    else
-   {
+//   {
+//        if (show_friday)
+//        
+//        {
+//            prayertime_pane.getRowConstraints().setAll(
+//                RowConstraintsBuilder.create().minHeight(1).build(),
+//                RowConstraintsBuilder.create().minHeight(105).build(),
+//                RowConstraintsBuilder.create().minHeight(108).build(),
+//                RowConstraintsBuilder.create().minHeight(1).build(),
+//                RowConstraintsBuilder.create().minHeight(108).build(),
+//                RowConstraintsBuilder.create().minHeight(1).build(),
+//                RowConstraintsBuilder.create().minHeight(108).build(),
+//                RowConstraintsBuilder.create().minHeight(1).build(),
+//                RowConstraintsBuilder.create().minHeight(108).build(),
+//                RowConstraintsBuilder.create().minHeight(1).build(),
+//                RowConstraintsBuilder.create().minHeight(108).build(),
+//                RowConstraintsBuilder.create().minHeight(1).build(),
+//                RowConstraintsBuilder.create().minHeight(1).build(),
+//                RowConstraintsBuilder.create().minHeight(108).build(),
+//                RowConstraintsBuilder.create().minHeight(10).build()
+//            );
+//        }
+//     
+//       prayertime_pane.getColumnConstraints().setAll(
+//                ColumnConstraintsBuilder.create().build(),
+//                ColumnConstraintsBuilder.create().build(),
+//                ColumnConstraintsBuilder.create().build()    
+//   
+//        );
+//        if (!show_friday){prayertime_pane.setId("prayertime_pane");}
+//        else {prayertime_pane.setId("prayertime_pane_friday");}
+//        
+//        prayertime_pane.setCache(false);       
+////        prayertime_pane.setGridLinesVisible(true);
+////        prayertime_pane.setPadding(new Insets(0, 0, 3, 0));
+//        prayertime_pane.setAlignment(Pos.BASELINE_CENTER);
+////        prayertime_pane.setVgap(5);
+//        prayertime_pane.setHgap(70);
+//        
+//        prayertime_pane.setConstraints(jamaat_Label_eng, 0, 1);
+////        jamaat_Label_eng.setMaxHeight(1);
+//        prayertime_pane.getChildren().add(jamaat_Label_eng);      
+//        prayertime_pane.setConstraints(jamaat_Label_ar, 0, 1);
+//        prayertime_pane.getChildren().add(jamaat_Label_ar);
+//        
+//        prayertime_pane.setConstraints(athan_Label_eng, 1, 1);
+////        athan_Label_eng.setMaxHeight(1);
+//        prayertime_pane.getChildren().add(athan_Label_eng); 
+//        
+//        prayertime_pane.setConstraints(athan_Label_ar, 1, 1);
+//        prayertime_pane.getChildren().add(athan_Label_ar);
+////=============================  
+//        HBox fajrBox = new HBox();
+////        fajrBox.setSpacing(0);
+//        fajrBox.setMaxSize(80,1);
+////        fajrBox.setMinSize(100,40);
+////        fajrBox.setPrefSize(100,15);
+//        
+//
+//        if (show_friday)
+//        
+//        {
+//            fajr_hourLeft.setId("hourLeft_friday_row");
+//            fajr_hourRight.setId("hourLeft_friday_row");
+//            time_Separator1.setId("hourLeft_friday_row");
+//            fajr_minLeft.setId("hourLeft_friday_row");
+//            fajr_minRight.setId("hourLeft_friday_row");   
+//        }
+//        
+//        else
+//        {
+//            fajr_hourLeft.setId("hourLeft");
+//            fajr_hourRight.setId("hourLeft");
+//            time_Separator1.setId("hourLeft");
+//            fajr_minLeft.setId("hourLeft");
+//            fajr_minRight.setId("hourLeft");
+//        }
+//        
+//        
+//        
+//        fajrBox.getChildren().addAll(fajr_hourLeft, fajr_hourRight, time_Separator1, fajr_minLeft, fajr_minRight);
+//        prayertime_pane.setConstraints(fajrBox, 1, 2);
+//        prayertime_pane.getChildren().add(fajrBox);
+//        
+////        fajr_Label_eng.setMaxSize(100,40);
+////        fajr_Label_eng.setMinSize(70,17);
+////        fajr_Label_eng.setPrefSize(100,40);
+//        
+////        fajr_Label_ar.setAlignment(Pos.TOP_LEFT);
+////        fajr_Label_eng.setAlignment(Pos.TOP_LEFT);
+//        fajr_Label_ar.setTranslateY(-10);
+////        fajr_Label_ar.setMaxSize(100,40);
+////        fajr_Label_ar.setMinSize(70,17);
+////        fajr_Label_ar.setPrefSize(100,40);
+//                
+//                
+//        prayertime_pane.setConstraints(fajr_Label_eng, 2, 2);
+//        prayertime_pane.getChildren().add(fajr_Label_eng);      
+//        prayertime_pane.setConstraints(fajr_Label_ar, 2, 2);
+//        prayertime_pane.getChildren().add(fajr_Label_ar);
+//        
+//        fajr_hourLeft.setText("-");
+//        fajr_hourRight.setText("-");
+//        fajr_minLeft.setText("-");
+//        fajr_minRight.setText("-");
+//        time_Separator1.setText(":");
+//        
+//
+////============================= 
+//        HBox zuhrBox = new HBox();
+////        zuhrBox.setSpacing(0);
+//        zuhrBox.setMaxSize(80,1);
+////        zuhrBox.setMinSize(100,15);
+////        zuhrBox.setPrefSize(100,15);
+//        
+//        if (show_friday)
+//        
+//        {
+//            zuhr_hourLeft.setId("hourLeft_friday_row");
+//            zuhr_hourRight.setId("hourLeft_friday_row");
+//            time_Separator3.setId("hourLeft_friday_row");
+//            zuhr_minLeft.setId("hourLeft_friday_row");
+//            zuhr_minRight.setId("hourLeft_friday_row");   
+//        }
+//        
+//        else
+//        {
+//            zuhr_hourLeft.setId("hourLeft");
+//            zuhr_hourRight.setId("hourLeft");
+//            time_Separator3.setId("hourLeft");
+//            zuhr_minLeft.setId("hourLeft");
+//            zuhr_minRight.setId("hourLeft");
+//        }
+//        zuhrBox.getChildren().addAll(zuhr_hourLeft, zuhr_hourRight, time_Separator3, zuhr_minLeft, zuhr_minRight);
+//        prayertime_pane.setConstraints(zuhrBox, 1, 4);
+//        prayertime_pane.getChildren().add(zuhrBox);
+//        
+////        zuhr_Label_eng.setMaxSize(100,45);
+////        zuhr_Label_eng.setMinSize(100,45);
+////        zuhr_Label_eng.setPrefSize(100,45);
+////        zuhr_Label_ar.setMaxSize(100,45);
+////        zuhr_Label_ar.setMinSize(100,45);
+////        zuhr_Label_ar.setPrefSize(100,45);
+//        
+//        prayertime_pane.setConstraints(zuhr_Label_eng, 2, 4);
+//        prayertime_pane.getChildren().add(zuhr_Label_eng);      
+//        prayertime_pane.setConstraints(zuhr_Label_ar, 2, 4);
+//        prayertime_pane.getChildren().add(zuhr_Label_ar);
+//        
+//        zuhr_hourLeft.setText("-");
+//        zuhr_hourRight.setText("-");
+//        zuhr_minLeft.setText("-");
+//        zuhr_minRight.setText("-");
+//        time_Separator3.setText(":");
+//
+////============================= 
+//        HBox asrBox = new HBox();
+////        asrBox.setSpacing(0);
+//        asrBox.setMaxSize(80,1);
+////        asrBox.setMinSize(100,15);
+////        asrBox.setPrefSize(100,15);
+//
+//        
+//        if (show_friday)
+//        
+//        {
+//            asr_hourLeft.setId("hourLeft_friday_row");
+//            asr_hourRight.setId("hourLeft_friday_row");
+//            time_Separator4.setId("hourLeft_friday_row");
+//            asr_minLeft.setId("hourLeft_friday_row");
+//            asr_minRight.setId("hourLeft_friday_row");   
+//        }
+//        
+//        else
+//        {
+//            asr_hourLeft.setId("hourLeft");
+//            asr_hourRight.setId("hourLeft");
+//            time_Separator4.setId("hourLeft");
+//            asr_minLeft.setId("hourLeft");
+//            asr_minRight.setId("hourLeft");
+//        }
+//        
+//        asrBox.getChildren().addAll(asr_hourLeft, asr_hourRight, time_Separator4, asr_minLeft, asr_minRight);
+//        prayertime_pane.setConstraints(asrBox, 1, 6);
+//        prayertime_pane.getChildren().add(asrBox);
+//        
+////        asr_Label_eng.setMaxSize(100,40);
+////        asr_Label_eng.setMinSize(100,40);
+////        asr_Label_eng.setPrefSize(100,40);
+////        asr_Label_ar.setMaxSize(100,40);
+////        asr_Label_ar.setMinSize(100,40);
+////        asr_Label_ar.setPrefSize(100,40);
+//        
+//        prayertime_pane.setConstraints(asr_Label_eng, 2, 6);
+//        prayertime_pane.getChildren().add(asr_Label_eng);      
+//        prayertime_pane.setConstraints(asr_Label_ar, 2, 6);
+//        prayertime_pane.getChildren().add(asr_Label_ar);
+//        
+//        asr_hourLeft.setText("-");
+//        asr_hourRight.setText("-");
+//        asr_minLeft.setText("-");
+//        asr_minRight.setText("-");
+//        time_Separator4.setText(":");
+//        
+////============================= 
+//        
+//        HBox maghribBox = new HBox();
+////        maghribBox.setSpacing(0);
+//        maghribBox.setMaxSize(80,1);
+////        maghribBox.setMinSize(100,15);
+////        maghribBox.setPrefSize(100,15);
+//
+//        
+//        
+//        if (show_friday)
+//        
+//        {
+//            maghrib_hourLeft.setId("hourLeft_friday_row");
+//            maghrib_hourRight.setId("hourLeft_friday_row");
+//            time_Separator5.setId("hourLeft_friday_row");
+//            maghrib_minLeft.setId("hourLeft_friday_row");
+//            maghrib_minRight.setId("hourLeft_friday_row");   
+//        }
+//        
+//        else
+//        {
+//            maghrib_hourLeft.setId("hourLeft");
+//            maghrib_hourRight.setId("hourLeft");
+//            time_Separator5.setId("hourLeft");
+//            maghrib_minLeft.setId("hourLeft");
+//            maghrib_minRight.setId("hourLeft");
+//        }
+//        
+//        
+//        maghribBox.getChildren().addAll(maghrib_hourLeft, maghrib_hourRight, time_Separator5, maghrib_minLeft, maghrib_minRight);
+//        prayertime_pane.setConstraints(maghribBox, 1, 8);
+//        prayertime_pane.getChildren().add(maghribBox);
+//        
+////        maghrib_Label_eng.setMaxSize(100,40);
+////        maghrib_Label_eng.setMinSize(100,40);
+////        maghrib_Label_eng.setPrefSize(100,40);
+////        maghrib_Label_ar.setMaxSize(100,40);
+////        maghrib_Label_ar.setMinSize(100,40);
+////        maghrib_Label_ar.setPrefSize(100,40);
+//        
+//        prayertime_pane.setConstraints(maghrib_Label_eng, 2, 8);
+//        prayertime_pane.getChildren().add(maghrib_Label_eng);      
+//        prayertime_pane.setConstraints(maghrib_Label_ar, 2, 8);
+//        prayertime_pane.getChildren().add(maghrib_Label_ar);
+//        
+//        maghrib_hourLeft.setText("-");
+//        maghrib_hourRight.setText("-");
+//        maghrib_minLeft.setText("-");
+//        maghrib_minRight.setText("-");
+//        time_Separator5.setText(":");
+//
+////============================= 
+//        
+//        HBox ishaBox = new HBox();
+////        ishaBox.setSpacing(0);
+//        ishaBox.setMaxSize(80,1);
+////        ishaBox.setMinSize(100,15);
+////        ishaBox.setPrefSize(100,15);
+//        isha_hourLeft.setId("hourLeft");
+//        isha_hourRight.setId("hourLeft");
+//        time_Separator6.setId("hourLeft");
+//        isha_minLeft.setId("hourLeft");
+//        isha_minRight.setId("hourLeft");
+//        
+//        if (show_friday)
+//        
+//        {
+//            isha_hourLeft.setId("hourLeft_friday_row");
+//            isha_hourRight.setId("hourLeft_friday_row");
+//            time_Separator6.setId("hourLeft_friday_row");
+//            isha_minLeft.setId("hourLeft_friday_row");
+//            isha_minRight.setId("hourLeft_friday_row");   
+//        }
+//        
+//        else
+//        {
+//            isha_hourLeft.setId("hourLeft");
+//            isha_hourRight.setId("hourLeft");
+//            time_Separator6.setId("hourLeft");
+//            isha_minLeft.setId("hourLeft");
+//            isha_minRight.setId("hourLeft");
+//        }
+//        
+//        
+//        ishaBox.getChildren().addAll(isha_hourLeft, isha_hourRight, time_Separator6, isha_minLeft, isha_minRight);
+//        prayertime_pane.setConstraints(ishaBox, 1, 10);
+//        prayertime_pane.getChildren().add(ishaBox);
+//        
+////        isha_Label_eng.setMaxSize(100,40);
+////        isha_Label_eng.setMinSize(100,40);
+////        isha_Label_eng.setPrefSize(100,40);
+////        isha_Label_ar.setMaxSize(100,40);
+////        isha_Label_ar.setMinSize(100,40);
+////        isha_Label_ar.setPrefSize(100,40);
+//        
+//        prayertime_pane.setConstraints(isha_Label_eng, 2, 10);
+//        prayertime_pane.getChildren().add(isha_Label_eng);      
+//        prayertime_pane.setConstraints(isha_Label_ar, 2, 10);
+//        prayertime_pane.getChildren().add(isha_Label_ar);
+//        
+//        isha_hourLeft.setText("-");
+//        isha_hourRight.setText("-");
+//        isha_minLeft.setText("-");
+//        isha_minRight.setText("-");
+//        time_Separator6.setText(":");
+//        
+//        
+//        //=============================  
+//         
+//        if (show_friday)
+//        
+//        {
+//            HBox fridayBox = new HBox();
+//    //        fridayBox.setSpacing(0);
+//            fridayBox.setMaxSize(80,1);
+//    //        fridayBox.setMinSize(100,15);
+//    //        fridayBox.setPrefSize(100,15);
+//            
+//            
+//            friday_hourLeft.setId("hourLeft_friday_row");
+//            friday_hourRight.setId("hourLeft_friday_row");
+//            time_Separator8.setId("hourLeft_friday_row");
+//            friday_minLeft.setId("hourLeft_friday_row");
+//            friday_minRight.setId("hourLeft_friday_row");
+//            
+//            fridayBox.getChildren().addAll(friday_hourLeft, friday_hourRight, time_Separator8, friday_minLeft, friday_minRight);
+//            prayertime_pane.setConstraints(fridayBox, 0, 13);
+//            prayertime_pane.getChildren().add(fridayBox);
+//
+//    //        friday_Label_eng.setMaxSize(100,40);
+//    //        friday_Label_eng.setMinSize(100,40);
+//    //        friday_Label_eng.setPrefSize(100,40);
+//    //        friday_Label_ar.setMaxSize(100,40);
+//    //        friday_Label_ar.setMinSize(100,40);
+//    //        friday_Label_ar.setPrefSize(100,40);
+//
+//            prayertime_pane.setConstraints(friday_Label_eng, 2, 13);
+//            prayertime_pane.getChildren().add(friday_Label_eng);
+//            prayertime_pane.setConstraints(friday_Label_ar, 2, 13);
+//            prayertime_pane.getChildren().add(friday_Label_ar);
+//
+//            friday_hourLeft.setText("-");
+//            friday_hourRight.setText("-");
+//            friday_minLeft.setText("-");
+//            friday_minRight.setText("-");
+//            time_Separator8.setText(":");
+//
+//            final Separator sepHor5 = new Separator();
+//            prayertime_pane.setValignment(sepHor5,VPos.CENTER);
+//            prayertime_pane.setConstraints(sepHor5, 0, 12);
+//            prayertime_pane.setColumnSpan(sepHor5, 3);
+////            sepHor5.setMinHeight(1);
+//            prayertime_pane.getChildren().add(sepHor5);
+//        
+//        }
+// //============================= 
+//        
+//        final Separator sepHor1 = new Separator();
+//        prayertime_pane.setValignment(sepHor1,VPos.CENTER);
+//        prayertime_pane.setConstraints(sepHor1, 0, 3);
+//        prayertime_pane.setColumnSpan(sepHor1, 3);
+////        sepHor1.setMaxSize(100,15);
+////        sepHor1.setMinSize(100,15);
+////        sepHor1.setMinHeight(1);
+//        prayertime_pane.getChildren().add(sepHor1);   
+//        
+//        final Separator sepHor2 = new Separator();
+//        prayertime_pane.setValignment(sepHor2,VPos.CENTER);
+//        prayertime_pane.setConstraints(sepHor2, 0, 5);
+//        prayertime_pane.setColumnSpan(sepHor2, 3);
+////        sepHor2.setMinHeight(1);
+//        prayertime_pane.getChildren().add(sepHor2);
+//        
+//        final Separator sepHor3 = new Separator();
+//        prayertime_pane.setValignment(sepHor3,VPos.CENTER);
+//        prayertime_pane.setConstraints(sepHor3, 0, 7);
+//        prayertime_pane.setColumnSpan(sepHor3, 3);
+////        sepHor3.setMinHeight(1);
+//        prayertime_pane.getChildren().add(sepHor3);
+//        
+//        final Separator sepHor4 = new Separator();
+//        prayertime_pane.setValignment(sepHor4,VPos.CENTER);
+//        prayertime_pane.setConstraints(sepHor4, 0, 9);
+//        prayertime_pane.setColumnSpan(sepHor4, 3);
+////        sepHor4.setMinHeight(1);
+//        prayertime_pane.getChildren().add(sepHor4);
+//        
+//        
+//        
+//        
+//
+////========= Jamama=======
+//               
+////=============================  
+//        HBox fajr_jamma_Box = new HBox();
+////        fajr_jamma_Box.setSpacing(0);
+//        fajr_jamma_Box.setMaxSize(80,1);
+////        fajr_jamma_Box.setMinSize(100,40);
+////        fajr_jamma_Box.setPrefSize(100,15);
+//
+//        
+//        if (show_friday)
+//        
+//        {
+//            fajr_jamma_hourLeft.setId("hourLeft_friday_row");
+//            fajr_jamma_hourRight.setId("hourLeft_friday_row");
+//            time_jamma_Separator1.setId("hourLeft_friday_row");
+//            fajr_jamma_minLeft.setId("hourLeft_friday_row");
+//            fajr_jamma_minRight.setId("hourLeft_friday_row");   
+//        }
+//        
+//        else
+//        {
+//            fajr_jamma_hourLeft.setId("hourLeft");
+//            fajr_jamma_hourRight.setId("hourLeft");
+//            time_jamma_Separator1.setId("hourLeft");
+//            fajr_jamma_minLeft.setId("hourLeft");
+//            fajr_jamma_minRight.setId("hourLeft");
+//        }
+//        
+//        
+//        fajr_jamma_Box.getChildren().addAll(fajr_jamma_hourLeft, fajr_jamma_hourRight, time_jamma_Separator1, fajr_jamma_minLeft, fajr_jamma_minRight);
+//        prayertime_pane.setConstraints(fajr_jamma_Box, 0, 2);
+//        prayertime_pane.getChildren().add(fajr_jamma_Box);
+//        
+//        fajr_jamma_hourLeft.setText("-");
+//        fajr_jamma_hourRight.setText("-");
+//        fajr_jamma_minLeft.setText("-");
+//        fajr_jamma_minRight.setText("-");
+//        time_jamma_Separator1.setText(":");
+//        
+////============================= 
+//        HBox zuhr_jamma_Box = new HBox();
+////        zuhr_jamma_Box.setSpacing(0);
+//        zuhr_jamma_Box.setMaxSize(80,1);
+////        zuhr_jamma_Box.setMinSize(100,15);
+////        zuhr_jamma_Box.setPrefSize(100,15);
+//
+//        
+//        if (show_friday)
+//        
+//        {
+//            zuhr_jamma_hourLeft.setId("hourLeft_friday_row");
+//            zuhr_jamma_hourRight.setId("hourLeft_friday_row");
+//            time_jamma_Separator2.setId("hourLeft_friday_row");
+//            zuhr_jamma_minLeft.setId("hourLeft_friday_row");
+//            zuhr_jamma_minRight.setId("hourLeft_friday_row");   
+//        }
+//        
+//        else
+//        {
+//            zuhr_jamma_hourLeft.setId("hourLeft");
+//            zuhr_jamma_hourRight.setId("hourLeft");
+//            time_jamma_Separator2.setId("hourLeft");
+//            zuhr_jamma_minLeft.setId("hourLeft");
+//            zuhr_jamma_minRight.setId("hourLeft");
+//        }
+//        
+//        
+//        zuhr_jamma_Box.getChildren().addAll(zuhr_jamma_hourLeft, zuhr_jamma_hourRight, time_jamma_Separator2, zuhr_jamma_minLeft, zuhr_jamma_minRight);
+//        prayertime_pane.setConstraints(zuhr_jamma_Box, 0, 4);
+//        prayertime_pane.getChildren().add(zuhr_jamma_Box);
+//        
+//        zuhr_jamma_hourLeft.setText("-");
+//        zuhr_jamma_hourRight.setText("-");
+//        zuhr_jamma_minLeft.setText("-");
+//        zuhr_jamma_minRight.setText("-");
+//        time_jamma_Separator2.setText(":");
+//
+////============================= 
+//        HBox asr_jamma_Box = new HBox();
+////        asr_jamma_Box.setSpacing(0);
+//        asr_jamma_Box.setMaxSize(80,1);
+////        asr_jamma_Box.setMinSize(100,15);
+////        asr_jamma_Box.setPrefSize(100,15);
+// 
+//        
+//        if (show_friday)
+//        
+//        {
+//            asr_jamma_minRight.setId("hourLeft_friday_row");
+//            asr_jamma_minLeft.setId("hourLeft_friday_row");
+//            time_jamma_Separator3.setId("hourLeft_friday_row");
+//            asr_jamma_hourRight.setId("hourLeft_friday_row");
+//            asr_jamma_hourLeft.setId("hourLeft_friday_row");   
+//        }
+//        
+//        else
+//        {
+//            asr_jamma_minRight.setId("hourLeft");
+//            asr_jamma_minLeft.setId("hourLeft");
+//            time_jamma_Separator3.setId("hourLeft");
+//            asr_jamma_hourRight.setId("hourLeft");
+//            asr_jamma_hourLeft.setId("hourLeft");
+//        }
+//        
+//        
+//        asr_jamma_Box.getChildren().addAll(asr_jamma_hourLeft, asr_jamma_hourRight, time_jamma_Separator3, asr_jamma_minLeft, asr_jamma_minRight);
+//        prayertime_pane.setConstraints(asr_jamma_Box, 0, 6);
+//        prayertime_pane.getChildren().add(asr_jamma_Box);
+//        
+//        asr_jamma_hourLeft.setText("-");
+//        asr_jamma_hourRight.setText("-");
+//        asr_jamma_minLeft.setText("-");
+//        asr_jamma_minRight.setText("-");
+//        time_jamma_Separator3.setText(":");
+//        
+////============================= 
+//        
+//        HBox maghrib_jamma_Box = new HBox();
+////        maghrib_jamma_Box.setSpacing(0);
+//        maghrib_jamma_Box.setMaxSize(80,1);
+////        maghrib_jamma_Box.setMinSize(100,15);
+////        maghrib_jamma_Box.setPrefSize(100,15);
+//
+//        if (show_friday)
+//        
+//        {
+//            maghrib_jamma_minRight.setId("hourLeft_friday_row");
+//            maghrib_jamma_minLeft.setId("hourLeft_friday_row");
+//            time_jamma_Separator4.setId("hourLeft_friday_row");
+//            maghrib_jamma_hourRight.setId("hourLeft_friday_row");
+//            maghrib_jamma_hourLeft.setId("hourLeft_friday_row");   
+//        }
+//        
+//        else
+//        {
+//            maghrib_jamma_minRight.setId("hourLeft");
+//            maghrib_jamma_minLeft.setId("hourLeft");
+//            time_jamma_Separator4.setId("hourLeft");
+//            maghrib_jamma_hourRight.setId("hourLeft");
+//            maghrib_jamma_hourLeft.setId("hourLeft");
+//        }
+//        
+//        
+//        maghrib_jamma_Box.getChildren().addAll(maghrib_jamma_hourLeft, maghrib_jamma_hourRight, time_jamma_Separator4, maghrib_jamma_minLeft, maghrib_jamma_minRight);
+//        prayertime_pane.setConstraints(maghrib_jamma_Box, 0, 8);
+//        prayertime_pane.getChildren().add(maghrib_jamma_Box);
+//        
+//        maghrib_jamma_hourLeft.setText("-");
+//        maghrib_jamma_hourRight.setText("-");
+//        maghrib_jamma_minLeft.setText("-");
+//        maghrib_jamma_minRight.setText("-");
+//        time_jamma_Separator4.setText(":");
+////============================= 
+//        
+//        HBox isha_jamma_Box = new HBox();
+////        isha_jamma_Box.setSpacing(0);
+//        isha_jamma_Box.setMaxSize(80,1);
+////        isha_jamma_Box.setMinSize(100,15);
+////        isha_jamma_Box.setPrefSize(100,15);
+//
+//        
+//        
+//        if (show_friday)
+//        
+//        {
+//            isha_jamma_hourLeft.setId("hourLeft_friday_row");
+//            isha_jamma_hourRight.setId("hourLeft_friday_row");
+//            time_jamma_Separator5.setId("hourLeft_friday_row");
+//            isha_jamma_minLeft.setId("hourLeft_friday_row");
+//            isha_jamma_minRight.setId("hourLeft_friday_row");   
+//        }
+//        
+//        else
+//        {
+//            isha_jamma_hourLeft.setId("hourLeft");
+//            isha_jamma_hourRight.setId("hourLeft");
+//            time_jamma_Separator5.setId("hourLeft");
+//            isha_jamma_minLeft.setId("hourLeft");
+//            isha_jamma_minRight.setId("hourLeft");
+//        }
+//        
+//        
+//        isha_jamma_Box.getChildren().addAll(isha_jamma_hourLeft, isha_jamma_hourRight, time_jamma_Separator5, isha_jamma_minLeft, isha_jamma_minRight);
+//        prayertime_pane.setConstraints(isha_jamma_Box, 0, 10);
+//        prayertime_pane.getChildren().add(isha_jamma_Box);
+//        
+//        isha_jamma_hourLeft.setText("-");
+//        isha_jamma_hourRight.setText("-");
+//        isha_jamma_minLeft.setText("-");
+//        isha_jamma_minRight.setText("-");
+//        time_jamma_Separator5.setText(":");
+//        
+//        if(show_friday && double_friday)
+//            
+//        {
+//            HBox fridayBox2 = new HBox();
+//            fridayBox2.setMaxSize(80,1);
+//            friday2_hourLeft.setId("hourLeft_friday_row");
+//            friday2_hourRight.setId("hourLeft_friday_row");
+//            time_Separator9.setId("hourLeft_friday_row");
+//            friday2_minLeft.setId("hourLeft_friday_row");
+//            friday2_minRight.setId("hourLeft_friday_row");
+//            fridayBox2.getChildren().addAll(friday2_hourLeft, friday2_hourRight, time_Separator9, friday2_minLeft, friday2_minRight);
+//            prayertime_pane.setConstraints(fridayBox2, 1, 13);
+//            prayertime_pane.getChildren().add(fridayBox2);
+//
+//            friday2_hourLeft.setText("-");
+//            friday2_hourRight.setText("-");
+//            friday2_minLeft.setText("-");
+//            friday2_minRight.setText("-");
+//            time_Separator9.setText(":");
+//        
+//        
+//        }
+//       
+//   }
+       
+       
+       {
         if (show_friday)
         
         {
             prayertime_pane.getRowConstraints().setAll(
                 RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(120).build(),
                 RowConstraintsBuilder.create().minHeight(105).build(),
-                RowConstraintsBuilder.create().minHeight(108).build(),
                 RowConstraintsBuilder.create().minHeight(1).build(),
-                RowConstraintsBuilder.create().minHeight(108).build(),
+                RowConstraintsBuilder.create().minHeight(105).build(),
                 RowConstraintsBuilder.create().minHeight(1).build(),
-                RowConstraintsBuilder.create().minHeight(108).build(),
+                RowConstraintsBuilder.create().minHeight(105).build(),
                 RowConstraintsBuilder.create().minHeight(1).build(),
-                RowConstraintsBuilder.create().minHeight(108).build(),
+                RowConstraintsBuilder.create().minHeight(105).build(),
                 RowConstraintsBuilder.create().minHeight(1).build(),
-                RowConstraintsBuilder.create().minHeight(108).build(),
+                RowConstraintsBuilder.create().minHeight(105).build(),
                 RowConstraintsBuilder.create().minHeight(1).build(),
                 RowConstraintsBuilder.create().minHeight(1).build(),
-                RowConstraintsBuilder.create().minHeight(108).build(),
+                RowConstraintsBuilder.create().minHeight(105).build(),
                 RowConstraintsBuilder.create().minHeight(10).build()
             );
         }
@@ -8974,11 +10232,11 @@ public void update_labels() throws Exception{
         prayertime_pane.setConstraints(jamaat_Label_ar, 0, 1);
         prayertime_pane.getChildren().add(jamaat_Label_ar);
         
-        prayertime_pane.setConstraints(athan_Label_eng, 1, 1);
+        prayertime_pane.setConstraints(athan_Label_eng, 2, 1);
 //        athan_Label_eng.setMaxHeight(1);
         prayertime_pane.getChildren().add(athan_Label_eng); 
         
-        prayertime_pane.setConstraints(athan_Label_ar, 1, 1);
+        prayertime_pane.setConstraints(athan_Label_ar, 2, 1);
         prayertime_pane.getChildren().add(athan_Label_ar);
 //=============================  
         HBox fajrBox = new HBox();
@@ -9010,7 +10268,7 @@ public void update_labels() throws Exception{
         
         
         fajrBox.getChildren().addAll(fajr_hourLeft, fajr_hourRight, time_Separator1, fajr_minLeft, fajr_minRight);
-        prayertime_pane.setConstraints(fajrBox, 1, 2);
+        prayertime_pane.setConstraints(fajrBox, 2, 2);
         prayertime_pane.getChildren().add(fajrBox);
         
 //        fajr_Label_eng.setMaxSize(100,40);
@@ -9025,9 +10283,9 @@ public void update_labels() throws Exception{
 //        fajr_Label_ar.setPrefSize(100,40);
                 
                 
-        prayertime_pane.setConstraints(fajr_Label_eng, 2, 2);
+        prayertime_pane.setConstraints(fajr_Label_eng, 1, 2);
         prayertime_pane.getChildren().add(fajr_Label_eng);      
-        prayertime_pane.setConstraints(fajr_Label_ar, 2, 2);
+        prayertime_pane.setConstraints(fajr_Label_ar, 1, 2);
         prayertime_pane.getChildren().add(fajr_Label_ar);
         
         fajr_hourLeft.setText("-");
@@ -9063,7 +10321,7 @@ public void update_labels() throws Exception{
             zuhr_minRight.setId("hourLeft");
         }
         zuhrBox.getChildren().addAll(zuhr_hourLeft, zuhr_hourRight, time_Separator3, zuhr_minLeft, zuhr_minRight);
-        prayertime_pane.setConstraints(zuhrBox, 1, 4);
+        prayertime_pane.setConstraints(zuhrBox, 2, 4);
         prayertime_pane.getChildren().add(zuhrBox);
         
 //        zuhr_Label_eng.setMaxSize(100,45);
@@ -9073,9 +10331,9 @@ public void update_labels() throws Exception{
 //        zuhr_Label_ar.setMinSize(100,45);
 //        zuhr_Label_ar.setPrefSize(100,45);
         
-        prayertime_pane.setConstraints(zuhr_Label_eng, 2, 4);
+        prayertime_pane.setConstraints(zuhr_Label_eng, 1, 4);
         prayertime_pane.getChildren().add(zuhr_Label_eng);      
-        prayertime_pane.setConstraints(zuhr_Label_ar, 2, 4);
+        prayertime_pane.setConstraints(zuhr_Label_ar, 1, 4);
         prayertime_pane.getChildren().add(zuhr_Label_ar);
         
         zuhr_hourLeft.setText("-");
@@ -9112,7 +10370,7 @@ public void update_labels() throws Exception{
         }
         
         asrBox.getChildren().addAll(asr_hourLeft, asr_hourRight, time_Separator4, asr_minLeft, asr_minRight);
-        prayertime_pane.setConstraints(asrBox, 1, 6);
+        prayertime_pane.setConstraints(asrBox, 2, 6);
         prayertime_pane.getChildren().add(asrBox);
         
 //        asr_Label_eng.setMaxSize(100,40);
@@ -9122,9 +10380,9 @@ public void update_labels() throws Exception{
 //        asr_Label_ar.setMinSize(100,40);
 //        asr_Label_ar.setPrefSize(100,40);
         
-        prayertime_pane.setConstraints(asr_Label_eng, 2, 6);
+        prayertime_pane.setConstraints(asr_Label_eng, 1, 6);
         prayertime_pane.getChildren().add(asr_Label_eng);      
-        prayertime_pane.setConstraints(asr_Label_ar, 2, 6);
+        prayertime_pane.setConstraints(asr_Label_ar, 1, 6);
         prayertime_pane.getChildren().add(asr_Label_ar);
         
         asr_hourLeft.setText("-");
@@ -9164,7 +10422,7 @@ public void update_labels() throws Exception{
         
         
         maghribBox.getChildren().addAll(maghrib_hourLeft, maghrib_hourRight, time_Separator5, maghrib_minLeft, maghrib_minRight);
-        prayertime_pane.setConstraints(maghribBox, 1, 8);
+        prayertime_pane.setConstraints(maghribBox, 2, 8);
         prayertime_pane.getChildren().add(maghribBox);
         
 //        maghrib_Label_eng.setMaxSize(100,40);
@@ -9174,9 +10432,9 @@ public void update_labels() throws Exception{
 //        maghrib_Label_ar.setMinSize(100,40);
 //        maghrib_Label_ar.setPrefSize(100,40);
         
-        prayertime_pane.setConstraints(maghrib_Label_eng, 2, 8);
+        prayertime_pane.setConstraints(maghrib_Label_eng, 1, 8);
         prayertime_pane.getChildren().add(maghrib_Label_eng);      
-        prayertime_pane.setConstraints(maghrib_Label_ar, 2, 8);
+        prayertime_pane.setConstraints(maghrib_Label_ar, 1, 8);
         prayertime_pane.getChildren().add(maghrib_Label_ar);
         
         maghrib_hourLeft.setText("-");
@@ -9219,7 +10477,7 @@ public void update_labels() throws Exception{
         
         
         ishaBox.getChildren().addAll(isha_hourLeft, isha_hourRight, time_Separator6, isha_minLeft, isha_minRight);
-        prayertime_pane.setConstraints(ishaBox, 1, 10);
+        prayertime_pane.setConstraints(ishaBox, 2, 10);
         prayertime_pane.getChildren().add(ishaBox);
         
 //        isha_Label_eng.setMaxSize(100,40);
@@ -9229,9 +10487,9 @@ public void update_labels() throws Exception{
 //        isha_Label_ar.setMinSize(100,40);
 //        isha_Label_ar.setPrefSize(100,40);
         
-        prayertime_pane.setConstraints(isha_Label_eng, 2, 10);
+        prayertime_pane.setConstraints(isha_Label_eng, 1, 10);
         prayertime_pane.getChildren().add(isha_Label_eng);      
-        prayertime_pane.setConstraints(isha_Label_ar, 2, 10);
+        prayertime_pane.setConstraints(isha_Label_ar, 1, 10);
         prayertime_pane.getChildren().add(isha_Label_ar);
         
         isha_hourLeft.setText("-");
@@ -9270,9 +10528,9 @@ public void update_labels() throws Exception{
     //        friday_Label_ar.setMinSize(100,40);
     //        friday_Label_ar.setPrefSize(100,40);
 
-            prayertime_pane.setConstraints(friday_Label_eng, 2, 13);
+            prayertime_pane.setConstraints(friday_Label_eng, 1, 13);
             prayertime_pane.getChildren().add(friday_Label_eng);
-            prayertime_pane.setConstraints(friday_Label_ar, 2, 13);
+            prayertime_pane.setConstraints(friday_Label_ar, 1, 13);
             prayertime_pane.getChildren().add(friday_Label_ar);
 
             friday_hourLeft.setText("-");
@@ -9446,6 +10704,7 @@ public void update_labels() throws Exception{
         HBox maghrib_jamma_Box = new HBox();
 //        maghrib_jamma_Box.setSpacing(0);
         maghrib_jamma_Box.setMaxSize(80,1);
+        
 //        maghrib_jamma_Box.setMinSize(100,15);
 //        maghrib_jamma_Box.setPrefSize(100,15);
 
@@ -9468,9 +10727,12 @@ public void update_labels() throws Exception{
             maghrib_jamma_hourLeft.setId("hourLeft");
         }
         
+        if(device_location.equals("Al hidayah"))
+            {maghrib_jamma_Box.setMaxSize(275,1); maghrib_jamma_Box.getChildren().addAll(maghrib_jamma_hourLeft);}
         
-        maghrib_jamma_Box.getChildren().addAll(maghrib_jamma_hourLeft, maghrib_jamma_hourRight, time_jamma_Separator4, maghrib_jamma_minLeft, maghrib_jamma_minRight);
+        else maghrib_jamma_Box.getChildren().addAll(maghrib_jamma_hourLeft, maghrib_jamma_hourRight, time_jamma_Separator4, maghrib_jamma_minLeft, maghrib_jamma_minRight);
         prayertime_pane.setConstraints(maghrib_jamma_Box, 0, 8);
+        
         prayertime_pane.getChildren().add(maghrib_jamma_Box);
         
         maghrib_jamma_hourLeft.setText("-");
@@ -9529,7 +10791,7 @@ public void update_labels() throws Exception{
             friday2_minLeft.setId("hourLeft_friday_row");
             friday2_minRight.setId("hourLeft_friday_row");
             fridayBox2.getChildren().addAll(friday2_hourLeft, friday2_hourRight, time_Separator9, friday2_minLeft, friday2_minRight);
-            prayertime_pane.setConstraints(fridayBox2, 1, 13);
+            prayertime_pane.setConstraints(fridayBox2, 2, 13);
             prayertime_pane.getChildren().add(fridayBox2);
 
             friday2_hourLeft.setText("-");
@@ -9541,7 +10803,10 @@ public void update_labels() throws Exception{
         
         }
        
-   }
+        
+        
+
+    }
 
     return prayertime_pane;
 } 
@@ -9554,12 +10819,13 @@ public void update_labels() throws Exception{
         {
             Moonpane.setId("moonpane");
             Moonpane.getColumnConstraints().setAll(
-                    ColumnConstraintsBuilder.create().prefWidth(220).minWidth(220).build(),
-                    ColumnConstraintsBuilder.create().prefWidth(100).minWidth(100).build()     
+                    ColumnConstraintsBuilder.create().minWidth(350).build(),
+//                    ColumnConstraintsBuilder.create().minWidth(50).build(),
+                    ColumnConstraintsBuilder.create().minWidth(160).build()     
             );
-            Moonpane.setHgap(40);
+            Moonpane.setHgap(30);
             Moonpane.setMaxHeight(50);
-    //       Moonpane.setGridLinesVisible(false);
+//           Moonpane.setGridLinesVisible(true);
 
             ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/100%.png")));      
             Moon_img.setFitWidth(120);
@@ -9574,7 +10840,7 @@ public void update_labels() throws Exception{
             Moon_Date_Label.setText("Loading......");
             Moonpane.setConstraints(Moon_Date_Label, 0, 0);
             Moonpane.getChildren().add(Moon_Date_Label);
-
+            
         }
         else if (orientation.equals("horizontal"))
             
@@ -9672,27 +10938,38 @@ public void update_labels() throws Exception{
         {
             Weatherpane.setId("moonpane");
             Weatherpane.getColumnConstraints().setAll(
-                    ColumnConstraintsBuilder.create().prefWidth(220).minWidth(220).build(),
-                    ColumnConstraintsBuilder.create().prefWidth(100).minWidth(100).build()     
+                    ColumnConstraintsBuilder.create().minWidth(150).build(),
+                    ColumnConstraintsBuilder.create().minWidth(160).build()     
             );
-            Weatherpane.setHgap(40);
-            Weatherpane.setMaxHeight(50);
-    //       Moonpane.setGridLinesVisible(false);
-
-            ImageView Moon_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Moon/100%.png")));      
-            Moon_img.setFitWidth(120);
-            Moon_img.setFitHeight(120);
+            Weatherpane.getRowConstraints().setAll(
+                    RowConstraintsBuilder.create().minHeight(70).build(),
+                    RowConstraintsBuilder.create().minHeight(30).build()     
+            );
+            Weatherpane.setHgap(20);
+//            Weatherpane.setMaxHeight(50);
+//           Weatherpane.setGridLinesVisible(true);
+            weather_img.setFitWidth(160);
+            weather_img.setFitHeight(160);
     //        Moon_img.setPreserveRatio(false);
-            Moon_img.setSmooth(true);
-            Moon_Image_Label.setGraphic(Moon_img);
-            Weatherpane.setConstraints(Moon_Image_Label, 1, 0);
-            Weatherpane.getChildren().add(Moon_Image_Label); 
-            Moon_Date_Label.setId("moon-text-english");
-            Moon_Date_Label.setWrapText(true);
-            Moon_Date_Label.setText("Loading......");
-            Weatherpane.setConstraints(Moon_Date_Label, 0, 0);
-            Weatherpane.getChildren().add(Moon_Date_Label);
-
+//            weather_img.setSmooth(true);
+            
+            Weather_Image_Label.setGraphic(weather_img);
+            Weatherpane.setConstraints(Weather_Image_Label, 1, 0,1,2);
+            Weatherpane.getChildren().add(Weather_Image_Label); 
+            Weather_Label1.setId("Weather_Label1");
+            Weather_Label1.setText("Loading......");
+            Weatherpane.setValignment(Weather_Label1,VPos.CENTER);
+            Weatherpane.setHalignment(Weather_Label1,HPos.CENTER);
+            Weatherpane.setConstraints(Weather_Label1, 0, 0,1,1);
+            Weatherpane.getChildren().add(Weather_Label1);
+            
+            Weather_Label2.setId("Weather_Label2");
+            Weather_Label2.setText("Loading......");
+            Weatherpane.setValignment(Weather_Label2,VPos.CENTER);
+            Weatherpane.setHalignment(Weather_Label2,HPos.CENTER);
+            Weatherpane.setConstraints(Weather_Label2, 0, 1,1,1);
+            Weatherpane.getChildren().add(Weather_Label2);
+            
         }
         else if (orientation.equals("horizontal"))
             
@@ -9828,17 +11105,18 @@ public void update_labels() throws Exception{
         
         if (orientation.equals("vertical") )
         {
-            Sunrise.getColumnConstraints().setAll(
-                    ColumnConstraintsBuilder.create().prefWidth(220).minWidth(220).build(),
-                    ColumnConstraintsBuilder.create().prefWidth(100).minWidth(100).build()     
+                        Sunrise.getColumnConstraints().setAll(
+                    ColumnConstraintsBuilder.create().minWidth(300).build(),
+//                    ColumnConstraintsBuilder.create().minWidth(50).build() ,
+                    ColumnConstraintsBuilder.create().minWidth(150).build()    
             );
-            Sunrise.setHgap(40);
+            Sunrise.setHgap(30);
             Sunrise.setMaxHeight(50);
-    //       Moonpane.setGridLinesVisible(false);
+//           Sunrise.setGridLinesVisible(true);
 
             ImageView Sunrise_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Sun/Sun.png")));      
-            Sunrise_img.setFitWidth(160);
-            Sunrise_img.setFitHeight(160);
+            Sunrise_img.setFitWidth(150);
+            Sunrise_img.setFitHeight(150);
     //        Moon_img.setPreserveRatio(false);
             Sunrise_img.setSmooth(true);
             Sunrise_Image_Label.setGraphic(Sunrise_img);
@@ -9849,6 +11127,7 @@ public void update_labels() throws Exception{
             Sunrise_Date_Label.setText("Loading......");
             Sunrise.setConstraints(Sunrise_Date_Label, 0, 0);
             Sunrise.getChildren().add(Sunrise_Date_Label);
+            
         }
         
         else if (orientation.equals("horizontal"))
@@ -10060,11 +11339,18 @@ public void update_labels() throws Exception{
         if (orientation.equals("vertical") )
         {
             clockPane.getColumnConstraints().setAll(
-                ColumnConstraintsBuilder.create().minWidth(10).maxWidth(50).build(),
-                ColumnConstraintsBuilder.create().minWidth(120).maxWidth(300).build(),
-                ColumnConstraintsBuilder.create().minWidth(40).maxWidth(50).build(),
-                ColumnConstraintsBuilder.create().minWidth(120).maxWidth(160).build(),
-                ColumnConstraintsBuilder.create().minWidth(70).maxWidth(150).build()    
+                ColumnConstraintsBuilder.create().minWidth(10).build(),
+                ColumnConstraintsBuilder.create().minWidth(140).build(),
+                ColumnConstraintsBuilder.create().minWidth(65).build(),
+                ColumnConstraintsBuilder.create().minWidth(140).build(),
+                ColumnConstraintsBuilder.create().minWidth(140).build()    
+            );
+
+            clockPane.getRowConstraints().setAll(
+                    RowConstraintsBuilder.create().minHeight(10).build(),
+                    RowConstraintsBuilder.create().minHeight(20).build(),
+                    RowConstraintsBuilder.create().minHeight(167).build(),
+                    RowConstraintsBuilder.create().minHeight(10).build()
             );
 
             clockPane.setHgap(0);
@@ -10073,30 +11359,34 @@ public void update_labels() throws Exception{
 
             hour_Label.setId("hour");  
             clockPane.setHalignment(hour_Label,HPos.RIGHT);
-            clockPane.setConstraints(hour_Label, 1, 0);
+            clockPane.setConstraints(hour_Label, 1, 2, 1, 3);
             clockPane.getChildren().add(hour_Label);
+            hour_Label.setTranslateY(-5);
 
             separator_Label.setText(":");
             separator_Label.setId("clock_separator");  
             clockPane.setHalignment(separator_Label,HPos.CENTER);
-            clockPane.setConstraints(separator_Label, 2, 0);
+            clockPane.setConstraints(separator_Label, 2, 2, 1, 3);
             clockPane.getChildren().add(separator_Label);
+            separator_Label.setTranslateY(-5);
 
             minute_Label.setId("minute");  
             clockPane.setHalignment(minute_Label,HPos.CENTER);
             clockPane.setValignment(minute_Label,VPos.CENTER);
-            clockPane.setConstraints(minute_Label, 3, 0);
+            clockPane.setConstraints(minute_Label, 3, 2, 1, 3);
             clockPane.getChildren().add(minute_Label);
+            minute_Label.setTranslateY(-5);
 
             second_Label.setId("second");  
             clockPane.setHalignment(second_Label,HPos.CENTER);
             clockPane.setValignment(second_Label,VPos.CENTER);
-            clockPane.setConstraints(second_Label, 4, 0);
+            clockPane.setConstraints(second_Label, 4, 2, 1, 3);
             clockPane.getChildren().add(second_Label);
+            second_Label.setTranslateY(-5);
 
             date_Label.setId("date");
             clockPane.setHalignment(date_Label,HPos.CENTER);
-            clockPane.setConstraints(date_Label, 0, 1,5,1);
+            clockPane.setConstraints(date_Label, 1, 3,5,1);
             clockPane.getChildren().add(date_Label);
 
         
@@ -10330,3 +11620,4 @@ public void update_labels() throws Exception{
 //                            } catch (IOException ex) {
 //                                logger.warn("Unexpected error", e);
 //                            }
+class Delta { double x, y; } 
