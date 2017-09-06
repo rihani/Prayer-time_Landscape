@@ -418,8 +418,8 @@ and open the template in the editor.
         
         #notification{
             
-                 -fx-background-color: rgba(0, 0, 0, 1); 
-	 -fx-border-color: black;
+                 -fx-background-color: rgba(255, 0, 0, 0.75); 
+	 /*-fx-border-color: black;*/
          
 
          
@@ -479,7 +479,7 @@ and open the template in the editor.
 	 /*-fx-border-color: black;*/
 	 /*-fx-border-radius: 20;*/
          
-	 -fx-padding: 12 30 5 35;
+	 -fx-padding: 50 50 50 50;
 	 /*-fx-background-radius: 20;*/
 	}
         
@@ -490,7 +490,7 @@ and open the template in the editor.
 	 /*-fx-border-color: black;*/
 	 /*-fx-border-radius: 20;*/
          
-	 -fx-padding: 12 30 5 35;
+	 -fx-padding: 50 50 50 50;
 	 /*-fx-background-radius: 20;*/
             
             
@@ -628,11 +628,13 @@ and open the template in the editor.
         
         /*-fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );*/ 
         /*-fx-text-alignment: right;*/
-        -fx-text-fill:whitesmoke;
-/*        -fx-shape: "M 0,1 L 1,1";
-        -fx-stroke: #ff5700;
-        -fx-background-color: skyblue;*/
-    /*-fx-background-insets: 0, 10;*/
+        -fx-text-fill:lightgray;
+/*        -fx-fill: linear-gradient(#ffd65b, #e68400),
+                linear-gradient(#ffea6a, #efaa22),
+                linear-gradient(#ffe657 0%, #f8c202 50%, #eea10b 100%),
+                linear-gradient(from 0% 0% to 15% 50%, rgba(255,255,255,0.9), rgba(255,255,255,0));
+        -fx-effect: dropshadow( one-pass-box , rgba(0,0,0,0.9) , 1, 0.0 , 0 , 10 );*/
+
 
     
     }

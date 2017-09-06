@@ -253,10 +253,10 @@ import javafx.stage.StageStyle;
     private FadeTransition hadith_en_fade_out = new FadeTransition(Duration.millis(500));
     private FadeTransition hadith_en_fade_in = new FadeTransition(Duration.millis(500));
     
-    private FadeTransition ft_ar1 = new FadeTransition(Duration.millis(4000));
-    private FadeTransition ft_ar = new FadeTransition(Duration.millis(4000));
-    private FadeTransition ft_en1 = new FadeTransition(Duration.millis(4000));
-    private FadeTransition ft_en = new FadeTransition(Duration.millis(4000));
+//    private FadeTransition ft_ar1 = new FadeTransition(Duration.millis(4000));
+//    private FadeTransition ft_ar = new FadeTransition(Duration.millis(4000));
+//    private FadeTransition ft_en1 = new FadeTransition(Duration.millis(4000));
+//    private FadeTransition ft_en = new FadeTransition(Duration.millis(4000));
     
     private Process p;
     static final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
@@ -620,9 +620,10 @@ try
 //    SQL = "Select * from settings_al_takwa";
 //    SQL = "Select * from settings_ESCA";
 //    SQL = "Select * from settings";
+//    SQL = "Select * from settings_middle_path";
 //    SQL = "Select * from settings_al_hidayah";
-//      SQL = "Select * from settings_arncliffe"; 
-    SQL = "Select * from settings_MIA";
+      SQL = "Select * from settings_arncliffe"; 
+//    SQL = "Select * from settings_MIA";
     
     rs = c.createStatement().executeQuery(SQL);
     while (rs.next())
@@ -763,14 +764,14 @@ if (platform.equals("osx"))
     if (orientation.equals("vertical") )
     {
 //        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/vertical");
-        String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/vertical";
+        String path = "/Users/ossama/Documents - ossama’s MacBook Pro/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/vertical";
             directory = new File(path);
     }
     
     else if (orientation.equals("horizontal") )
     {
 //        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal");
-        String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/horizontal";
+        String path = "/Users/ossama/Documents - ossama’s MacBook Pro/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/horizontal";
             directory = new File(path);
     }
     
@@ -779,13 +780,13 @@ if (platform.equals("osx"))
         if(custom_background)
         {
 //            directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/custom");
-            String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/custom";
+            String path = "/Users/ossama/Documents - ossama’s MacBook Pro/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/custom";
             directory = new File(path);
         }
         else
         {
 //        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal_HD");
-            String path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/horizontal_HD";
+            String path = "/Users/ossama/Documents - ossama’s MacBook Pro/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/horizontal_HD";
             directory = new File(path);
         }
          
@@ -823,6 +824,7 @@ countImages = images.size();
 imageNumber = (int) (Math.random() * countImages);
 rand_Image_Path = directory + "/"+ images.get(imageNumber);
 //        System.out.println(rand_Image_Path);
+
 
 if (!platform.equals("osx"))
 {
@@ -1105,24 +1107,24 @@ int[] offsets = {0, 0, 0, 0, 0, 0, 0}; // {Fajr,Sunrise,Dhuhr,Asr,Sunset,Maghrib
 getprayertime.tune(offsets);
 
 Date time = cal.getTime();
-//                        System.out.println(" daylight saving? " + TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ));
+                        System.out.println(" daylight saving? " + TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ));
                         
 //                        The following calculate the next daylight saving date
 DateTimeZone zone = DateTimeZone.forID(timeZone_ID);
 DateTimeFormatter format = DateTimeFormat.mediumDateTime();
 
-//                        long current = System.currentTimeMillis();
-//                        for (int i=0; i < 1; i++)
-//                        {
-//                            long next = zone.nextTransition(current);
-//                            if (current == next)
-//                            {
-//                                break;
-//                            }
-//                            System.out.println ("Next Daylight saving Change: " + format.print(next) + " Into DST? " 
-//                                                + !zone.isStandardOffset(next));
-//                            current = next;
-//                        }
+                        long current = System.currentTimeMillis();
+                        for (int i=0; i < 1; i++)
+                        {
+                            long next = zone.nextTransition(current);
+                            if (current == next)
+                            {
+                                break;
+                            }
+                            System.out.println ("Next Daylight saving Change: " + format.print(next) + " Into DST? " 
+                                                + !zone.isStandardOffset(next));
+                            current = next;
+                        }
 
 long next = zone.nextTransition(System.currentTimeMillis());
 
@@ -3112,13 +3114,13 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
         if (orientation.equals("vertical") )
         {
 //                                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/vertical");
-            path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/vertical";
+            path = "/Users/ossama/Documents - ossama’s MacBook Pro/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/vertical";
                 directory = new File(path);
         }
         else if (orientation.equals("horizontal") )
         {
 //                                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal");
-                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/horizontal";
+                path = "/Users/ossama/Documents - ossama’s MacBook Pro/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/horizontal";
                 directory = new File(path);                                   
         }
         else 
@@ -3126,12 +3128,12 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
             if(custom_background)
             {
 //                                    directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/custom");                                   
-                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/custom";
+                path = "/Users/ossama/Documents - ossama’s MacBook Pro/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/custom";
                 directory = new File(path);                                                                
             }
             else
             {
-                path = "/Users/ossama/Documents/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/horizontal_HD";
+                path = "/Users/ossama/Documents - ossama’s MacBook Pro/Documents - ossama’s MacBook Pro/Projects/javaFX Apps/Prayer Time/background/full_moon/horizontal_HD";
                 directory = new File(path);
 //                                directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/horizontal_HD");
             }
@@ -3771,7 +3773,7 @@ clock_update_timer = new AnimationTimer() {
 
 moon_weather_flip= new AnimationTimer() {
     @Override public void handle(long now) {
-        if (now > moon_weather_flip_update_lastTimerCall + 5000_000_000l)
+        if (now > moon_weather_flip_update_lastTimerCall + 5000_000_000l && !weather_retrieve_fault)
         {
             try 
             {                
@@ -3782,8 +3784,8 @@ moon_weather_flip= new AnimationTimer() {
                     weather_visible = true;
 //                    Weatherpane.setVisible(true);
 
-                    if(moon_view_blocked_sunrise_in_progress){Sunrisepane.setVisible(false);}
-                    else Moonpane_fade_out.playFromStart();
+                    if(moon_view_blocked_sunrise_in_progress){ Sunrisepane_fade_out.playFromStart();}
+                    else Moonpane_fade_out.playFromStart(); 
                     
                 }
                 
@@ -3794,7 +3796,7 @@ moon_weather_flip= new AnimationTimer() {
                     Weatherpane_fade_out.playFromStart();
                     weather_visible = false;
 //                    Weatherpane.setVisible(false);
-                    if(moon_view_blocked_sunrise_in_progress){Sunrisepane.setVisible(true);}
+                    if(moon_view_blocked_sunrise_in_progress){Sunrisepane.setVisible(true); Sunrisepane_fade_in.playFromStart();}
                     else Moonpane_fade_in.playFromStart();
                     
                 }
@@ -3878,7 +3880,7 @@ if(weather_enabled)
                             {
                                 @Override public void run()
                                 {
-                                    if (weather_retrieve_fault){Weatherpane.setVisible(true);}
+                                    if (!weather_retrieve_fault){Weatherpane.setVisible(true);}
                                     Weather_Label1.setText(getAtPath(je, "current_observation/temp_c").getAsString() +"°C");
                                     Weather_Label2.setText(getAtPath(je2, "forecast/simpleforecast/forecastday/low/celsius").getAsString() +"°" + "/" + getAtPath(je2, "forecast/simpleforecast/forecastday/high/celsius").getAsString()+"°");                              
                                     
@@ -4002,7 +4004,7 @@ if(weather_enabled)
                         {
                             @Override public void run()
                             {
-                                if (weather_retrieve_fault){Weatherpane.setVisible(true);}
+                                if (!weather_retrieve_fault){Weatherpane.setVisible(true);}
                                     Weather_Label1.setText(getAtPath(je, "current_observation/temp_c").getAsString() +"°C");
                                     Weather_Label2.setText(getAtPath(je2, "forecast/simpleforecast/forecastday/low/celsius").getAsString() +"°" + "/" + getAtPath(je2, "forecast/simpleforecast/forecastday/high/celsius").getAsString()+"°");                              
                                     
@@ -4933,11 +4935,150 @@ new Thread(() ->
                     scene.snapshot(image);
                     File outputfile = new File("saved.png");
                     ImageIO.write((RenderedImage) image, "png", outputfile);
-
-
-
-
                     System.out.println("saved...");
+                }
+                
+                
+                
+                
+                if(received.equals("athan time"))
+                {
+                    System.out.println("calculating athan time...");
+                    
+                    PrayTime getprayertime = new PrayTime();
+                    getprayertime.setTimeFormat(0);
+                    getprayertime.setCalcMethod(calcMethod);
+                    getprayertime.setAsrJuristic(AsrJuristic);
+                    getprayertime.setAdjustHighLats(0);
+                    int[] offsets = {0, 0, 0, 0, 0, 0, 0}; // {Fajr,Sunrise,Dhuhr,Asr,Sunset,Maghrib,Isha}
+                    getprayertime.tune(offsets);
+                    
+                    int i=366;
+  
+                    while (i <= 1095)
+                    {
+                        try
+                        {
+                            
+                            System.out.println(i);
+                            c = DBConnect.connect();
+                            SQL = "select id, date from arncliff_prayertimes_java WHERE id =\""+ i + "\"";
+                            rs = c.createStatement().executeQuery(SQL);
+                            while (rs.next())
+                            {
+                                id =                            rs.getInt("id");
+                                prayer_date =                   rs.getDate("date");
+
+                            }
+                            c.close();
+                            System.out.println("ID and mysql date: " + id + " " + prayer_date);
+
+                            SimpleDateFormat date_format = new SimpleDateFormat("HH:mm:ss");
+                            
+                            String date = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+                            Calendar prayer_cal = Calendar.getInstance();
+                            
+
+                            ArrayList<String> prayerTimes = getprayertime.getPrayerTimes(prayer_cal, latitude, longitude, timezone);
+                            ArrayList<String> prayerNames = getprayertime.getTimeNames();
+
+                            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
+
+                            
+                            
+                            Date fajr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(0)).getTime()));
+                            prayer_cal.setTime(fajr_temp);
+                            
+                            prayer_cal.setTime(fajr_temp);
+                            System.out.println("prayer_cal: "  + prayer_cal.getTime());
+                            
+                            if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( prayer_date )){prayer_cal.add(Calendar.MINUTE, 60);}
+                            Date fajr = prayer_cal.getTime();
+                            fajr_cal = prayer_cal.getInstance();
+                            fajr_cal.setTime(fajr);
+                            fajr_begins_time = fajr_cal.getTime();
+                            
+                            
+                            //                        System.out.println(" fajr time " + fajr_begins_time);
+
+                            Date sunrise_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(1)).getTime()));
+                            prayer_cal.setTime(sunrise_temp);
+                            if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( prayer_date )){prayer_cal.add(Calendar.MINUTE, 60);}
+                            Date sunrise = prayer_cal.getTime();
+                            sunrise_cal = prayer_cal.getInstance();
+                            sunrise_cal.setTime(sunrise);
+                            sunrise_time = sunrise_cal.getTime();
+                            //                        System.out.println(" sunrise time " + sunrise_time);
+
+                            Date zuhr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(2)).getTime()));
+                            prayer_cal.setTime(zuhr_temp);
+                            if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( prayer_date )){prayer_cal.add(Calendar.MINUTE, 60);}
+                            Date zuhr = prayer_cal.getTime();
+                            zuhr_cal = prayer_cal.getInstance();
+                            zuhr_cal.setTime(zuhr);
+                            zuhr_begins_time = zuhr_cal.getTime();
+                            //                        System.out.println(" Zuhr time " + zuhr_begins_time);
+
+                            Date asr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(3)).getTime()));
+                            prayer_cal.setTime(asr_temp);
+                            if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( prayer_date )){prayer_cal.add(Calendar.MINUTE, 60);}
+                            Date asr = prayer_cal.getTime();
+                            asr_cal = prayer_cal.getInstance();
+                            asr_cal.setTime(asr);
+                            asr_begins_time = asr_cal.getTime();
+                            //                        System.out.println(" Asr time " + asr_begins_time);
+
+                            Date maghrib_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(5)).getTime()));
+                            prayer_cal.setTime(maghrib_temp);
+                            if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( prayer_date )){prayer_cal.add(Calendar.MINUTE, 60);}
+                            Date maghrib = prayer_cal.getTime();
+                            maghrib_cal = prayer_cal.getInstance();
+                            maghrib_cal.setTime(maghrib);
+                            maghrib_begins_time = maghrib_cal.getTime();
+                            //                        System.out.println(" maghrib time " + maghrib_begins_time);
+
+
+                            Date isha_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(6)).getTime()));
+                            prayer_cal.setTime(isha_temp);
+                            if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( prayer_date )){prayer_cal.add(Calendar.MINUTE, 60);}
+                            Date isha = prayer_cal.getTime();
+                            isha_cal = prayer_cal.getInstance();
+                            isha_cal.setTime(isha);
+                            isha_begins_time = isha_cal.getTime();
+                            
+                            
+                            System.out.print(date_format.format(fajr_begins_time.getTime())); System.out.print(" , ");
+                            System.out.print(date_format.format(sunrise_time.getTime())); System.out.print(" , ");
+                            System.out.print(date_format.format(zuhr_begins_time.getTime())); System.out.print(" , ");
+                            System.out.print(date_format.format(asr_begins_time.getTime())); System.out.print(" , ");
+                            System.out.print(date_format.format(maghrib_begins_time.getTime())); System.out.print(" , ");
+                            System.out.println(date_format.format(isha_begins_time.getTime())); 
+                            
+                            
+                            c = DBConnect.connect();
+                            PreparedStatement ps = c.prepareStatement("UPDATE prayertime.arncliff_prayertimes_java  set fajr_begins= ? , sunrise= ? , zuhr_begins = ? , asr_begins = ? , maghrib_begins = ? , isha_begins = ?  WHERE id = ?");
+  
+                            ps.setString(1, date_format.format(fajr_begins_time.getTime()));
+                            ps.setString(2, date_format.format(sunrise_time.getTime()));
+                            ps.setString(3, date_format.format(zuhr_begins_time.getTime()));
+                            ps.setString(4, date_format.format(asr_begins_time.getTime()));
+                            ps.setString(5, date_format.format(maghrib_begins_time.getTime()));
+                            ps.setString(6, date_format.format(isha_begins_time.getTime()));
+                            ps.setString(7, String.valueOf(i));
+
+                            ps.executeUpdate();
+                            c.close();
+                
+        
+                        }
+                        
+
+                        catch (Exception e){logger.warn("Unexpected error", e);}
+                    
+                    
+                    
+                        i++;
+                    }
                 }
                 
                 if(received.equals("refresh facebook"))
@@ -5191,17 +5332,17 @@ new Thread(() ->
             text_Box.setMinWidth(640);
             text_Box.setMinHeight(50);
 
-            ft_ar1.setNode(ar_Marquee_Notification_Text1);
-            ft_ar1.setFromValue(1.0);
-            ft_ar1.setToValue(0);
-            ft_ar1.setCycleCount(Timeline.INDEFINITE);
-            ft_ar1.setAutoReverse(true);
-
-            ft_en1.setNode(en_Marquee_Notification_Text1);
-            ft_en1.setFromValue(1.0);
-            ft_en1.setToValue(0);
-            ft_en1.setCycleCount(2);
-            ft_en1.setAutoReverse(true);
+//            ft_ar1.setNode(ar_Marquee_Notification_Text1);
+//            ft_ar1.setFromValue(1.0);
+//            ft_ar1.setToValue(0);
+//            ft_ar1.setCycleCount(Timeline.INDEFINITE);
+//            ft_ar1.setAutoReverse(true);
+//
+//            ft_en1.setNode(en_Marquee_Notification_Text1);
+//            ft_en1.setFromValue(1.0);
+//            ft_en1.setToValue(0);
+//            ft_en1.setCycleCount(2);
+//            ft_en1.setAutoReverse(true);
         
             File file = new File(rand_Image_Path);
             Image image = new Image(file.toURI().toString());
@@ -5392,9 +5533,10 @@ new Thread(() ->
             }
             else
             {   
-                Mainpane.add(prayertime_pane, 16, 8,13,21); 
-                prayertime_pane.setTranslateY(10);
-                Mainpane.add(hadithPane, 1,8,14,21);
+                Mainpane.add(prayertime_pane, 1, 5,13,12); 
+//                prayertime_pane.setTranslateY(30); 
+//                hadithPane.setTranslateY(15); 
+                Mainpane.add(hadithPane, 1,18,13,10);
             }
             
 
@@ -5990,18 +6132,18 @@ new Thread(() ->
         }
         
 
-        
-        ft_ar.setNode(ar_Marquee_Notification_Text);
-        ft_ar.setFromValue(1.0);
-        ft_ar.setToValue(0);
-        ft_ar.setCycleCount(Timeline.INDEFINITE);
-        ft_ar.setAutoReverse(true);
-        
-        ft_en.setNode(en_Marquee_Notification_Text);
-        ft_en.setFromValue(1.0);
-        ft_en.setToValue(0);
-        ft_en.setCycleCount(Timeline.INDEFINITE);
-        ft_en.setAutoReverse(true);
+//        
+//        ft_ar.setNode(ar_Marquee_Notification_Text);
+//        ft_ar.setFromValue(1.0);
+//        ft_ar.setToValue(0);
+//        ft_ar.setCycleCount(Timeline.INDEFINITE);
+//        ft_ar.setAutoReverse(true);
+//        
+//        ft_en.setNode(en_Marquee_Notification_Text);
+//        ft_en.setFromValue(1.0);
+//        ft_en.setToValue(0);
+//        ft_en.setCycleCount(Timeline.INDEFINITE);
+//        ft_en.setAutoReverse(true);
         
         
         
@@ -6586,8 +6728,8 @@ public void update_labels() throws Exception{
                         ar_Marquee_Notification_Text.setVisible(false);
     //                    ar_timeline.stop();
     //                    en_Marquee_Notification_Text_XPos = 320;
-                        ft_en.playFromStart();
-                        ft_ar.stop();
+//                        ft_en.playFromStart();
+//                        ft_ar.stop();
     //                    en_Animate();
                         en_Marquee_Notification_Text.setVisible(true);
                     
@@ -6932,8 +7074,8 @@ public void update_labels() throws Exception{
                         text_Box.setVisible(true);
     //                    en_timeline.stop();
     //                    ft_en.stop();
-                        ft_ar.playFromStart();
-                        ft_en.stop();
+//                        ft_ar.playFromStart();
+//                        ft_en.stop();
 
     //                    ar_Marquee_Notification_Text_XPos = -320;
     //                    ar_Animate();
@@ -8336,6 +8478,26 @@ public void update_labels() throws Exception{
                 RowConstraintsBuilder.create().minHeight(1).build(),
                 RowConstraintsBuilder.create().minHeight(115).build(),
                 RowConstraintsBuilder.create().minHeight(10).build()
+            );
+        }
+        
+        else
+        
+        {
+            prayertime_pane.getRowConstraints().setAll(
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(130).build(),
+                RowConstraintsBuilder.create().minHeight(115).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(115).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(115).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(115).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(115).build(),
+                RowConstraintsBuilder.create().minHeight(1).build(),
+                RowConstraintsBuilder.create().minHeight(1).build()
             );
         }
      
