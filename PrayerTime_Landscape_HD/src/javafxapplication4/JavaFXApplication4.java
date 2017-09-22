@@ -1,5 +1,9 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
+ 
+prayertime rev 3.2 dropshadow to notification
+
+
+* To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -171,6 +175,7 @@ import javafx.stage.StageStyle;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import javafx.scene.Cursor;
+import javafx.scene.effect.InnerShadow;
 import org.joda.time.Chronology;
 import org.joda.time.chrono.ISOChronology;
 import javafx.stage.StageStyle;
@@ -351,7 +356,7 @@ import javafx.stage.StageStyle;
     boolean show_friday = false;
     boolean double_friday = false;
     boolean jammat_from_database;
-    boolean zuhr_adj_enable, asr_settime, isha_settime;
+    boolean zuhr_adj_enable, asr_settime, isha_settime,maghrib_athan_custom_bool;
     boolean custom_background, zuhr_custom;
     
     boolean isha_ramadan_bool,fajr_ramadan_bool;
@@ -387,8 +392,8 @@ import javafx.stage.StageStyle;
     private int sonar_distance =50000;
     private int sonar_active_distance;
     
-    private int id, fajr_adj, fajr_ramadan_inc, zuhr_adj, asr_adj,maghrib_adj,isha_summer_adj, isha_winter_adj, isha_summer_increment_initial, isha_summer_increment, isha_summer_min_gap;        
-                
+    private int id, fajr_adj, fajr_ramadan_inc, zuhr_adj, asr_adj,maghrib_athan_inc, maghrib_adj,isha_summer_adj, isha_winter_adj, isha_summer_increment_initial, isha_summer_increment, isha_summer_min_gap;        
+
     private int AsrJuristic,calcMethod;
     private int max_ar_hadith_len, max_en_hadith_len;
     int olddayofweek_int;
@@ -620,9 +625,9 @@ try
 //    SQL = "Select * from settings_al_takwa";
 //    SQL = "Select * from settings_ESCA";
 //    SQL = "Select * from settings";
-//    SQL = "Select * from settings_middle_path";
+    SQL = "Select * from settings_middle_path";
 //    SQL = "Select * from settings_al_hidayah";
-      SQL = "Select * from settings_arncliffe"; 
+//      SQL = "Select * from settings_arncliffe"; 
 //    SQL = "Select * from settings_MIA";
     
     rs = c.createStatement().executeQuery(SQL);
@@ -668,6 +673,8 @@ try
         asr_settime =                   rs.getBoolean("asr_settime");        
         asr_adj =                       rs.getInt("asr_adj");
         maghrib_adj =                   rs.getInt("maghrib_adj");
+        maghrib_athan_custom_bool =     rs.getBoolean("maghrib_athan_custom_bool"); 
+        maghrib_athan_inc =             rs.getInt("maghrib_athan_inc");      
         
         
         isha_summer_adj  =              rs.getInt("isha_summer_adj");
@@ -703,9 +710,6 @@ try
         max_ar_hadith_len =             rs.getInt("max_ar_hadith_len");
         max_en_hadith_len =             rs.getInt("max_en_hadith_len");
         
-    
-    
-    
 }
 c.close();
 System.out.format("Prayertime server running on %s platform\n", platform);
@@ -1200,8 +1204,18 @@ if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){cal.add(Calendar.
 Date maghrib = cal.getTime();
 maghrib_cal = Calendar.getInstance();
 maghrib_cal.setTime(maghrib);
+
+if (maghrib_athan_custom_bool)
+{
+    maghrib_cal.add(Calendar.MINUTE, maghrib_athan_inc); 
+}
+
 maghrib_begins_time = maghrib_cal.getTime();
-//                        System.out.println(" maghrib time " + maghrib_begins_time);
+
+if (maghrib_athan_custom_bool){System.out.println("Custom maghrib time: " + maghrib_begins_time);}
+else {System.out.println(" maghrib time " + maghrib_begins_time);}
+    
+    
 
 maghrib_plus15_cal = (Calendar)maghrib_cal.clone();
 maghrib_plus15_cal.add(Calendar.MINUTE, +15);
@@ -4973,31 +4987,28 @@ new Thread(() ->
                             c.close();
                             System.out.println("ID and mysql date: " + id + " " + prayer_date);
 
-                            SimpleDateFormat date_format = new SimpleDateFormat("HH:mm:ss");
-                            
-                            String date = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
                             Calendar prayer_cal = Calendar.getInstance();
-                            
+                            prayer_cal.setTime(prayer_date);
+                            System.out.println("prayer_cal before: "  + prayer_cal.getTime());
 
                             ArrayList<String> prayerTimes = getprayertime.getPrayerTimes(prayer_cal, latitude, longitude, timezone);
                             ArrayList<String> prayerNames = getprayertime.getTimeNames();
 
                             SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
-
-                            
+                            String date = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
                             
                             Date fajr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(0)).getTime()));
                             prayer_cal.setTime(fajr_temp);
                             
-                            prayer_cal.setTime(fajr_temp);
-                            System.out.println("prayer_cal: "  + prayer_cal.getTime());
-                            
+                            System.out.println("prayer date: "  + prayer_date.toString());
+                            System.out.println("time zone: "  + timeZone_ID);
+                            System.out.println("in day light?: "  +TimeZone.getTimeZone( timeZone_ID).inDaylightTime( prayer_date ));
+                                                                
                             if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( prayer_date )){prayer_cal.add(Calendar.MINUTE, 60);}
                             Date fajr = prayer_cal.getTime();
                             fajr_cal = prayer_cal.getInstance();
                             fajr_cal.setTime(fajr);
                             fajr_begins_time = fajr_cal.getTime();
-                            
                             
                             //                        System.out.println(" fajr time " + fajr_begins_time);
 
@@ -5046,6 +5057,7 @@ new Thread(() ->
                             isha_cal.setTime(isha);
                             isha_begins_time = isha_cal.getTime();
                             
+                            SimpleDateFormat date_format = new SimpleDateFormat("HH:mm:ss");
                             
                             System.out.print(date_format.format(fajr_begins_time.getTime())); System.out.print(" , ");
                             System.out.print(date_format.format(sunrise_time.getTime())); System.out.print(" , ");
@@ -5372,10 +5384,17 @@ new Thread(() ->
                 clockPane.setTranslateY(80); 
                 Mainpane.add(clockPane, 0, 0,9,2);
                 
+                
+                DropShadow ds = new DropShadow();
+                ds.setOffsetY(2.0f);
+                ds.setOffsetX(2.0f);
+                ds.setColor(Color.BLACK);
+
                 ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
                 ar_Marquee_Notification_Text.setTextAlignment(TextAlignment.CENTER);
                 ar_Marquee_Notification_Text.setY(50);
                 ar_Marquee_Notification_Text_textSize = 28;
+                ar_Marquee_Notification_Text.setEffect(ds);
                 ar_Marquee_Notification_Text.setFont(Font.font("Verdana", ar_Marquee_Notification_Text_textSize));                        
                 ar_Marquee_Notification_Text.setFill(Color.WHITE);
                 ar_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
@@ -5387,6 +5406,7 @@ new Thread(() ->
                 en_Marquee_Notification_Text.setTextAlignment(TextAlignment.CENTER);                    
                 en_Marquee_Notification_Text.setY(50);
                 en_Marquee_Notification_Text_textSize = 28;
+                en_Marquee_Notification_Text.setEffect(ds);
                 en_Marquee_Notification_Text.setFont(Font.font("Verdana", en_Marquee_Notification_Text_textSize));                        
                 en_Marquee_Notification_Text.setFill(Color.WHITE);
                 en_Marquee_Notification_Text.setFontSmoothingType(FontSmoothingType.LCD);
@@ -6129,6 +6149,8 @@ new Thread(() ->
             clockPane.setEffect(ds);
             Glasspane.setEffect(ds);
             footerPane.setEffect(ds);
+//            en_Marquee_Notification_Text.setEffect(ds);
+//            ar_Marquee_Notification_Text.setEffect(ds);
         }
         
 
