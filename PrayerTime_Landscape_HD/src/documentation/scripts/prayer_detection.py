@@ -86,12 +86,12 @@ while True:
 		if debug:
 			print 'Radar = {radar}%' .format(radar = pir_value)			
 
-		if pir_value > 15 and not initial:
+		if pir_value > 10 and not initial:
 			GPIO.output(25,True)
 			initial = True
 			start_time = time.time()
 
-		elif pir_value < 15:
+		elif pir_value < 10:
 			GPIO.output(25,False)
 			initial = False
 			msg_resend = False
