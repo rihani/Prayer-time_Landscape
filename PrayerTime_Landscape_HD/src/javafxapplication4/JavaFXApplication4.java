@@ -154,7 +154,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javax.imageio.ImageIO;
 import me.shanked.nicatronTg.jPushover.Pushover;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeComparator;
@@ -174,6 +174,7 @@ import javafx.stage.StageStyle;
 //import org.joda.time.chrono.JulianChronology;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.sql.Timestamp;
 import javafx.scene.Cursor;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.input.KeyEvent;
@@ -231,7 +232,7 @@ import javafx.stage.StageStyle;
     private final Boolean debug    = false;  //  <<========================== Debuger 
     private final Boolean facebook_image_debug = false; //  <<========================== Debuger 
     private final Boolean auto_friday_cam_debug = false; //  <<========================== Debuger 
-    private final Logger logger = Logger.getLogger(JavaFXApplication4.class.getName());
+//    private final Logger logger = Logger.getLogger(JavaFXApplication4.class.getName());
     private Date fullMoon= null; //  <<========================== might fix errors at startup
     private Date newMoon= null; //  <<========================== might fix errors at startup
     private Date date_now;
@@ -360,8 +361,7 @@ import javafx.stage.StageStyle;
     boolean zuhr_adj_enable, asr_settime, isha_winter_settime,isha_custom, maghrib_athan_custom_bool;
     boolean custom_background, zuhr_custom;
     
-    boolean isha_ramadan_winter_bool, isha_ramadan_summer_bool,isha_winter_adj_bool, isha_summer_adj_bool, fajr_ramadan_bool, fajr_winter_min_bool, fajr_winter_max_bool, fajr_summer_min_bool, fajr_summer_max_bool;
-        
+    boolean isha_ramadan_winter_bool, isha_ramadan_summer_bool,isha_winter_dynamic_adj_bool, isha_summer_dynamic_adj_bool,isha_winter_static_adj_bool,  isha_winter_static_min_bool, isha_winter_static_max_bool, isha_summer_static_adj_bool, isha_summer_static_min_bool, isha_summer_static_max_bool, fajr_ramadan_bool, fajr_winter_min_bool, fajr_winter_max_bool, fajr_summer_min_bool, fajr_summer_max_bool, isha_winter_dynamic_min_bool, isha_winter_dynamic_max_bool, isha_summer_dynamic_min_bool, isha_summer_dynamic_max_bool ;
         
     boolean fajr_ramadan_custom = false;
    
@@ -385,6 +385,7 @@ import javafx.stage.StageStyle;
     private String hour_in_hour_Label, minute_in_minute_Label;
     private String formattedDateTime;
     private String Weather_icon, weather_image_string;
+    String settings_table;
 //    private String cameraSource = "http://192.168.0.6/cam_pic.php";
     
 //    private String cameraSource;
@@ -399,7 +400,7 @@ import javafx.stage.StageStyle;
     private int sonar_distance =50000;
     private int sonar_active_distance;
     
-    private int id, fajr_adj, fajr_ramadan_inc, zuhr_adj, asr_adj,maghrib_athan_inc, maghrib_adj,isha_ramadan_winter_adj, isha_ramadan_summer_adj ,isha_summer_adj, isha_winter_adj, isha_summer_increment_initial, isha_summer_increment, isha_summer_min_gap;        
+    private int id, fajr_adj, fajr_ramadan_inc, zuhr_adj, asr_adj,maghrib_athan_inc, maghrib_adj,isha_ramadan_winter_adj, isha_ramadan_summer_adj ,isha_summer_dynamic_adj, isha_winter_dynamic_adj, isha_winter_rounding, isha_winter_static_initial_adj, isha_winter_static_adj, isha_winter_static_falling_gap, isha_winter_static_rising_gap, isha_summer_static_falling_gap, isha_summer_static_rising_gap, isha_summer_rounding, isha_summer_static_initial_adj, isha_summer_static_adj, isha_summer_increment_initial, isha_summer_increment, isha_summer_min_gap;        
 
     private int AsrJuristic,calcMethod;
     private int max_ar_hadith_len, max_en_hadith_len;
@@ -407,6 +408,7 @@ import javafx.stage.StageStyle;
     int clock_minute, old_clock_minute ;
     int fajr_diffsec, maghrib_diffsec;
     int fajr_diffsec_dec ,fajr_diffsec_sin, maghrib_diffsec_dec ,maghrib_diffsec_sin;
+    int calculated_rounding;
     private Date prayer_date,future_prayer_date;
     private Calendar fajr_cal, sunrise_cal, duha_cal, zuhr_cal, asr_cal, maghrib_cal, isha_cal,old_today;
     private Calendar fajr_jamaat_cal, duha_jamaat_cal, zuhr_jamaat_cal,friday_jamaat_cal, asr_jamaat_cal, maghrib_jamaat_cal, isha_jamaat_cal;
@@ -417,6 +419,7 @@ import javafx.stage.StageStyle;
     private Date friday1_summer,friday2_summer ,friday1_winter ,friday2_winter ,zuhr_summer ,zuhr_winter,asr_winter, asr_summer, isha_ramadan_winter, isha_ramadan_summer,isha_summer_start_time, isha_winter;
     
     private Date fajr_winter_min, fajr_winter_max, fajr_summer_min, fajr_summer_max;
+    private Date isha_winter_min, isha_winter_max, isha_summer_min, isha_summer_max, isha_jamaa_static_old;
         
         
     private Date fajr_begins_time,fajr_jamaat_time, sunrise_time, duha_time, zuhr_begins_time, zuhr_jamaat_time, asr_begins_time, asr_jamaat_time, maghrib_begins_time, maghrib_jamaat_time,isha_begins_time, isha_jamaat_time;
@@ -604,20 +607,20 @@ import javafx.stage.StageStyle;
 //            camera_Timeline.setCycleCount(Animation.INDEFINITE);
 //
  
-logger.info("Starting prayer application....");
+System.out.println("Starting prayer application....");
 
 Runtime.getRuntime().addShutdownHook(new Thread(new Runnable()
 {
     @Override
     public void run()
     {
-        logger.info("Exiting application....");
+        System.out.println("Exiting application....");
         
         try {Process process2 = processBuilder2.start();}
-        catch (IOException e) {logger.warn("Unexpected error", e);}
+        catch (IOException e) {System.out.println("Unexpected error " + e);}
         System.out.println("Switching back to App...");
         try {Process process = processBuilder_camera_off.start(); }
-        catch (IOException e) {logger.warn("Unexpected error", e);}
+        catch (IOException e) {System.out.println("Unexpected error " + e);}
         
         Platform.exit();
         
@@ -630,16 +633,28 @@ moonPhase = 200;
 
 try
 {
+    settings_table = "settings_test";
+//    settings_table = "settings_al_takwa";
+//    settings_table = "settings_ESCA";
+//    settings_table = "settings";
+//    settings_table = "settings_middle_path";
+//    settings_table = "settings_revesby";
+//    settings_table = "settings_al_hidayah";
+//    settings_table = "settings_arncliffe";
+//    settings_table = "settings_MIA";
+//    settings_table = "settings_cabramatta";
     c = DBConnect.connect();
 
 //    SQL = "Select * from settings_al_takwa";
 //    SQL = "Select * from settings_ESCA";
 //    SQL = "Select * from settings";
 //    SQL = "Select * from settings_middle_path";
-      SQL = "Select * from settings_revesby";
+//      SQL = "Select * from settings_revesby";
 //    SQL = "Select * from settings_al_hidayah";
 //      SQL = "Select * from settings_arncliffe"; 
 //    SQL = "Select * from settings_MIA";
+//      SQL = "Select * from settings_cabramatta";
+    SQL = "Select * from " +  settings_table;
     
     rs = c.createStatement().executeQuery(SQL);
     while (rs.next())
@@ -704,34 +719,73 @@ try
         fajr_ramadan_bool =             rs.getBoolean("fajr_ramadan_bool");
         fajr_ramadan_inc =              rs.getInt("fajr_ramadan_inc");
         
-                
-        
+        //Isha ramadan setting:
         isha_ramadan_winter_bool =      rs.getBoolean("isha_ramadan_winter_bool");
         isha_ramadan_winter  =          rs.getTime("isha_ramadan_winter"); 
-        isha_ramadan_winter_adj =       rs.getInt("isha_ramadan_winter_adj");
-                    
+        isha_ramadan_winter_adj =       rs.getInt("isha_ramadan_winter_adj");        
         
         isha_ramadan_summer_bool =      rs.getBoolean("isha_ramadan_summer_bool");
         isha_ramadan_summer  =          rs.getTime("isha_ramadan_summer"); 
         isha_ramadan_summer_adj =       rs.getInt("isha_ramadan_summer_adj");
         
         
-        isha_winter_adj_bool =          rs.getBoolean("isha_winter_adj_bool");
-        isha_winter_adj  =              rs.getInt("isha_winter_adj");
-        isha_summer_adj_bool =          rs.getBoolean("isha_summer_adj_bool");
-        isha_summer_adj  =              rs.getInt("isha_summer_adj");
-                
         
-                        
+        //Isha Normal settings:
+        isha_winter_dynamic_min_bool =  rs.getBoolean("isha_winter_dynamic_min_bool");
+        isha_winter_min =               rs.getTime("isha_winter_min");
+        isha_winter_dynamic_max_bool=   rs.getBoolean("isha_winter_dynamic_max_bool");
+        isha_winter_max=                rs.getTime("isha_winter_max");
+        
+        isha_summer_dynamic_min_bool=   rs.getBoolean("isha_summer_dynamic_min_bool");
+        isha_summer_min=                rs.getTime("isha_summer_min");
+        isha_summer_dynamic_max_bool=   rs.getBoolean("isha_summer_dynamic_max_bool");
+        isha_summer_max=                rs.getTime("isha_summer_max");
+        
+        isha_winter_dynamic_adj_bool =  rs.getBoolean("isha_winter_dynamic_adj_bool");
+        isha_winter_dynamic_adj  =      rs.getInt("isha_winter_dynamic_adj");
+        
         isha_winter_settime =           rs.getBoolean("isha_winter_settime"); 
         isha_winter =                   rs.getTime("isha_winter");
         
+        isha_summer_dynamic_adj_bool =  rs.getBoolean("isha_summer_dynamic_adj_bool");
+        isha_summer_dynamic_adj  =      rs.getInt("isha_summer_dynamic_adj");
         
+        
+        isha_winter_static_adj_bool =   rs.getBoolean("isha_winter_static_adj_bool");
+        isha_winter_rounding=           rs.getInt("isha_winter_rounding");
+        isha_winter_static_initial_adj= rs.getInt("isha_winter_static_initial_adj");
+        isha_winter_static_adj=         rs.getInt("isha_winter_static_adj");
+        
+        
+        isha_winter_static_falling_gap= rs.getInt("isha_winter_static_falling_gap");
+        isha_winter_static_rising_gap=  rs.getInt("isha_winter_static_rising_gap");
+        
+
+        isha_winter_static_min_bool =   rs.getBoolean("isha_winter_static_min_bool");
+        isha_winter_static_max_bool =   rs.getBoolean("isha_winter_static_max_bool");
+                
+        isha_summer_static_adj_bool =   rs.getBoolean("isha_summer_static_adj_bool");
+        isha_summer_rounding=           rs.getInt("isha_summer_rounding");
+        isha_summer_static_initial_adj= rs.getInt("isha_summer_static_initial_adj");
+        isha_summer_static_adj=         rs.getInt("isha_summer_static_adj");
+        
+        
+        isha_summer_static_falling_gap= rs.getInt("isha_summer_static_falling_gap");
+        isha_summer_static_rising_gap=  rs.getInt("isha_summer_static_rising_gap");
+                
+
+        isha_summer_static_min_bool =   rs.getBoolean("isha_summer_static_min_bool");
+        isha_summer_static_max_bool =   rs.getBoolean("isha_summer_static_max_bool");
+        
+        isha_jamaa_static_old =         rs.getTime("isha_jamaa_static_old");
+
+        //Isha custom setting:
         isha_custom   =                 rs.getBoolean("isha_custom");
         isha_summer_start_time =        rs.getTime("isha_summer_start_time");        
         isha_summer_increment_initial=  rs.getInt("isha_summer_increment_initial");
         isha_summer_increment =         rs.getInt("isha_summer_increment");
         isha_summer_min_gap=            rs.getInt("isha_summer_min_gap");
+        
                 
                 
         show_friday =                   rs.getBoolean("show_friday");
@@ -762,7 +816,7 @@ System.out.format("Orientation:%s \n", orientation);
 
 
 }
-catch (Exception e){logger.warn("Unexpected error", e);}
+catch (Exception e){e.printStackTrace();}
 
 
 if (facebook_notification_enable){System.out.println("facebook notification is enabled" );}
@@ -1361,7 +1415,7 @@ if(jammat_from_database)
         // print the results
         //                                System.out.format("%s,%s,%s,%s,%s \n", id, prayer_date, fajr_jamaat, asr_jamaat, isha_jamaat );
     }
-    catch (Exception e){ logger.warn("Unexpected error", e); }
+    catch (Exception e){ e.printStackTrace();}
     
     Chronology iso = ISOChronology.getInstanceUTC();
     Chronology hijri = IslamicChronology.getInstanceUTC();
@@ -1715,7 +1769,7 @@ else
             // print the results
             //                                System.out.format("%s,%s,%s,%s,%s \n", id, prayer_date, fajr_jamaat, asr_jamaat, isha_jamaat );
         }
-        catch (Exception e){ logger.warn("Unexpected error", e); }
+        catch (Exception e){ e.printStackTrace();}
         
         Date maghrib_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + maghrib_jamaat);
         cal.setTime(maghrib_jamaat_temp);
@@ -1956,9 +2010,7 @@ else
 
     else
     {
-        
-        
-        
+
         if(isha_winter_settime && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
         {
             isha_jamaat = isha_winter.toString();
@@ -1971,13 +2023,46 @@ else
             isha_jamaat_cal.set(Calendar.SECOND, 0);            
 
         }
-       
-
-        if (isha_winter_adj_bool && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    
+            
+        if (isha_winter_dynamic_adj_bool && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
         {
             isha_jamaat_cal = (Calendar)isha_cal.clone();
-            isha_jamaat_cal.add(Calendar.MINUTE, isha_winter_adj);
+            isha_jamaat_cal.add(Calendar.MINUTE, isha_winter_dynamic_adj);
+            
+            Date isha_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_min);
+            cal.setTime(isha_jamaat_min_temp);
+            Date isha_jamaat_min_Date = cal.getTime();
+            Calendar isha_jamaat_min_cal = Calendar.getInstance();
+            isha_jamaat_min_cal.setTime(isha_jamaat_min_Date);
+            isha_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+            isha_jamaat_min_cal.set(Calendar.SECOND, 0);
 
+            long diff_min = isha_jamaat_cal.getTime().getTime() - isha_jamaat_min_cal.getTime().getTime();
+            long diffMinutes_min = diff_min / (60 * 1000);
+            System.out.println("isha gap from min value");    
+            System.out.println(diffMinutes_min); 
+            
+            
+            Date isha_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_max);
+            cal.setTime(isha_jamaat_max_temp);
+            Date isha_jamaat_max_Date = cal.getTime();
+            Calendar isha_jamaat_max_cal = Calendar.getInstance();
+            isha_jamaat_max_cal.setTime(isha_jamaat_max_Date);
+            isha_jamaat_max_cal.set(Calendar.MILLISECOND, 0);
+            isha_jamaat_max_cal.set(Calendar.SECOND, 0);
+            
+            long diff_max = isha_jamaat_cal.getTime().getTime() - isha_jamaat_max_cal.getTime().getTime();
+            long diffMinutes_max = diff_max / (60 * 1000);
+            System.out.println("isha gap from max value");    
+            System.out.println(diffMinutes_max); 
+            
+            if (isha_winter_dynamic_max_bool &&  diffMinutes_max>=0){ isha_jamaat_cal = (Calendar)isha_jamaat_max_cal.clone(); System.out.println("isha jamaa max applied "); }
+            
+            if (isha_winter_dynamic_min_bool &&  diffMinutes_min<=0){ isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); System.out.println("isha jamaa min applied "); }
+            
+            
+            
             isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
             isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
             isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
@@ -1985,16 +2070,213 @@ else
         }
         
         
-        if (isha_summer_adj_bool && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+        if (isha_summer_dynamic_adj_bool && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
         {
             isha_jamaat_cal = (Calendar)isha_cal.clone();
-            isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_adj);
+            isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_dynamic_adj);
+            
+            Date isha_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_min);
+            cal.setTime(isha_jamaat_min_temp);
+            Date isha_jamaat_min_Date = cal.getTime();
+            Calendar isha_jamaat_min_cal = Calendar.getInstance();
+            isha_jamaat_min_cal.setTime(isha_jamaat_min_Date);
+            isha_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+            isha_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+            long diff_min = isha_jamaat_cal.getTime().getTime() - isha_jamaat_min_cal.getTime().getTime();
+            long diffMinutes_min = diff_min / (60 * 1000);
+//            System.out.println("isha gap from min value");    
+//            System.out.println(diffMinutes_min); 
+            
+            
+            Date isha_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_max);
+            cal.setTime(isha_jamaat_max_temp);
+            Date isha_jamaat_max_Date = cal.getTime();
+            Calendar isha_jamaat_max_cal = Calendar.getInstance();
+            isha_jamaat_max_cal.setTime(isha_jamaat_max_Date);
+            isha_jamaat_max_cal.set(Calendar.MILLISECOND, 0);
+            isha_jamaat_max_cal.set(Calendar.SECOND, 0);
+            
+            long diff_max = isha_jamaat_cal.getTime().getTime() - isha_jamaat_max_cal.getTime().getTime();
+            long diffMinutes_max = diff_max / (60 * 1000);
+//            System.out.println("isha gap from max value");    
+//            System.out.println(diffMinutes_max); 
+            
+            if (isha_summer_dynamic_max_bool &&  diffMinutes_max>=0){ isha_jamaat_cal = (Calendar)isha_jamaat_max_cal.clone(); System.out.println("isha jamaa max applied "); }
+            
+            if (isha_summer_dynamic_min_bool &&  diffMinutes_min<=0){ isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); System.out.println("isha jamaa min applied "); }
+            
 
             isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
             isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
             isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
             isha_jamaat_update_cal.set(Calendar.SECOND, 0);
         }
+
+        if (isha_summer_static_adj_bool && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+        {
+            try
+            {
+                c = DBConnect.connect();
+                SQL = "select isha_jamaa_static_old from prayertime.temp_jamaa WHERE id='1'";
+                rs = c.createStatement().executeQuery(SQL);
+                while (rs.next())
+                {
+                    isha_jamaa_static_old =        rs.getTime("isha_jamaa_static_old");
+                }
+                c.close();
+                //System.out.format("isha_jamaa_static_old from database: %s \n", isha_jamaa_static_old );
+            }
+            
+            catch (Exception e){ e.printStackTrace(); System.out.println("Error in Line number"+ e.getStackTrace()[0].getLineNumber());}
+            
+            
+            if (isha_jamaa_static_old== null || isha_jamaa_static_old.getHours()== 0)
+            {
+                isha_jamaat_cal = (Calendar)isha_cal.clone();            
+                isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_static_initial_adj);
+                isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                isha_jamaat_cal.set(Calendar.SECOND, 0);
+                isha_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(isha_jamaat_cal, isha_summer_rounding));
+                c = DBConnect.connect();            
+                PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET isha_jamaa_static_old='"+ isha_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + isha_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+                ps.executeUpdate();
+                c.close();
+                System.out.println(" Virgin Isha jamaa: " + isha_jamaat_cal + " used and inserted in Database ");
+            }
+            
+            else
+            {
+                //set date?????
+                
+                Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaa_static_old);
+                cal.setTime(isha_jamaat_temp);
+                Date isha_jamaat_Date = cal.getTime();
+                isha_jamaat_cal = Calendar.getInstance();
+                isha_jamaat_cal.setTime(isha_jamaat_Date);
+                isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                isha_jamaat_cal.set(Calendar.SECOND, 0);
+                System.out.format("isha_jamaa_static_old_cal from database: %s \n", isha_jamaat_cal.getTime() );
+                
+                long diff = isha_jamaat_cal.getTime().getTime() - isha_cal.getTime().getTime();
+                long diffMinutes = diff / (60 * 1000);
+                System.out.println("isha prayer / jamaa difference:  " + diffMinutes);    
+                
+                while (diffMinutes<isha_summer_static_rising_gap){
+                    isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_static_adj);
+                    System.out.println("adjusting up isha jamaat prayer by " + isha_summer_static_adj);
+                    System.out.format("new isha_jamaa: %s \n", isha_jamaat_cal.getTime() );
+                    diff = isha_jamaat_cal.getTime().getTime() - isha_cal.getTime().getTime();
+                    diffMinutes = diff / (60 * 1000);
+                    System.out.println("isha prayer / jamaa value:  " + diffMinutes); 
+                
+                
+                
+                }
+                
+                
+                while (diffMinutes>isha_summer_static_falling_gap){
+                    isha_jamaat_cal.add(Calendar.MINUTE, -isha_summer_static_adj);
+                    System.out.println("adjusting down isha jamaat prayer by " + isha_summer_static_adj);
+                    System.out.format("new isha_jamaa: %s \n", isha_jamaat_cal.getTime() );
+                    diff = isha_jamaat_cal.getTime().getTime() - isha_cal.getTime().getTime();
+                    diffMinutes = diff / (60 * 1000);
+                    System.out.println("isha prayer / jamaa value:  " + diffMinutes); 
+                
+                }
+                c = DBConnect.connect();            
+                PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET isha_jamaa_static_old='"+ isha_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + isha_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+                ps.executeUpdate();
+                c.close();
+                
+//                isha_summer_static_adj
+            }
+            
+            
+            
+            
+            
+            
+            
+                
+            
+            //get last stored value isha_jamaa_static_old
+            
+            //if value is empty - virgin start
+                //jamaa prayer = athan prayer + isha_winter_static_initial_adj
+                //round prayer clock mark isha_winter_rounding  (get this value from database) 
+                //store new jamaa prayer
+            
+            
+            
+            //else value is available
+            
+                //if isha_jamaa_static_old - athan time < isha_winter_static_gap
+                    //for loop untill adjust satisfied
+                    // jamaa prayer = isha_jamaa_static_old + isha_winter_static_adj
+                    //round prayer clock mark isha_winter_rounding  (get this value from database) 
+                    //store new jamaa prayer
+                    
+                //if isha_jamaa_static_old - athan time > isha_winter_static_gap
+                    //for loop untill adjust satisfied
+                    // jamaa prayer = isha_jamaa_static_old - isha_winter_static_adj
+                    //round prayer clock mark isha_winter_rounding  (get this value from database) 
+                    //store new jamaa prayer
+            
+           
+            
+            
+            
+            
+ ////////////////////min and max
+            Date isha_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_min);
+            cal.setTime(isha_jamaat_min_temp);
+            Date isha_jamaat_min_Date = cal.getTime();
+            Calendar isha_jamaat_min_cal = Calendar.getInstance();
+            isha_jamaat_min_cal.setTime(isha_jamaat_min_Date);
+            isha_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+            isha_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+            long diff_min = isha_jamaat_cal.getTime().getTime() - isha_jamaat_min_cal.getTime().getTime();
+            long diffMinutes_min = diff_min / (60 * 1000);
+//            System.out.println("isha gap from min value");    
+//            System.out.println(diffMinutes_min); 
+            
+            
+            Date isha_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_max);
+            cal.setTime(isha_jamaat_max_temp);
+            Date isha_jamaat_max_Date = cal.getTime();
+            Calendar isha_jamaat_max_cal = Calendar.getInstance();
+            isha_jamaat_max_cal.setTime(isha_jamaat_max_Date);
+            isha_jamaat_max_cal.set(Calendar.MILLISECOND, 0);
+            isha_jamaat_max_cal.set(Calendar.SECOND, 0);
+            
+            long diff_max = isha_jamaat_cal.getTime().getTime() - isha_jamaat_max_cal.getTime().getTime();
+            long diffMinutes_max = diff_max / (60 * 1000);
+//            System.out.println("isha gap from max value");    
+//            System.out.println(diffMinutes_max); 
+            
+            if (isha_summer_static_max_bool &&  diffMinutes_max>=0){ isha_jamaat_cal = (Calendar)isha_jamaat_max_cal.clone(); System.out.println("isha jamaa max applied "); }
+            
+            if (isha_summer_static_min_bool &&  diffMinutes_min<=0){ isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); System.out.println("isha jamaa min applied "); }
+            
+            
+            
+            isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
+            isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
+            isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+            isha_jamaat_update_cal.set(Calendar.SECOND, 0);
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         if(isha_custom)
         {
@@ -2195,7 +2477,7 @@ if(jammat_from_database && prayer_change_notification)
         c.close();
 //                                    System.out.format("%s,%s,%s,%s \n", notification_Date, en_message_String, ar_message_String, notification_Sent );
     }
-    catch (Exception e){logger.warn("Unexpected error", e);}
+    catch (Exception e){e.printStackTrace(); System.out.println("Error in Line number"+ e.getStackTrace()[0].getLineNumber());}
     notification_Date_cal = Calendar.getInstance();
     notification_Date_cal.setTime(notification_Date);
     notification_Date_cal.set(Calendar.MILLISECOND, 0);
@@ -2411,7 +2693,7 @@ if(jammat_from_database && prayer_change_notification)
                     notification = true;
                 }
         }
-        catch (Exception e){logger.warn("Unexpected error", e);}
+        catch (Exception e){e.printStackTrace();}
 
    }
 }
@@ -2440,7 +2722,7 @@ else
             c.close();
     //                                    System.out.format("%s,%s,%s,%s \n", notification_Date, en_message_String, ar_message_String, notification_Sent );
         }
-        catch (Exception e){logger.warn("Unexpected error", e);}
+        catch (Exception e){e.printStackTrace();}
         if(notification_Date!= null)
         {
             notification_Date_cal = Calendar.getInstance();
@@ -2560,7 +2842,7 @@ else
                     {
                         Date future_isha_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(6)).getTime()));
                         cal.setTime(future_isha_temp);
-                        cal.add(Calendar.MINUTE, isha_winter_adj);
+                        cal.add(Calendar.MINUTE, isha_winter_dynamic_adj);
                         future_isha_jamaat_time = cal.getTime();
                     } 
 
@@ -2620,7 +2902,7 @@ else
                     {
                         Date future_isha_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(6)).getTime()));
                         cal.setTime(future_isha_temp);
-                        cal.add(Calendar.MINUTE, isha_summer_adj);
+                        cal.add(Calendar.MINUTE, isha_summer_dynamic_adj);
                         cal.add(Calendar.MINUTE, 60);
                         future_isha_jamaat_time = cal.getTime();
                     } 
@@ -3204,7 +3486,7 @@ try
     ar_notification_Msg_Lines = ar_notification_Msg.split("\\r?\\n");
     en_notification_Msg_Lines = en_notification_Msg.split("\\r?\\n");
 }
-catch (Exception e){logger.warn("Unexpected error", e);}
+catch (Exception e){e.printStackTrace();}
 
 System.out.format(ar_notification_Msg);
 System.out.format(en_notification_Msg);
@@ -3254,11 +3536,11 @@ if (facebook_notification_enable)
         String pageID = page_ID +"/feed";
         facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", notification_Msg));
     }
-    catch (Exception e){logger.warn("Unexpected error", e);}
+    catch (Exception e){e.printStackTrace();}
 }
 
 try {push.sendMessage(device_name + " at "+ device_location + ": \n" + en_notification_Msg);}
-catch (Exception e){{logger.warn("Unexpected error", e);}}
+catch (Exception e){{e.printStackTrace();}}
 
 if (device_location.equals("Parramatta") )
 {
@@ -3343,7 +3625,7 @@ if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fu
     short_translated_hadith = short_translated_hadith.replaceAll("ﷺ", "PBUH");
 //    System.out.println("short_translated_hadith after" + short_translated_hadith);
     }
-    catch (Exception e){logger.warn("Unexpected error", e);}
+    catch (Exception e){e.printStackTrace();}
 
     ashura.setTime(fullMoon.getTime() - 4 * 24 * 60 * 60 * 1000);
     String Ashura_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(ashura);
@@ -3362,7 +3644,7 @@ if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fu
     //                                        System.out.println("Full Moon Notification Sent to Facebook:" );
     //                                        System.out.println(facebook_moon_notification_Msg);
         }
-        catch (FacebookException e){logger.warn("Unexpected error", e);} 
+        catch (FacebookException e){e.printStackTrace();} 
     }
 }
 else if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fullmoon <=9 && days_Between_Now_Fullmoon >=6 && comparator.compare(fullMoon, maghrib_cal)<0 || test)
@@ -3405,7 +3687,7 @@ else if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_N
     short_translated_hadith = short_translated_hadith.replaceAll("ﷺ", "PBUH");
     System.out.println("short_translated_hadith after" + short_translated_hadith);
     }
-    catch (Exception e){logger.warn("Unexpected error", e);}
+    catch (Exception e){e.printStackTrace();}
 
     ashura.setTime(fullMoon.getTime() - 5 * 24 * 60 * 60 * 1000);
     String Ashura_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(ashura);
@@ -3424,7 +3706,7 @@ else if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_N
     //                                        System.out.println("Full Moon Notification Sent to Facebook:" );
     //                                        System.out.println(facebook_moon_notification_Msg);
         }
-        catch (FacebookException e){logger.warn("Unexpected error", e);} 
+        catch (FacebookException e){e.printStackTrace();} 
     }
 
 
@@ -3614,7 +3896,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
     //                                                System.out.println("Full Moon Notification Sent to Facebook:" );
     //                                                System.out.println(facebook_moon_notification_Msg);
                 }
-                catch (FacebookException e){logger.warn("Unexpected error", e);}
+                catch (FacebookException e){e.printStackTrace();}
 
             }
 
@@ -3657,7 +3939,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
     //                                                System.out.println("Full Moon Notification Sent to Facebook:" );
     //                                                System.out.println(facebook_moon_notification_Msg);
                 }
-                catch (FacebookException e){logger.warn("Unexpected error", e);}
+                catch (FacebookException e){e.printStackTrace();}
 
             }
 
@@ -3709,7 +3991,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
     //                                                System.out.println("Full Moon Notification Sent to Facebook:" );
     //                                                System.out.println(facebook_moon_notification_Msg);
                 }
-                catch (FacebookException e){logger.warn("Unexpected error", e);}
+                catch (FacebookException e){e.printStackTrace();}
             }
 
         }
@@ -3734,7 +4016,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
         //                                                System.out.println("Full Moon Notification Sent to Facebook:" );
         //                                                System.out.println(facebook_moon_notification_Msg);
             }
-            catch (FacebookException e){logger.warn("Unexpected error", e);}
+            catch (FacebookException e){e.printStackTrace();}
         }
 
     }
@@ -3844,8 +4126,8 @@ else
     }
     else{out.println("Facebook post is empty");}
 }
-catch (FacebookException e){logger.warn("Unexpected error", e);}
-catch (Exception e){logger.warn("Unexpected error", e);}
+catch (FacebookException e){e.printStackTrace();}
+catch (Exception e){e.printStackTrace();}
 
 query = "SELECT fan_count FROM page WHERE page_id = " + page_ID ;
 try
@@ -3855,8 +4137,8 @@ try
     out.println("Page Likes: " + facebook_Fan_Count);
     
 }
-catch (FacebookException e){logger.warn("Unexpected error", e);}
-catch (Exception e){logger.warn("Unexpected error", e);}
+catch (FacebookException e){e.printStackTrace();}
+catch (Exception e){e.printStackTrace();}
 
 query = "SELECT attachment.media.photo.images.src, created_time   FROM stream WHERE source_id = " + page_ID + "  AND type = 247 AND created_time > " + facebook_check_post_Unix_Time ; //+ " LIMIT 1"
 try
@@ -3869,7 +4151,7 @@ try
 
 try
 {facebook_Post_Url = queryResults.get(0).getJsonObject("attachment").getJsonArray("media").getJsonObject(0).getJsonObject("photo").getJsonArray("images").getJsonObject(1).getString("src");}
-catch (Exception e){logger.warn("facebook post url exception", e);}
+catch (Exception e){e.printStackTrace();}
 
 out.println(facebook_Post_Url);
 
@@ -3917,8 +4199,8 @@ if(null != facebook_Post_Url && !"".equals(facebook_Post_Url) )
     }
     
 }
-catch (FacebookException e){logger.warn("Unexpected error", e);}
-catch (Exception e){logger.warn("Unexpected error", e);}
+catch (FacebookException e){e.printStackTrace();}
+catch (Exception e){e.printStackTrace();}
 
 //compare text and picture post dates, if facebook_Picture_Post && facebook_Text_Post are true, and dates are not null
 // which ever was posted last, clear facebook_post = ""; or facebook_Post_Url = "";
@@ -4083,16 +4365,16 @@ if (Calendar_now.compareTo(hadith_notification_Date_cal) != 0 )
                 c.close();
                 System.out.println("hadith posted to Facebook: \n" + facebook_hadith );
             }
-            catch (FacebookException e){logger.warn("Unexpected error", e);}
+            catch (FacebookException e){e.printStackTrace();}
         }
         
         
     }
-    catch (FacebookException e){logger.warn("Unexpected error", e);}
-    catch (Exception e){logger.warn("Unexpected error", e);}
+    catch (FacebookException e){e.printStackTrace();}
+    catch (Exception e){e.printStackTrace();}
 }
     }
-    catch (Exception e){logger.warn("Unexpected error", e);}
+    catch (Exception e){e.printStackTrace();}
     
 }
         }
@@ -4100,10 +4382,10 @@ if (Calendar_now.compareTo(hadith_notification_Date_cal) != 0 )
         catch(SQLException e)
         {
             System.out.println("Error on Database connection");
-            logger.warn("Unexpected error", e);
+            e.printStackTrace();
         }
-        catch (ParseException e){logger.warn("Unexpected error", e);}
-        catch (Exception e){logger.warn("Unexpected error", e);}
+        catch (ParseException e){e.printStackTrace();}
+        catch (Exception e){e.printStackTrace();}
         
         
     }
@@ -4118,7 +4400,7 @@ translate_timer = new AnimationTimer() {
         if (now > translate_lastTimerCall + 40000_000_000l) //40000_000_000l
         {
             try {update_labels();}
-            catch (Exception e) {logger.warn("Unexpected error", e);}
+            catch (Exception e) {e.printStackTrace();}
             translate_lastTimerCall = now;
         }
     }
@@ -4135,7 +4417,7 @@ clock_update_timer = new AnimationTimer() {
                 play_athan();
                             
             }
-            catch (Exception e) {logger.warn("Unexpected error", e);}
+            catch (Exception e) {e.printStackTrace();}
             clock_update_lastTimerCall = now;
         }
     }
@@ -4177,7 +4459,7 @@ moon_weather_flip= new AnimationTimer() {
  
             
             }
-            catch (Exception e) {logger.warn("Unexpected error", e);}
+            catch (Exception e) {e.printStackTrace();}
             moon_weather_flip_update_lastTimerCall = now;
         }
     }
@@ -4601,7 +4883,7 @@ for (;;)
                 System.out.println("Switching to Camera...");
 //                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
                 try {Process process = processBuilder_camera_on.start(); }
-                catch (IOException e) {logger.warn("Unexpected error", e);}
+                catch (IOException e) {e.printStackTrace();}
                 sensor1_lastTimerCall = System.nanoTime();
                 camera = true;
                 prayer_In_Progress = true;
@@ -4611,7 +4893,7 @@ for (;;)
                 //                                    ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
                 hdmiOn = false;
                 try {Process process2 = processBuilder2.start();}
-                catch (IOException e) {logger.warn("Unexpected error", e);}
+                catch (IOException e) {e.printStackTrace();}
                 }
 
                 Calendar cal = Calendar.getInstance();
@@ -4676,7 +4958,7 @@ for (;;)
                         packet1 = new DatagramPacket(buf1, buf1.length, group, 8888);
                         socket1.send(packet1);
                     }
-                    catch(Exception e){logger.warn("Unexpected error", e);}
+                    catch(Exception e){e.printStackTrace();}
                 }
             }
 
@@ -4688,7 +4970,7 @@ for (;;)
                 System.out.println("Switching back to App...");
 //                                ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
                 try {Process process = processBuilder_camera_off.start(); }
-                catch (IOException e) {logger.warn("Unexpected error", e);}
+                catch (IOException e) {e.printStackTrace();}
                 camera = false;
                 prayer_In_Progress = false;
                 if(local_HDMI_control)
@@ -4704,7 +4986,7 @@ for (;;)
                         Thread.sleep(2500);
                         processBuilder1.start();
                     }
-                    catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) {
+                    catch (IOException e) {e.printStackTrace();} catch (InterruptedException ex) {
                         java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);}
                 }
             }
@@ -4759,7 +5041,7 @@ if (platform.equals("pi") && Button_activated)
                         System.out.println("button pressed ");
 //                                ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
 try {Process process = processBuilder_camera_on.start(); System.out.println("Manually Switching to Camera...");}
-catch (IOException e) {logger.warn("Unexpected error", e);}
+catch (IOException e) {e.printStackTrace();}
 delay_Manual_switch_to_cam_lastTimerCall = System.nanoTime();
 camera = true;
 manual_Camera = true;
@@ -4780,7 +5062,7 @@ manual_Camera = true;
                     System.out.println("Manually Switching back to App...");
 //                                ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
 try {Process process = processBuilder_camera_off.start(); }
-catch (IOException e) {logger.warn("Unexpected error", e);}
+catch (IOException e) {e.printStackTrace();}
 
                 }
                 
@@ -4828,7 +5110,7 @@ if (platform.equals("pi"))
                             Thread.sleep(2500);
                             processBuilder1.start();
                         }
-                        catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) {
+                        catch (IOException e) {e.printStackTrace();} catch (InterruptedException ex) {
                             java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);}
                     }}
                 
@@ -4850,7 +5132,7 @@ if (platform.equals("pi"))
 //                             ProcessBuilder processBuilder2 = new ProcessBuilder("bash", "-c", "echo \"standby 0000\" | cec-client -d 1 -s \"standby 0\" RPI");
 hdmiOn = false;
 try {Process process2 = processBuilder2.start();}
-catch (IOException e) {logger.warn("Unexpected error", e);}
+catch (IOException e) {e.printStackTrace();}
 sensor_lastTimerCall = System.nanoTime();
 sensorLow = false;
                 }
@@ -4912,7 +5194,7 @@ new Thread(() ->
                             
                         }
                     }
-                    catch (IOException e) {logger.warn("Unexpected error", e);}
+                    catch (IOException e) {e.printStackTrace();}
                     
                 }
                 
@@ -4930,7 +5212,7 @@ new Thread(() ->
                         Thread.sleep(2500);
                         processBuilder1.start();
                     }
-                    catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) {
+                    catch (IOException e) {e.printStackTrace();} catch (InterruptedException ex) {
                         java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);}
 
 
@@ -5140,7 +5422,7 @@ new Thread(() ->
                         
                         
                     }
-                    catch (Exception e){logger.warn("Unexpected error", e);}
+                    catch (Exception e){e.printStackTrace();}
                     
                 } 
                 
@@ -5187,7 +5469,7 @@ new Thread(() ->
                                         
 //                                        ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
                                 try {Process process = processBuilder_camera_on.start(); }
-                                catch (IOException e) {logger.warn("Unexpected error", e);}
+                                catch (IOException e) {e.printStackTrace();}
 
                             }
                         });
@@ -5207,7 +5489,7 @@ new Thread(() ->
 //                                        hadithPane.setVisible(true);
 //                                        ProcessBuilder processBuilder_camera_off = new ProcessBuilder("bash", "-c", "sudo pkill raspistill");
                                 try {Process process = processBuilder_camera_off.start(); }
-                                catch (IOException e) {logger.warn("Unexpected error", e);}
+                                catch (IOException e) {e.printStackTrace();}
                                 camera = false;
                             }
                         });
@@ -5271,7 +5553,7 @@ new Thread(() ->
                         System.out.println("short_translated_hadith after" + short_translated_hadith);
                         
                     } 
-                    catch (Exception e){logger.warn("Unexpected error", e);}
+                    catch (Exception e){e.printStackTrace();}
                     
                 }
                 
@@ -5282,7 +5564,7 @@ new Thread(() ->
 //                            ProcessBuilder processBuilder_Athan = new ProcessBuilder("bash", "-c", "mpg123 /home/pi/prayertime/Audio/athan1.mp3");
                     
                     try {Process process = processBuilder_Athan.start();}
-                    catch (IOException e) {logger.warn("Unexpected error", e);}
+                    catch (IOException e) {e.printStackTrace();}
                 }
                 
                 if(received.equals("hello"))
@@ -5442,7 +5724,7 @@ new Thread(() ->
                         }
                         
 
-                        catch (Exception e){logger.warn("Unexpected error", e);}
+                        catch (Exception e){e.printStackTrace();}
                     
                     
                     
@@ -5519,8 +5801,8 @@ new Thread(() ->
                             }
                             else{out.println("Facebook post is empty");}
                         }
-                        catch (FacebookException e){logger.warn("Unexpected error", e);}
-                        catch (Exception e){logger.warn("Unexpected error", e);}
+                        catch (FacebookException e){e.printStackTrace();}
+                        catch (Exception e){e.printStackTrace();}
                         
                         query = "SELECT fan_count FROM page WHERE page_id = " + page_ID ;
                         try 
@@ -5530,8 +5812,8 @@ new Thread(() ->
                             out.println("Page Likes: " + facebook_Fan_Count);
                             
                         }
-                        catch (FacebookException e){logger.warn("Unexpected error", e);}
-                        catch (Exception e){logger.warn("Unexpected error", e);} 
+                        catch (FacebookException e){e.printStackTrace();}
+                        catch (Exception e){e.printStackTrace();} 
                         query = "SELECT attachment.media.photo.images.src, created_time   FROM stream WHERE source_id = " + page_ID + "  AND type = 247 AND created_time > " + facebook_check_post_Unix_Time + " LIMIT 1";
                         try
                         {
@@ -5573,8 +5855,8 @@ new Thread(() ->
                             }
                             
                         }
-                        catch (FacebookException e){logger.warn("Unexpected error", e);}
-                        catch (Exception e){logger.warn("Unexpected error", e);}
+                        catch (FacebookException e){e.printStackTrace();}
+                        catch (Exception e){e.printStackTrace();}
                         
                         //compare text and picture post dates, if facebook_Picture_Post && facebook_Text_Post are true, and dates are not null
                         // which ever was posted last, clear facebook_post = ""; or facebook_Post_Url = "";
@@ -5599,7 +5881,7 @@ new Thread(() ->
         }
         
 //                 catch(InterruptedException e){Thread.currentThread().interrupt();}
-        catch (Exception e){logger.warn("Unexpected error", e); Thread.currentThread().interrupt();}
+        catch (Exception e){e.printStackTrace();Thread.currentThread().interrupt();}
         
     }
     
@@ -6656,6 +6938,25 @@ public static void main(String[] args) {
     System.exit(0);
 }
 
+
+int calendar_rounding(Calendar date, int rounding) throws Exception{
+    
+    if (rounding == 15)
+    {
+        int unroundedMinutes = date.get(Calendar.MINUTE);
+        int mod = unroundedMinutes % 15;
+        calculated_rounding = mod < 8 ? -mod : (15-mod);
+    }
+    if (rounding == 5)
+    {
+        int unroundedMinutes = date.get(Calendar.MINUTE);
+        int mod = unroundedMinutes % 5;
+        calculated_rounding =  mod < 3 ? -mod : (5-mod);
+    }
+    
+    return calculated_rounding;
+}
+
 public void play_athan() throws Exception{  
     
         
@@ -6851,10 +7152,10 @@ public void play_athan() throws Exception{
 //            sensorLow = true;
             
             try {Process process = processBuilder_Tvon.start(); hdmiOn = true;} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
             TimeUnit.SECONDS.sleep(3);
             try {Process process = processBuilder_Duha.start();} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
         }
 
         else if (fajr_cal.equals(Calendar_now) && fajr_athan_enable) 
@@ -6872,10 +7173,10 @@ public void play_athan() throws Exception{
             sensor_lastTimerCall = System.nanoTime();
             sensorLow = true;
             try {Process process = processBuilder_Tvon.start(); hdmiOn = true;} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
             TimeUnit.SECONDS.sleep(3);
             try {Process process = processBuilder_Athan.start();} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
         }
         
         
@@ -6885,7 +7186,7 @@ public void play_athan() throws Exception{
             System.out.println("Switching to Camera...Friday Prayer");
 //            ProcessBuilder processBuilder_camera_on = new ProcessBuilder("bash", "-c", "raspistill -vf -p '25,12,670,480'  -t 5400000 -tl 200000 -w 640 -h 400 -o cam2.jpg");
             try {Process process = processBuilder_camera_on.start(); } 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
             camera = true;                              
                  
                  
@@ -6916,10 +7217,10 @@ public void play_athan() throws Exception{
             sensor_lastTimerCall = System.nanoTime();
             sensorLow = true;
             try {Process process = processBuilder_Tvon.start(); hdmiOn = true;} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
             TimeUnit.SECONDS.sleep(3);
             try {Process process = processBuilder_Athan.start();} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
         }        
 
         else if (asr_cal.equals(Calendar_now) && asr_athan_enable) 
@@ -6930,10 +7231,10 @@ public void play_athan() throws Exception{
             sensor_lastTimerCall = System.nanoTime();
             sensorLow = true;
             try {Process process = processBuilder_Tvon.start(); hdmiOn = true;} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
             TimeUnit.SECONDS.sleep(3);
             try {Process process = processBuilder_Athan.start();} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
         } 
         
         else if (maghrib_cal.equals(Calendar_now) && maghrib_athan_enable) 
@@ -6944,10 +7245,10 @@ public void play_athan() throws Exception{
             sensor_lastTimerCall = System.nanoTime();
             sensorLow = true;
             try {Process process = processBuilder_Tvon.start(); hdmiOn = true;} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
             TimeUnit.SECONDS.sleep(3);
             try {Process process = processBuilder_Athan.start();} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
 //            String image = JavaFXApplication4.class.getResource("/Images/wallpaper_sunset.jpg").toExternalForm();
 //            Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 1080 1920;-fx-background-position: bottom left;");  
         } 
@@ -6960,10 +7261,10 @@ public void play_athan() throws Exception{
             sensor_lastTimerCall = System.nanoTime();
             sensorLow = true;
             try {Process process = processBuilder_Tvon.start(); hdmiOn = true;} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
             TimeUnit.SECONDS.sleep(3);
             try {Process process = processBuilder_Athan.start();} 
-            catch (IOException e) {logger.warn("Unexpected error", e);}
+            catch (IOException e) {e.printStackTrace();}
         }      
         
         
@@ -7842,9 +8143,9 @@ public void update_labels() throws Exception{
 
 
                         } 
-                        catch (SQLException e) {logger.warn("Unexpected error", e);} 
-                        catch (ParseException e) {logger.warn("Unexpected error", e);} 
-                        catch (InterruptedException e) {logger.warn("Unexpected error", e);}
+                        catch (SQLException e) {e.printStackTrace();} 
+                        catch (ParseException e) {e.printStackTrace();} 
+                        catch (InterruptedException e) {e.printStackTrace();}
                    }
                 }).start();
             }   
@@ -7889,9 +8190,9 @@ public void update_labels() throws Exception{
                             update_prayer_labels = true;
 
                         } 
-                        catch (SQLException e) {logger.warn("Unexpected error", e);} 
-                        catch (ParseException e) {logger.warn("Unexpected error", e);} 
-                        catch (InterruptedException e) {logger.warn("Unexpected error", e);}
+                        catch (SQLException e) {e.printStackTrace();} 
+                        catch (ParseException e) {e.printStackTrace();} 
+                        catch (InterruptedException e) {e.printStackTrace();}
                    }
                 }).start();
             }
@@ -7938,9 +8239,9 @@ public void update_labels() throws Exception{
                             update_prayer_labels = true;
 
                         } 
-                        catch (SQLException e) {logger.warn("Unexpected error", e);} 
-                        catch (ParseException e) {logger.warn("Unexpected error", e);} 
-                        catch (InterruptedException e) {logger.warn("Unexpected error", e);}
+                        catch (SQLException e) {e.printStackTrace();} 
+                        catch (ParseException e) {e.printStackTrace();} 
+                        catch (InterruptedException e) {e.printStackTrace();}
                    }
                 }).start();
             }
@@ -7986,9 +8287,9 @@ public void update_labels() throws Exception{
                             update_prayer_labels = true;
 
                         } 
-                        catch (SQLException e) {logger.warn("Unexpected error", e);} 
-                        catch (ParseException e) {logger.warn("Unexpected error", e);} 
-                        catch (InterruptedException e) {logger.warn("Unexpected error", e);}
+                        catch (SQLException e) {e.printStackTrace();} 
+                        catch (ParseException e) {e.printStackTrace();} 
+                        catch (InterruptedException e) {e.printStackTrace();}
                    }
                 }).start();
             }
