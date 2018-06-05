@@ -1,4 +1,4 @@
-/*
+ /*
  
 prayertime rev 3.2 dropshadow to notification
 
@@ -155,14 +155,7 @@ import javafx.util.Duration;
 import javax.imageio.ImageIO;
 import me.shanked.nicatronTg.jPushover.Pushover;
 //import org.apache.log4j.Logger;
-import org.joda.time.DateMidnight;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeComparator;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Days;
-import org.joda.time.chrono.IslamicChronology;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+
 import eu.hansolo.enzo.common.Section;
 import eu.hansolo.enzo.gauge.SimpleGauge;
 import eu.hansolo.enzo.gauge.SimpleGaugeBuilder;
@@ -175,11 +168,27 @@ import javafx.stage.StageStyle;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
+import java.time.Month;
 import javafx.scene.Cursor;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.input.KeyEvent;
+import org.joda.time.DateMidnight;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeComparator;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Days;
+import org.joda.time.chrono.IslamicChronology;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.Chronology;
 import org.joda.time.chrono.ISOChronology;
+import java.time.chrono.HijrahChronology;
+import java.time.chrono.HijrahDate;
+
+//import org.joda.time.LocalDate;
+import java.time.LocalDate;
+import java.time.temporal.ChronoField;
+
 import javafx.stage.StageStyle;
 
 
@@ -296,9 +305,18 @@ import javafx.stage.StageStyle;
     private Boolean maghrib_athan_enable  = true ;
     private Boolean isha_athan_enable = true ;
     private Boolean fajr_jamma_time_change = false;
+    private Boolean fajr_jamma_time_change_lock = false;
+    private Boolean zuhr_jamma_time_change_lock = false;
+    private Boolean asr_jamma_time_change_lock = false;
+    private Boolean maghrib_jamma_time_change_lock = false;
+    private Boolean isha_jamma_time_change_lock = false;
+    
+    
+    private Boolean zuhr_custom_max_flagged = false;
     private Boolean zuhr_jamma_time_change = false;
     private Boolean asr_jamma_time_change = false;
     private Boolean maghrib_jamma_time_change = false;
+    private Boolean maghrib_from_database_bool = false;
     private Boolean isha_jamma_time_change = false;
     private Boolean notification = false;
     private Boolean prayer_change_notification;
@@ -358,13 +376,48 @@ import javafx.stage.StageStyle;
     boolean show_friday = false;
     boolean double_friday = false;
     boolean jammat_from_database;
-    boolean zuhr_adj_enable, asr_settime, isha_winter_settime,isha_custom, maghrib_athan_custom_bool;
+    boolean zuhr_adj_enable, asr_winter_settime,asr_summer_settime, isha_winter_settime,isha_custom;
+    boolean isha_custom_option2_flag = false;
+    boolean isha_custom_option3_flag = false;
+    boolean isha_custom_option4_flag = false;
+    boolean isha_custom_option5_flag = false;
+            
     boolean custom_background, zuhr_custom;
     
-    boolean isha_ramadan_winter_bool, isha_ramadan_summer_bool,isha_winter_dynamic_adj_bool, isha_summer_dynamic_adj_bool,isha_winter_static_adj_bool,  isha_winter_static_min_bool, isha_winter_static_max_bool, isha_summer_static_adj_bool, isha_summer_static_min_bool, isha_summer_static_max_bool, fajr_ramadan_bool, fajr_winter_min_bool, fajr_winter_max_bool, fajr_summer_min_bool, fajr_summer_max_bool, isha_winter_dynamic_min_bool, isha_winter_dynamic_max_bool, isha_summer_dynamic_min_bool, isha_summer_dynamic_max_bool ;
+    boolean friday_winter_dynamic_adj_bool, friday_summer_dynamic_adj_bool, asr_winter_dynamic_adj_bool, asr_summer_dynamic_adj_bool,asr_winter_static_adj_bool, asr_summer_static_adj_bool, asr_winter_static_min_bool,maghrib_dynamic_adj_bool,maghrib_static_adj_bool, isha_ramadan_winter_bool, isha_ramadan_summer_bool,isha_winter_dynamic_adj_bool, isha_summer_dynamic_adj_bool,isha_winter_static_adj_bool,  isha_winter_static_min_bool, isha_winter_static_max1_bool, isha_summer_static_adj_bool, isha_summer_static_min_bool, isha_summer_static_max1_bool, isha_winter_dynamic_min_bool, isha_winter_dynamic_max_bool, isha_summer_dynamic_min_bool, isha_summer_dynamic_max_bool,fajr_winter_dynamic_adj_bool, fajr_summer_dynamic_adj_bool,fajr_winter_static_adj_bool,  fajr_winter_static_min_bool, fajr_winter_static_max1_bool,fajr_winter_static_max2_bool, isha_winter_static_max2_bool,fajr_summer_static_max1_bool,fajr_summer_static_max2_bool,isha_summer_static_max2_bool,  fajr_summer_static_adj_bool, fajr_summer_static_min_bool, fajr_summer_static_max_bool, fajr_winter_dynamic_min_bool, fajr_winter_dynamic_max_bool, fajr_summer_dynamic_min_bool, fajr_summer_dynamic_max_bool ;
         
     boolean fajr_ramadan_custom = false;
    
+    boolean fajr_summer_dynamic_min_bool_flagged = false;
+    boolean fajr_summer_dynamic_max_bool_flagged = false;
+    boolean fajr_winter_dynamic_min_bool_flagged = false;
+    boolean fajr_winter_dynamic_max_bool_flagged = false;
+    
+    boolean isha_summer_dynamic_min_bool_flagged = false;
+    boolean isha_summer_dynamic_max_bool_flagged = false;
+    boolean isha_winter_dynamic_min_bool_flagged = false;
+    boolean isha_winter_dynamic_max_bool_flagged = false;
+    
+            
+            
+    boolean fajr_static_adj_flagged = false;
+    
+    boolean asr_static_adj_flagged = false;
+    boolean maghrib_static_adj_flagged = false;
+    
+    boolean fajr_static_max2_bool_flagged = false;
+    boolean fajr_static_max1_bool_flagged = false;
+    
+    boolean isha_static_max2_bool_flagged = false;
+    boolean isha_static_max1_bool_flagged = false;
+    boolean isha_static_max_adj_flagged = false;
+    boolean isha_static_adj_flagged = false;
+    boolean isha_ramadan_flag = false;
+    
+    
+    boolean asr_static_min_bool_flagged = false;
+    boolean fajr_static_max_adj_flagged = false;
+    
     boolean weather_retrieve_fault = false;
     boolean weather_image_wrong = false;
     boolean weather_visible = true;
@@ -386,6 +439,12 @@ import javafx.stage.StageStyle;
     private String formattedDateTime;
     private String Weather_icon, weather_image_string;
     String settings_table;
+    
+    private String fajr_notification_type;
+    private String zuhr_notification_type;
+    private String asr_notification_type;
+    private String maghrib_notification_type;
+    private String isha_notification_type;
 //    private String cameraSource = "http://192.168.0.6/cam_pic.php";
     
 //    private String cameraSource;
@@ -400,7 +459,7 @@ import javafx.stage.StageStyle;
     private int sonar_distance =50000;
     private int sonar_active_distance;
     
-    private int id, fajr_adj, fajr_ramadan_inc, zuhr_adj, asr_adj,maghrib_athan_inc, maghrib_adj,isha_ramadan_winter_adj, isha_ramadan_summer_adj ,isha_summer_dynamic_adj, isha_winter_dynamic_adj, isha_winter_rounding, isha_winter_static_initial_adj, isha_winter_static_adj, isha_winter_static_falling_gap, isha_winter_static_rising_gap, isha_summer_static_falling_gap, isha_summer_static_rising_gap, isha_summer_rounding, isha_summer_static_initial_adj, isha_summer_static_adj, isha_summer_increment_initial, isha_summer_increment, isha_summer_min_gap;        
+    private int id, zuhr_adj,friday_winter_dynamic_adj, friday_summer_dynamic_adj, asr_summer_dynamic_adj, asr_winter_dynamic_adj, asr_winter_rounding, asr_winter_static_initial_adj, asr_winter_static_adj, asr_winter_static_falling_gap, asr_winter_static_rising_gap,        maghrib_dynamic_adj, maghrib_rounding, maghrib_static_initial_adj, maghrib_static_adj, maghrib_static_falling_gap, maghrib_static_rising_gap, asr_summer_static_falling_gap, asr_summer_static_rising_gap, asr_summer_rounding, asr_summer_static_initial_adj, asr_summer_static_adj, fajr_athan_inc, zuhr_athan_inc, asr_athan_inc, maghrib_athan_inc,isha_athan_inc, isha_ramadan_winter_adj, isha_ramadan_summer_adj ,isha_summer_dynamic_adj, isha_winter_dynamic_adj, isha_winter_rounding, isha_winter_static_initial_adj, isha_winter_static_adj, isha_winter_static_falling_gap, isha_winter_static_rising_gap, isha_summer_static_falling_gap, isha_summer_static_rising_gap, isha_summer_rounding, isha_summer_static_initial_adj, isha_summer_static_adj, isha_summer_increment_initial, isha_summer_increment, isha_summer_min_gap,fajr_summer_dynamic_adj, fajr_winter_dynamic_adj, fajr_winter_rounding, fajr_winter_static_initial_adj, fajr_winter_static_adj,fajr_winter_static_max_adj,isha_winter_static_max_adj,isha_summer_static_max_adj, fajr_winter_static_max_gap,isha_winter_static_max_gap,isha_summer_static_max_gap,fajr_summer_static_max_adj,fajr_summer_static_max_gap, fajr_winter_static_falling_gap, fajr_winter_static_rising_gap, fajr_summer_static_falling_gap, fajr_summer_static_rising_gap, fajr_summer_rounding, fajr_summer_static_initial_adj, fajr_summer_static_adj, fajr_summer_increment_initial, fajr_summer_increment, fajr_summer_min_gap;        
 
     private int AsrJuristic,calcMethod;
     private int max_ar_hadith_len, max_en_hadith_len;
@@ -410,7 +469,7 @@ import javafx.stage.StageStyle;
     int fajr_diffsec_dec ,fajr_diffsec_sin, maghrib_diffsec_dec ,maghrib_diffsec_sin;
     int calculated_rounding;
     private Date prayer_date,future_prayer_date;
-    private Calendar fajr_cal, sunrise_cal, duha_cal, zuhr_cal, asr_cal, maghrib_cal, isha_cal,old_today;
+    private Calendar fajr_cal, sunrise_cal, duha_cal, zuhr_cal, asr_cal, maghrib_cal, isha_cal,old_today,dtIso_cal_minus_one;
     private Calendar fajr_jamaat_cal, duha_jamaat_cal, zuhr_jamaat_cal,friday_jamaat_cal, asr_jamaat_cal, maghrib_jamaat_cal, isha_jamaat_cal;
     private Calendar fajr_jamaat_update_cal, duha_jamaat_update_cal, zuhr_jamaat_update_cal, asr_jamaat_update_cal, maghrib_jamaat_update_cal, isha_jamaat_update_cal;
     private Calendar future_fajr_jamaat_cal, future_zuhr_jamaat_cal, future_asr_jamaat_cal, future_maghrib_jamaat_cal, future_isha_jamaat_cal, maghrib_plus15_cal, zuhr_plus15_cal, zuhr_plus30_cal, friday_plus30_cal;
@@ -418,8 +477,8 @@ import javafx.stage.StageStyle;
     
     private Date friday1_summer,friday2_summer ,friday1_winter ,friday2_winter ,zuhr_summer ,zuhr_winter,asr_winter, asr_summer, isha_ramadan_winter, isha_ramadan_summer,isha_summer_start_time, isha_winter;
     
-    private Date fajr_winter_min, fajr_winter_max, fajr_summer_min, fajr_summer_max;
-    private Date isha_winter_min, isha_winter_max, isha_summer_min, isha_summer_max, isha_jamaa_static_old;
+    private Date asr_winter_min, isha_winter_min, isha_winter_max1, isha_summer_min, isha_summer_max1,asr_jamaa_static_old,maghrib_jamaa_static_old , isha_jamaa_static_old;
+    private Date fajr_winter_min, fajr_winter_max1, fajr_summer_min, fajr_summer_max1,fajr_winter_max2,fajr_summer_max2,  fajr_jamaa_static_old, isha_winter_max2, isha_summer_max2;
         
         
     private Date fajr_begins_time,fajr_jamaat_time, sunrise_time, duha_time, zuhr_begins_time, zuhr_jamaat_time, asr_begins_time, asr_jamaat_time, maghrib_begins_time, maghrib_jamaat_time,isha_begins_time, isha_jamaat_time;
@@ -427,7 +486,7 @@ import javafx.stage.StageStyle;
     private Date notification_Date, hadith_notification_Date;   
     private Date fullMoon_plus1;
     Date ishadate, maghribdate, asrdate, zuhrdate, fajrdate; 
-    private Date fajrjamaatdate, zuhrjamaatdate, asrjamaatdate, maghribjamaatdate, ishajamaatdate;
+    private Date fajrjamaatdate, zuhrjamaatdate, fridayjamaatdate, asrjamaatdate, maghribjamaatdate, ishajamaatdate;
     
     DateTimeZone tzSAUDI_ARABIA;
     DateTime dtIslamic;
@@ -629,11 +688,8 @@ Runtime.getRuntime().addShutdownHook(new Thread(new Runnable()
 
 moonPhase = 200;
 
-// Get Parameter from database==========================================================
-
-try
-{
-    settings_table = "settings_test";
+//    settings_table = "settings_punchbowl";
+//    settings_table = "settings_test";
 //    settings_table = "settings_al_takwa";
 //    settings_table = "settings_ESCA";
 //    settings_table = "settings";
@@ -643,19 +699,25 @@ try
 //    settings_table = "settings_arncliffe";
 //    settings_table = "settings_MIA";
 //    settings_table = "settings_cabramatta";
-    c = DBConnect.connect();
+//    settings_table = "settings_regentspark";
+//    settings_table = "settings_cabramatta";
 
-//    SQL = "Select * from settings_al_takwa";
-//    SQL = "Select * from settings_ESCA";
-//    SQL = "Select * from settings";
-//    SQL = "Select * from settings_middle_path";
-//      SQL = "Select * from settings_revesby";
-//    SQL = "Select * from settings_al_hidayah";
-//      SQL = "Select * from settings_arncliffe"; 
-//    SQL = "Select * from settings_MIA";
-//      SQL = "Select * from settings_cabramatta";
-    SQL = "Select * from " +  settings_table;
+try
+{
+    c = DBConnect.connect();
+    SQL = "Select * from prayertime_table where ID=1";  
+    rs = c.createStatement().executeQuery(SQL);
+    while (rs.next())
+    {
+        id =                            rs.getInt("id");
+        settings_table =                rs.getString("settings_table");        
+    }
+    c.close();
+    System.out.format("Settings Table selected: %s\n", settings_table);
+
     
+    c = DBConnect.connect();
+    SQL = "Select * from " +  settings_table;  
     rs = c.createStatement().executeQuery(SQL);
     while (rs.next())
     {
@@ -692,60 +754,136 @@ try
         page_ID =                       rs.getString("page_ID");
         jammat_from_database =          rs.getBoolean("jammat_from_database");
         prayertime_database =           rs.getString("prayertime_database");
-        fajr_adj =                      rs.getInt("fajr_adj");
         
-        fajr_winter_min_bool =          rs.getBoolean("fajr_winter_min_bool");
+        fajr_athan_inc =                rs.getInt("fajr_athan_inc");
+        
+        fajr_winter_dynamic_adj_bool =  rs.getBoolean("fajr_winter_dynamic_adj_bool");
+        fajr_winter_dynamic_adj  =      rs.getInt("fajr_winter_dynamic_adj");
+        fajr_winter_dynamic_min_bool =  rs.getBoolean("fajr_winter_dynamic_min_bool");
         fajr_winter_min =               rs.getTime("fajr_winter_min");
-        fajr_winter_max_bool=           rs.getBoolean("fajr_winter_max_bool");
-        fajr_winter_max=                rs.getTime("fajr_winter_max");
-        fajr_summer_min_bool=           rs.getBoolean("fajr_summer_min_bool");
+        fajr_winter_dynamic_max_bool=   rs.getBoolean("fajr_winter_dynamic_max_bool");
+        fajr_winter_max1=                rs.getTime("fajr_winter_max1");
+
+        fajr_summer_dynamic_adj_bool =  rs.getBoolean("fajr_summer_dynamic_adj_bool");
+        fajr_summer_dynamic_adj  =      rs.getInt("fajr_summer_dynamic_adj");
+        fajr_summer_dynamic_min_bool=   rs.getBoolean("fajr_summer_dynamic_min_bool");
         fajr_summer_min=                rs.getTime("fajr_summer_min");
-        fajr_summer_max_bool=           rs.getBoolean("fajr_summer_max_bool");
-        fajr_summer_max=                rs.getTime("fajr_summer_max");
+        fajr_summer_dynamic_max_bool=   rs.getBoolean("fajr_summer_dynamic_max_bool");
+        fajr_summer_max1=                rs.getTime("fajr_summer_max1");
+
+        fajr_winter_static_adj_bool =   rs.getBoolean("fajr_winter_static_adj_bool");
+        fajr_winter_rounding=           rs.getInt("fajr_winter_rounding");
+        fajr_winter_static_initial_adj= rs.getInt("fajr_winter_static_initial_adj");
+        fajr_winter_static_adj=         rs.getInt("fajr_winter_static_adj");
         
+        fajr_winter_static_falling_gap= rs.getInt("fajr_winter_static_falling_gap");
+        fajr_winter_static_rising_gap=  rs.getInt("fajr_winter_static_rising_gap");
         
+        fajr_winter_static_min_bool =   rs.getBoolean("fajr_winter_static_min_bool");
+        fajr_winter_static_max1_bool =   rs.getBoolean("fajr_winter_static_max1_bool");
+        fajr_winter_static_max2_bool =   rs.getBoolean("fajr_winter_static_max2_bool");
+        fajr_winter_static_max_adj=         rs.getInt("fajr_winter_static_max_adj");
+        fajr_winter_static_max_gap=         rs.getInt("fajr_winter_static_max_gap");       
+        fajr_winter_max2=                rs.getTime("fajr_winter_max2");
+                
+        fajr_summer_static_adj_bool =   rs.getBoolean("fajr_summer_static_adj_bool");
+        fajr_summer_rounding=           rs.getInt("fajr_summer_rounding");
+        fajr_summer_static_initial_adj= rs.getInt("fajr_summer_static_initial_adj");
+        fajr_summer_static_adj=         rs.getInt("fajr_summer_static_adj");
+        
+        fajr_summer_static_falling_gap= rs.getInt("fajr_summer_static_falling_gap");
+        fajr_summer_static_rising_gap=  rs.getInt("fajr_summer_static_rising_gap");
+                
+        fajr_summer_static_min_bool =   rs.getBoolean("fajr_summer_static_min_bool");
+        fajr_summer_static_min_bool =   rs.getBoolean("fajr_summer_static_min_bool");
+        fajr_summer_static_max1_bool =   rs.getBoolean("fajr_summer_static_max1_bool");
+        fajr_summer_static_max2_bool =   rs.getBoolean("fajr_summer_static_max2_bool");
+        fajr_summer_static_max_adj=         rs.getInt("fajr_summer_static_max_adj");
+        fajr_summer_static_max_gap=         rs.getInt("fajr_summer_static_max_gap");       
+        fajr_summer_max2=                rs.getTime("fajr_summer_max2");
+              
+        zuhr_athan_inc =                rs.getInt("zuhr_athan_inc");
         zuhr_adj_enable =               rs.getBoolean("zuhr_adj_enable");
         zuhr_adj =                      rs.getInt("zuhr_adj");
-        asr_settime =                   rs.getBoolean("asr_settime"); 
-        asr_summer =                   rs.getTime("asr_summer");
-        asr_winter =                   rs.getTime("asr_winter");
-        asr_adj =                       rs.getInt("asr_adj");
-        maghrib_adj =                   rs.getInt("maghrib_adj");
-        maghrib_athan_custom_bool =     rs.getBoolean("maghrib_athan_custom_bool"); 
+        zuhr_custom =                   rs.getBoolean("zuhr_custom");
+        zuhr_summer =                   rs.getTime("zuhr_summer");
+        zuhr_winter =                   rs.getTime("zuhr_winter");
+        
+        asr_athan_inc =                rs.getInt("asr_athan_inc");
+        asr_winter_settime =            rs.getBoolean("asr_winter_settime"); 
+        asr_winter =                    rs.getTime("asr_winter");
+        asr_summer_settime =            rs.getBoolean("asr_summer_settime");
+        asr_summer =                    rs.getTime("asr_summer");
+
+        asr_winter_dynamic_adj_bool =  rs.getBoolean("asr_winter_dynamic_adj_bool");
+        asr_winter_dynamic_adj  =      rs.getInt("asr_winter_dynamic_adj");
+        
+        asr_summer_dynamic_adj_bool =  rs.getBoolean("asr_summer_dynamic_adj_bool");
+        asr_summer_dynamic_adj  =      rs.getInt("asr_summer_dynamic_adj");
+        
+        asr_winter_static_adj_bool =   rs.getBoolean("asr_winter_static_adj_bool");
+        asr_winter_rounding=           rs.getInt("asr_winter_rounding");
+        asr_winter_static_initial_adj= rs.getInt("asr_winter_static_initial_adj");
+        asr_winter_static_adj=         rs.getInt("asr_winter_static_adj");
+        asr_winter_static_falling_gap= rs.getInt("asr_winter_static_falling_gap");
+        asr_winter_static_rising_gap=  rs.getInt("asr_winter_static_rising_gap");
+        
+        asr_summer_static_adj_bool =   rs.getBoolean("asr_summer_static_adj_bool");
+        asr_summer_rounding=           rs.getInt("asr_summer_rounding");
+        asr_summer_static_initial_adj= rs.getInt("asr_summer_static_initial_adj");
+        asr_summer_static_adj=         rs.getInt("asr_summer_static_adj");
+        asr_summer_static_falling_gap= rs.getInt("asr_summer_static_falling_gap");
+        asr_summer_static_rising_gap=  rs.getInt("asr_summer_static_rising_gap");
+        
+        asr_winter_static_min_bool =  rs.getBoolean("asr_winter_static_min_bool");
+        asr_winter_min =               rs.getTime("asr_winter_min");
+                
+        maghrib_dynamic_adj_bool =      rs.getBoolean("maghrib_dynamic_adj_bool");
+        maghrib_dynamic_adj  =          rs.getInt("maghrib_dynamic_adj");
+        
+        maghrib_static_adj_bool =   rs.getBoolean("maghrib_static_adj_bool");
+        maghrib_rounding=           rs.getInt("maghrib_rounding");
+        maghrib_static_initial_adj= rs.getInt("maghrib_static_initial_adj");
+        maghrib_static_adj=         rs.getInt("maghrib_static_adj");
+        maghrib_static_falling_gap= rs.getInt("maghrib_static_falling_gap");
+        maghrib_static_rising_gap=  rs.getInt("maghrib_static_rising_gap");
+        
+        
+        maghrib_from_database_bool =    rs.getBoolean("maghrib_from_database_bool"); 
+        
+        
         maghrib_athan_inc =             rs.getInt("maghrib_athan_inc");      
         
 
-              
-        fajr_ramadan_bool =             rs.getBoolean("fajr_ramadan_bool");
-        fajr_ramadan_inc =              rs.getInt("fajr_ramadan_inc");
+        
         
         //Isha ramadan setting:
+        isha_athan_inc =                rs.getInt("isha_athan_inc");  
         isha_ramadan_winter_bool =      rs.getBoolean("isha_ramadan_winter_bool");
         isha_ramadan_winter  =          rs.getTime("isha_ramadan_winter"); 
-        isha_ramadan_winter_adj =       rs.getInt("isha_ramadan_winter_adj");        
         
         isha_ramadan_summer_bool =      rs.getBoolean("isha_ramadan_summer_bool");
         isha_ramadan_summer  =          rs.getTime("isha_ramadan_summer"); 
-        isha_ramadan_summer_adj =       rs.getInt("isha_ramadan_summer_adj");
-        
-        
-        
+
         //Isha Normal settings:
+        
+        isha_winter_settime =           rs.getBoolean("isha_winter_settime"); 
+        isha_winter =                   rs.getTime("isha_winter");
+        
         isha_winter_dynamic_min_bool =  rs.getBoolean("isha_winter_dynamic_min_bool");
         isha_winter_min =               rs.getTime("isha_winter_min");
         isha_winter_dynamic_max_bool=   rs.getBoolean("isha_winter_dynamic_max_bool");
-        isha_winter_max=                rs.getTime("isha_winter_max");
+        isha_winter_max1=                rs.getTime("isha_winter_max1");
         
         isha_summer_dynamic_min_bool=   rs.getBoolean("isha_summer_dynamic_min_bool");
         isha_summer_min=                rs.getTime("isha_summer_min");
         isha_summer_dynamic_max_bool=   rs.getBoolean("isha_summer_dynamic_max_bool");
-        isha_summer_max=                rs.getTime("isha_summer_max");
+        isha_summer_max1=                rs.getTime("isha_summer_max1");
         
         isha_winter_dynamic_adj_bool =  rs.getBoolean("isha_winter_dynamic_adj_bool");
         isha_winter_dynamic_adj  =      rs.getInt("isha_winter_dynamic_adj");
         
-        isha_winter_settime =           rs.getBoolean("isha_winter_settime"); 
-        isha_winter =                   rs.getTime("isha_winter");
+        
         
         isha_summer_dynamic_adj_bool =  rs.getBoolean("isha_summer_dynamic_adj_bool");
         isha_summer_dynamic_adj  =      rs.getInt("isha_summer_dynamic_adj");
@@ -757,12 +895,19 @@ try
         isha_winter_static_adj=         rs.getInt("isha_winter_static_adj");
         
         
+        
         isha_winter_static_falling_gap= rs.getInt("isha_winter_static_falling_gap");
         isha_winter_static_rising_gap=  rs.getInt("isha_winter_static_rising_gap");
         
 
         isha_winter_static_min_bool =   rs.getBoolean("isha_winter_static_min_bool");
-        isha_winter_static_max_bool =   rs.getBoolean("isha_winter_static_max_bool");
+        
+        isha_winter_static_max1_bool =   rs.getBoolean("isha_winter_static_max1_bool");
+        isha_winter_static_max2_bool =   rs.getBoolean("isha_winter_static_max2_bool");
+        isha_winter_static_max_adj=         rs.getInt("isha_winter_static_max_adj");
+        isha_winter_static_max_gap=         rs.getInt("isha_winter_static_max_gap");       
+        isha_winter_max2=                rs.getTime("isha_winter_max2");
+        
                 
         isha_summer_static_adj_bool =   rs.getBoolean("isha_summer_static_adj_bool");
         isha_summer_rounding=           rs.getInt("isha_summer_rounding");
@@ -775,10 +920,12 @@ try
                 
 
         isha_summer_static_min_bool =   rs.getBoolean("isha_summer_static_min_bool");
-        isha_summer_static_max_bool =   rs.getBoolean("isha_summer_static_max_bool");
+        isha_summer_static_max1_bool =   rs.getBoolean("isha_summer_static_max1_bool");
+        isha_summer_static_max2_bool =   rs.getBoolean("isha_summer_static_max2_bool");
+        isha_summer_static_max_adj=         rs.getInt("isha_summer_static_max_adj");
+        isha_summer_static_max_gap=         rs.getInt("isha_summer_static_max_gap");       
+        isha_summer_max2=                rs.getTime("isha_summer_max2");
         
-        isha_jamaa_static_old =         rs.getTime("isha_jamaa_static_old");
-
         //Isha custom setting:
         isha_custom   =                 rs.getBoolean("isha_custom");
         isha_summer_start_time =        rs.getTime("isha_summer_start_time");        
@@ -789,14 +936,17 @@ try
                 
                 
         show_friday =                   rs.getBoolean("show_friday");
+        friday_winter_dynamic_adj_bool =  rs.getBoolean("friday_winter_dynamic_adj_bool");
+        friday_winter_dynamic_adj  =      rs.getInt("friday_winter_dynamic_adj");
+        friday_summer_dynamic_adj_bool =  rs.getBoolean("friday_summer_dynamic_adj_bool");
+        friday_summer_dynamic_adj  =      rs.getInt("friday_summer_dynamic_adj");
+        
         double_friday =                 rs.getBoolean("double_friday");
         friday1_summer =                rs.getTime("friday1_summer");
         friday2_summer =                rs.getTime("friday2_summer");
         friday1_winter =                rs.getTime("friday1_winter");
         friday2_winter =                rs.getTime("friday2_winter");
-        zuhr_custom =                   rs.getBoolean("zuhr_custom");
-        zuhr_summer =                   rs.getTime("zuhr_summer");
-        zuhr_winter =                   rs.getTime("zuhr_winter");
+        
         
         
         max_ar_hadith_len =             rs.getInt("max_ar_hadith_len");
@@ -808,7 +958,7 @@ System.out.format("Prayertime server running on %s platform\n", platform);
 //                System.out.format(" Face Book Notification Enabled: %s \n Face Book Receive posts: %s \n Facebook page ID: %s \n Latitude: %s \n Longitude: %s \n Time Zone: %s \n Calculation Method: %s  \n Asr Juristic: %s \n", facebook_notification_enable, facebook_Receive, page_ID, latitude, longitude, timezone,calcMethod, AsrJuristic );
 System.out.format("Device Name is:%s at %s \n", device_name, device_location);
 //                System.out.format("Time Zone ID is:%s \n", timeZone_ID);
-System.out.format("Orientation:%s \n", orientation);
+//System.out.format("Orientation:%s \n", orientation);
 //System.out.format("jammat_from_database:%s \n", jammat_from_database);
 //
 //System.out.format("device_location:%s \n", device_location);
@@ -819,11 +969,11 @@ System.out.format("Orientation:%s \n", orientation);
 catch (Exception e){e.printStackTrace();}
 
 
-if (facebook_notification_enable){System.out.println("facebook notification is enabled" );}
-if (!facebook_notification_enable){System.out.println("facebook notification is not enabled" );}
-if (remote_HDMI_control){System.out.println("Remote HDMI control is enabled" );}
-if (local_HDMI_control){System.out.println("Local HDMI control is enabled" );}
-if (Button_activated){System.out.println("camera button is enabled" );}
+//if (facebook_notification_enable){System.out.println("facebook notification is enabled" );}
+//if (!facebook_notification_enable){System.out.println("facebook notification is not enabled" );}
+//if (remote_HDMI_control){System.out.println("Remote HDMI control is enabled" );}
+//if (local_HDMI_control){System.out.println("Local HDMI control is enabled" );}
+//if (Button_activated){System.out.println("camera button is enabled" );}
 
 // facebook Client ==========================================================================
 
@@ -856,7 +1006,7 @@ images = new ArrayList<String>();
 if (platform.equals("osx"))
 //        {directory = new File("/Users/ossama/Projects/Pi/javafx/prayertime/background/");}
 {
-    
+     
     if (orientation.equals("vertical") )
     {
 //        directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background/vertical");
@@ -1217,8 +1367,7 @@ DateTimeFormatter format = DateTimeFormat.mediumDateTime();
                             {
                                 break;
                             }
-                            System.out.println ("Next Daylight saving Change: " + format.print(next) + " Into DST? " 
-                                                + !zone.isStandardOffset(next));
+//                            System.out.println ("Next Daylight saving Change: " + format.print(next) + " Into DST? "  + !zone.isStandardOffset(next));
                             current = next;
                         }
 
@@ -1235,10 +1384,16 @@ Calendar nextTransitionCal_min_3 = Calendar.getInstance();
 nextTransitionCal_min_3.setTime(nextTransitionDate);
 nextTransitionCal_min_3.add(Calendar.DAY_OF_MONTH, -3);
 nextTransitionCal_min_3.set(Calendar.HOUR_OF_DAY, 0);
-                        System.out.println ("Next Daylight saving Check (-3 days): " + nextTransitionCal_min_3.getTime());
+//                        System.out.println ("Next Daylight saving Check (-3 days): " + nextTransitionCal_min_3.getTime());
 
+                        
+Calendar nextTransitionCal_min_2 = Calendar.getInstance();
+nextTransitionCal_min_2.setTime(nextTransitionDate);
+nextTransitionCal_min_2.add(Calendar.DAY_OF_MONTH, -2);
+nextTransitionCal_min_2.set(Calendar.HOUR_OF_DAY, 0);
+//                        System.out.println ("Next Daylight saving Check (-2 days): " + nextTransitionCal_min_2.getTime());
 
-
+                        
 ArrayList<String> prayerTimes = getprayertime.getPrayerTimes(cal, latitude, longitude, timezone);
 ArrayList<String> prayerNames = getprayertime.getTimeNames();
 
@@ -1250,6 +1405,7 @@ if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){cal.add(Calendar.
 Date fajr = cal.getTime();
 fajr_cal = Calendar.getInstance();
 fajr_cal.setTime(fajr);
+fajr_cal.add(Calendar.MINUTE, fajr_athan_inc);
 fajr_begins_time = fajr_cal.getTime();
 //                        System.out.println(" fajr time " + fajr_begins_time);
 
@@ -1278,6 +1434,7 @@ if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){cal.add(Calendar.
 Date zuhr = cal.getTime();
 zuhr_cal = Calendar.getInstance();
 zuhr_cal.setTime(zuhr);
+zuhr_cal.add(Calendar.MINUTE, zuhr_athan_inc);
 zuhr_begins_time = zuhr_cal.getTime();
 //                        System.out.println(" Zuhr time " + zuhr_begins_time);
 
@@ -1287,6 +1444,7 @@ if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){cal.add(Calendar.
 Date asr = cal.getTime();
 asr_cal = Calendar.getInstance();
 asr_cal.setTime(asr);
+asr_cal.add(Calendar.MINUTE, asr_athan_inc);
 asr_begins_time = asr_cal.getTime();
 //                        System.out.println(" Asr time " + asr_begins_time);
 
@@ -1297,16 +1455,11 @@ Date maghrib = cal.getTime();
 maghrib_cal = Calendar.getInstance();
 maghrib_cal.setTime(maghrib);
 
-if (maghrib_athan_custom_bool)
-{
-    maghrib_cal.add(Calendar.MINUTE, maghrib_athan_inc); 
-}
+maghrib_cal.add(Calendar.MINUTE, maghrib_athan_inc); 
+
 
 maghrib_begins_time = maghrib_cal.getTime();
-
-if (maghrib_athan_custom_bool){System.out.println("Custom maghrib time: " + maghrib_begins_time);}
-else {System.out.println(" maghrib time " + maghrib_begins_time);}
-    
+   
     
 
 maghrib_plus15_cal = (Calendar)maghrib_cal.clone();
@@ -1318,6 +1471,8 @@ if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){cal.add(Calendar.
 Date isha = cal.getTime();
 isha_cal = Calendar.getInstance();
 isha_cal.setTime(isha);
+isha_cal.add(Calendar.MINUTE, isha_athan_inc);
+
 isha_begins_time = isha_cal.getTime();
 //                        System.out.println(" isha time " + isha_begins_time);
                         
@@ -1443,37 +1598,21 @@ if(jammat_from_database)
     System.out.print("notification calcs: shawal on: "); 
     System.out.println(dtIso_cal_shawal.getTime());
             
-    if ( fajr_ramadan_bool && (Calendar_now.compareTo(dtIso_cal)==0 || dtIslamic.getMonthOfYear()==9) && !(Calendar_now.compareTo(dtIso_cal_shawal)==0))
-    {
-        
-        fajr_ramadan_custom = true;
-        fajr_jamaat_cal = (Calendar)fajr_cal.clone();
-        fajr_jamaat_cal.add(Calendar.MINUTE, fajr_ramadan_inc);
-        fajr_jamaat_update_cal = (Calendar)fajr_jamaat_cal.clone();
-        fajr_jamaat_update_cal.add(Calendar.MINUTE, 5);
-        fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-        fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
-        
-    }
-    
-    
-            
-    else
-    {        
-        fajr_ramadan_custom = false;
-        Date fajr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_jamaat);
-        cal.setTime(fajr_jamaat_temp);
-        cal.add(Calendar.MINUTE, 5);
-        Date fajr_jamaat = cal.getTime();
-        fajr_jamaat_update_cal = Calendar.getInstance();
-        fajr_jamaat_update_cal.setTime(fajr_jamaat);
-        fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-        fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
+      
+    fajr_ramadan_custom = false;
+    Date fajr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_jamaat);
+    cal.setTime(fajr_jamaat_temp);
+    cal.add(Calendar.MINUTE, 5);
+    Date fajr_jamaat = cal.getTime();
+    fajr_jamaat_update_cal = Calendar.getInstance();
+    fajr_jamaat_update_cal.setTime(fajr_jamaat);
+    fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+    fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
 
-        fajr_jamaat_cal = (Calendar)fajr_jamaat_update_cal.clone();
-        fajr_jamaat_cal.add(Calendar.MINUTE, -5);
+    fajr_jamaat_cal = (Calendar)fajr_jamaat_update_cal.clone();
+    fajr_jamaat_cal.add(Calendar.MINUTE, -5);
     //                            System.out.println("fajr Jamaat update scheduled at:" + fajr_jamaat_update_cal.getTime());
-    }
+
     System.out.println(dtIslamic.getMonthOfYear());
     
     
@@ -1494,14 +1633,35 @@ if(jammat_from_database)
     zuhr_plus30_cal.add(Calendar.MINUTE, +30);
 
     
-    Date friday_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + friday_jamaat);
-    cal.setTime(friday_jamaat_temp);
-    Date friday_jamaat_jamaat_Date = cal.getTime();
-    friday_jamaat_cal = Calendar.getInstance();
-    friday_jamaat_cal.setTime(friday_jamaat_jamaat_Date);
-    friday_jamaat_cal.set(Calendar.MILLISECOND, 0);
-    friday_jamaat_cal.set(Calendar.SECOND, 0);
-    //                            System.out.println("=============friday_jamaat Jamaat at:" + friday_jamaat_cal.getTime() + "day int" + dayofweek_int);
+    if (friday_winter_dynamic_adj_bool && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    {
+        friday_jamaat_cal = (Calendar)zuhr_cal.clone();
+        friday_jamaat_cal.add(Calendar.MINUTE, friday_winter_dynamic_adj);
+        System.out.println("======= friday_winter_dynamic_adj_bool selected===="); 
+
+
+    }
+        
+        
+    else if (friday_summer_dynamic_adj_bool && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    {
+        friday_jamaat_cal = (Calendar)zuhr_cal.clone();
+        friday_jamaat_cal.add(Calendar.MINUTE, friday_summer_dynamic_adj);
+
+
+    }
+    
+    else
+    {
+        Date friday_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + friday_jamaat);
+        cal.setTime(friday_jamaat_temp);
+        Date friday_jamaat_jamaat_Date = cal.getTime();
+        friday_jamaat_cal = Calendar.getInstance();
+        friday_jamaat_cal.setTime(friday_jamaat_jamaat_Date);
+        friday_jamaat_cal.set(Calendar.MILLISECOND, 0);
+        friday_jamaat_cal.set(Calendar.SECOND, 0);
+        //                            System.out.println("=============friday_jamaat Jamaat at:" + friday_jamaat_cal.getTime() + "day int" + dayofweek_int);
+    }
     
     friday_plus30_cal = (Calendar)friday_jamaat_cal.clone();
     friday_plus30_cal.add(Calendar.MINUTE, +30);
@@ -1534,7 +1694,7 @@ if(jammat_from_database)
     asr_jamaat_cal.add(Calendar.MINUTE, -5);
     
     
-    if (maghrib_adj ==60)
+    if (maghrib_from_database_bool)
     {
 
         Date maghrib_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + maghrib_jamaat);
@@ -1552,8 +1712,101 @@ if(jammat_from_database)
     
     else
     {
-        maghrib_jamaat_cal = (Calendar)maghrib_cal.clone();
-        maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_adj);
+        if (maghrib_dynamic_adj_bool)
+        {
+            maghrib_jamaat_cal = (Calendar)maghrib_cal.clone();
+            maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_dynamic_adj);
+
+            maghrib_jamaat_update_cal = (Calendar)maghrib_jamaat_cal.clone();
+            maghrib_jamaat_update_cal.add(Calendar.MINUTE, 5);
+            maghrib_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+            maghrib_jamaat_update_cal.set(Calendar.SECOND, 0);
+        }
+
+        if (maghrib_static_adj_bool)
+        {
+            try
+            {
+                c = DBConnect.connect();
+                SQL = "select maghrib_jamaa_static_old from prayertime.temp_jamaa WHERE id='1'";
+                rs = c.createStatement().executeQuery(SQL);
+                while (rs.next())
+                {
+                    maghrib_jamaa_static_old =        rs.getTime("maghrib_jamaa_static_old");
+                }
+                c.close();
+                //System.out.format("maghrib_jamaa_static_old from database: %s \n", maghrib_jamaa_static_old );
+            }
+
+            catch (Exception e){ e.printStackTrace(); System.out.println("Error in Line number"+ e.getStackTrace()[0].getLineNumber());}
+
+
+            if (maghrib_jamaa_static_old== null || maghrib_jamaa_static_old.getHours()== 0)
+            {
+                maghrib_jamaat_cal = (Calendar)maghrib_cal.clone();            
+                maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_static_initial_adj);
+                maghrib_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                maghrib_jamaat_cal.set(Calendar.SECOND, 0);
+                maghrib_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(maghrib_jamaat_cal, maghrib_rounding));
+                c = DBConnect.connect();            
+                PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET maghrib_jamaa_static_old='"+ maghrib_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + maghrib_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+                ps.executeUpdate();
+                c.close();
+                System.out.println(" Virgin maghrib jamaa: " + maghrib_jamaat_cal + " used and inserted in Database ");
+            }
+
+            else
+            {
+                //set date?????
+
+                Date maghrib_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + maghrib_jamaa_static_old);
+                cal.setTime(maghrib_jamaat_temp);
+                Date maghrib_jamaat_Date = cal.getTime();
+                maghrib_jamaat_cal = Calendar.getInstance();
+                maghrib_jamaat_cal.setTime(maghrib_jamaat_Date);
+                maghrib_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                maghrib_jamaat_cal.set(Calendar.SECOND, 0);
+                maghrib_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(maghrib_jamaat_cal, maghrib_rounding));
+                System.out.format("maghrib_jamaa_static_old_cal from database: %s \n", maghrib_jamaat_cal.getTime() );
+
+                long diff = maghrib_jamaat_cal.getTime().getTime() - maghrib_cal.getTime().getTime();
+                long diffMinutes = diff / (60 * 1000);
+                System.out.println("maghrib prayer / jamaa difference:  " + diffMinutes);    
+
+                while (diffMinutes<maghrib_static_rising_gap){
+                    maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_static_adj);
+                    System.out.println("adjusting up maghrib jamaat prayer by " + maghrib_static_adj);
+                    System.out.format("new maghrib_jamaa: %s \n", maghrib_jamaat_cal.getTime() );
+                    diff = maghrib_jamaat_cal.getTime().getTime() - maghrib_cal.getTime().getTime();
+                    diffMinutes = diff / (60 * 1000);
+                    System.out.println("maghrib prayer / jamaa value:  " + diffMinutes); 
+
+                }
+
+
+                while (diffMinutes>maghrib_static_falling_gap){
+                    maghrib_jamaat_cal.add(Calendar.MINUTE, -maghrib_static_adj);
+                    System.out.println("adjusting down maghrib jamaat prayer by " + maghrib_static_adj);
+                    System.out.format("new maghrib_jamaa: %s \n", maghrib_jamaat_cal.getTime() );
+                    diff = maghrib_jamaat_cal.getTime().getTime() - maghrib_cal.getTime().getTime();
+                    diffMinutes = diff / (60 * 1000);
+                    System.out.println("maghrib prayer / jamaa value:  " + diffMinutes); 
+
+                }
+                c = DBConnect.connect();            
+                PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET maghrib_jamaa_static_old='"+ maghrib_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + maghrib_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+                ps.executeUpdate();
+                c.close();
+
+    //                maghrib_static_adj
+            }
+
+
+            maghrib_jamaat_update_cal = (Calendar)maghrib_jamaat_cal.clone();
+            maghrib_jamaat_update_cal.add(Calendar.MINUTE, 5);
+            maghrib_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+            maghrib_jamaat_update_cal.set(Calendar.SECOND, 0);
+        }
     }
  
     Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
@@ -1574,95 +1827,421 @@ if(jammat_from_database)
 else
 {
     
-    fajr_jamaat_cal = (Calendar)fajr_cal.clone();
-    
-    fajr_jamaat_cal.add(Calendar.MINUTE, fajr_adj);
-    
-    
-    Date fajr_winter_min_date = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_min);   
-    Calendar fajr_winter_min_cal =  Calendar.getInstance();
-    fajr_winter_min_cal.setTime(fajr_winter_min_date);      
-    fajr_winter_min_cal.set(Calendar.AM_PM, Calendar.AM );
-    fajr_winter_min_cal.set(Calendar.MILLISECOND, 0);
-    fajr_winter_min_cal.set(Calendar.SECOND, 0);
-    long fajr_diff =  fajr_jamaat_cal.getTime().getTime() - fajr_winter_min_date.getTime() ;
-    long fajr_diffMinutes = fajr_diff / (60 * 1000) % 60; 
-    System.out.print("fajr min gap:  ");    
-    System.out.println(fajr_diffMinutes);  
-    
-    
-    
-    if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) && fajr_winter_min_bool && fajr_diffMinutes<0)
-        {
-            fajr_jamaat_cal = fajr_winter_min_cal;
-            System.out.print("fajr restricted to min"); 
+    if (fajr_winter_dynamic_adj_bool && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    {
+        fajr_jamaat_cal = (Calendar)fajr_cal.clone();
+        fajr_jamaat_cal.add(Calendar.MINUTE, fajr_winter_dynamic_adj);
+
+        Date fajr_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_min);
+        cal.setTime(fajr_jamaat_min_temp);
+        Date fajr_jamaat_min_Date = cal.getTime();
+        Calendar fajr_jamaat_min_cal = Calendar.getInstance();
+        fajr_jamaat_min_cal.setTime(fajr_jamaat_min_Date);
+        fajr_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+        long diff_min = fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_min_cal.getTime().getTime();
+        long diffMinutes_min = diff_min / (60 * 1000);
+        System.out.println("fajr gap from min value");    
+        System.out.println(diffMinutes_min); 
+
+
+        Date fajr_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_max1);
+        cal.setTime(fajr_jamaat_max_temp);
+        Date fajr_jamaat_max_Date = cal.getTime();
+        Calendar fajr_jamaat_max_cal = Calendar.getInstance();
+        fajr_jamaat_max_cal.setTime(fajr_jamaat_max_Date);
+        fajr_jamaat_max_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_max_cal.set(Calendar.SECOND, 0);
+
+        long diff_max = fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max_cal.getTime().getTime();
+        long diffMinutes_max = diff_max / (60 * 1000);
+        System.out.println("fajr gap from max value");    
+        System.out.println(diffMinutes_max); 
+
+        if (fajr_winter_dynamic_max_bool &&  diffMinutes_max>=0){ fajr_jamaat_cal = (Calendar)fajr_jamaat_max_cal.clone(); System.out.println("fajr jamaa max applied "); fajr_winter_dynamic_max_bool_flagged = true;}
+
+        if (fajr_winter_dynamic_min_bool &&  diffMinutes_min<=0){ fajr_jamaat_cal = (Calendar)fajr_jamaat_min_cal.clone(); System.out.println("fajr jamaa min applied "); fajr_winter_dynamic_min_bool_flagged = true;}
+
+
+
+        fajr_jamaat_update_cal = (Calendar)fajr_jamaat_cal.clone();
+        fajr_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
+    }
+
+
+    if (fajr_summer_dynamic_adj_bool && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    {
+        fajr_jamaat_cal = (Calendar)fajr_cal.clone();
+        fajr_jamaat_cal.add(Calendar.MINUTE, fajr_summer_dynamic_adj);
+
+        Date fajr_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_min);
+        cal.setTime(fajr_jamaat_min_temp);
+        Date fajr_jamaat_min_Date = cal.getTime();
+        Calendar fajr_jamaat_min_cal = Calendar.getInstance();
+        fajr_jamaat_min_cal.setTime(fajr_jamaat_min_Date);
+        fajr_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+        long diff_min = fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_min_cal.getTime().getTime();
+        long diffMinutes_min = diff_min / (60 * 1000);
+//            System.out.println("fajr gap from min value");    
+//            System.out.println(diffMinutes_min); 
+
+
+        Date fajr_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_max1);
+        cal.setTime(fajr_jamaat_max_temp);
+        Date fajr_jamaat_max_Date = cal.getTime();
+        Calendar fajr_jamaat_max_cal = Calendar.getInstance();
+        fajr_jamaat_max_cal.setTime(fajr_jamaat_max_Date);
+        fajr_jamaat_max_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_max_cal.set(Calendar.SECOND, 0);
+
+        long diff_max = fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max_cal.getTime().getTime();
+        long diffMinutes_max = diff_max / (60 * 1000);
+//            System.out.println("fajr gap from max value");    
+//            System.out.println(diffMinutes_max); 
+
+        if (fajr_summer_dynamic_max_bool &&  diffMinutes_max>=0)
+        { 
+            fajr_jamaat_cal = (Calendar)fajr_jamaat_max_cal.clone(); System.out.println("fajr jamaa max applied "); fajr_summer_dynamic_max_bool_flagged = true; 
+        
         }
-    
-    Date fajr_winter_max_date = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_max);   
-    Calendar fajr_winter_max_cal =  Calendar.getInstance();
-    fajr_winter_max_cal.setTime(fajr_winter_max_date);      
-    fajr_winter_max_cal.set(Calendar.AM_PM, Calendar.AM );
-    fajr_winter_max_cal.set(Calendar.MILLISECOND, 0);
-    fajr_winter_max_cal.set(Calendar.SECOND, 0);
-    fajr_diff = fajr_winter_max_date.getTime() - fajr_jamaat_cal.getTime().getTime();
-    fajr_diffMinutes = fajr_diff / (60 * 1000) % 60; 
-    System.out.print("fajr max gap:  ");    
-    System.out.println(fajr_diffMinutes);  
-    
-    
-    
-    if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) && fajr_winter_max_bool && fajr_diffMinutes<0)
+
+        if (fajr_summer_dynamic_min_bool &&  diffMinutes_min<=0){ fajr_jamaat_cal = (Calendar)fajr_jamaat_min_cal.clone(); System.out.println("fajr jamaa min applied "); fajr_summer_dynamic_min_bool_flagged = true;}
+
+
+        fajr_jamaat_update_cal = (Calendar)fajr_jamaat_cal.clone();
+        fajr_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
+    }
+
+    if (fajr_summer_static_adj_bool && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    {
+        try
         {
-            fajr_jamaat_cal = fajr_winter_max_cal;
-            System.out.print("fajr restricted to max");
+            c = DBConnect.connect();
+            SQL = "select fajr_jamaa_static_old from prayertime.temp_jamaa WHERE id='1'";
+            rs = c.createStatement().executeQuery(SQL);
+            while (rs.next())
+            {
+                fajr_jamaa_static_old =        rs.getTime("fajr_jamaa_static_old");
+            }
+            c.close();
+            //System.out.format("fajr_jamaa_static_old from database: %s \n", fajr_jamaa_static_old );
+        }
+
+        catch (Exception e){ e.printStackTrace(); System.out.println("Error in Line number"+ e.getStackTrace()[0].getLineNumber());}
+
+
+        if (fajr_jamaa_static_old== null || fajr_jamaa_static_old.getHours()== 0)
+        {
+            fajr_jamaat_cal = (Calendar)fajr_cal.clone();            
+            fajr_jamaat_cal.add(Calendar.MINUTE, fajr_summer_static_initial_adj);
+            fajr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+            fajr_jamaat_cal.set(Calendar.SECOND, 0);
+            fajr_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(fajr_jamaat_cal, fajr_summer_rounding));
+            c = DBConnect.connect();            
+            PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET fajr_jamaa_static_old='"+ fajr_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + fajr_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+            ps.executeUpdate();
+            c.close();
+            System.out.println(" Virgin Fajr jamaa: " + fajr_jamaat_cal + " used and inserted in Database ");
+        }
+
+        else
+        {
+            //set date?????
+
+            Date fajr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_jamaa_static_old);
+            cal.setTime(fajr_jamaat_temp);
+            Date fajr_jamaat_Date = cal.getTime();
+            fajr_jamaat_cal = Calendar.getInstance();
+            fajr_jamaat_cal.setTime(fajr_jamaat_Date);
+            fajr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+            fajr_jamaat_cal.set(Calendar.SECOND, 0);
+            fajr_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(fajr_jamaat_cal, fajr_summer_rounding));
+            System.out.format("fajr_jamaa_static_old_cal from database: %s \n", fajr_jamaat_cal.getTime() );
+
+            long diff = fajr_jamaat_cal.getTime().getTime() - fajr_cal.getTime().getTime();
+            long diffMinutes = diff / (60 * 1000);
+            System.out.println("fajr prayer / jamaa difference:  " + diffMinutes);    
+
+            while (diffMinutes<fajr_summer_static_rising_gap){
+                fajr_jamaat_cal.add(Calendar.MINUTE, fajr_summer_static_adj);
+                System.out.println("adjusting up fajr jamaat prayer by " + fajr_summer_static_adj);
+                System.out.format("new fajr_jamaa: %s \n", fajr_jamaat_cal.getTime() );
+                diff = fajr_jamaat_cal.getTime().getTime() - fajr_cal.getTime().getTime();
+                diffMinutes = diff / (60 * 1000);
+                System.out.println("fajr prayer / jamaa value:  " + diffMinutes); 
+                fajr_static_adj_flagged = true;
+
+            }
+
+
+            while (diffMinutes>fajr_summer_static_falling_gap){
+                fajr_jamaat_cal.add(Calendar.MINUTE, -fajr_summer_static_adj);
+                System.out.println("adjusting down fajr jamaat prayer by " + fajr_summer_static_adj);
+                System.out.format("new fajr_jamaa: %s \n", fajr_jamaat_cal.getTime() );
+                diff = fajr_jamaat_cal.getTime().getTime() - fajr_cal.getTime().getTime();
+                diffMinutes = diff / (60 * 1000);
+                System.out.println("fajr prayer / jamaa value:  " + diffMinutes); 
+
+            }
+            
+
+//                fajr_summer_static_adj
         }
 
 
-    Date fajr_summer_min_date = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_min);   
-    Calendar fajr_summer_min_cal =  Calendar.getInstance();
-    fajr_summer_min_cal.setTime(fajr_summer_min_date);      
-    fajr_summer_min_cal.set(Calendar.AM_PM, Calendar.AM );
-    fajr_summer_min_cal.set(Calendar.MILLISECOND, 0);
-    fajr_summer_min_cal.set(Calendar.SECOND, 0);
-    fajr_diff =  fajr_jamaat_cal.getTime().getTime() - fajr_summer_min_date.getTime() ;
-    fajr_diffMinutes = fajr_diff / (60 * 1000) % 60; 
-    System.out.print("fajr min gap:  ");    
-    System.out.println(fajr_diffMinutes);  
-    
-    
-    
-    if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) && fajr_summer_min_bool && fajr_diffMinutes<0)
-        {
-            fajr_jamaat_cal = fajr_summer_min_cal;
-            System.out.print("fajr restricted to min"); 
-        }
-    
-    Date fajr_summer_max_date = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_max);   
-    Calendar fajr_summer_max_cal =  Calendar.getInstance();
-    fajr_summer_max_cal.setTime(fajr_summer_max_date);      
-    fajr_summer_max_cal.set(Calendar.AM_PM, Calendar.AM );
-    fajr_summer_max_cal.set(Calendar.MILLISECOND, 0);
-    fajr_summer_max_cal.set(Calendar.SECOND, 0);
-    fajr_diff = fajr_summer_max_date.getTime() - fajr_jamaat_cal.getTime().getTime();
-    fajr_diffMinutes = fajr_diff / (60 * 1000) % 60; 
-    System.out.print("fajr max gap:  ");    
-    System.out.println(fajr_diffMinutes);  
-    
-    
-    
-    if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) && fajr_summer_max_bool && fajr_diffMinutes<0)
-        {
-            fajr_jamaat_cal = fajr_summer_max_cal;
-            System.out.print("fajr restricted to max");
-        }
-           
 
-    
-    
-    fajr_jamaat_update_cal = (Calendar)fajr_jamaat_cal.clone();
-    fajr_jamaat_update_cal.add(Calendar.MINUTE, 5);
-    fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-    fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
+////////////////////min and max
+        Date fajr_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_min);
+        cal.setTime(fajr_jamaat_min_temp);
+        Date fajr_jamaat_min_Date = cal.getTime();
+        Calendar fajr_jamaat_min_cal = Calendar.getInstance();
+        fajr_jamaat_min_cal.setTime(fajr_jamaat_min_Date);
+        fajr_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+        long diff_min = fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_min_cal.getTime().getTime();
+        long diffMinutes_min = diff_min / (60 * 1000);
+//            System.out.println("fajr gap from min value");    
+//            System.out.println(diffMinutes_min); 
+
+
+        Date fajr_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_max1);
+        cal.setTime(fajr_jamaat_max_temp);
+        Date fajr_jamaat_max_Date = cal.getTime();
+        Calendar fajr_jamaat_max1_cal = Calendar.getInstance();
+        fajr_jamaat_max1_cal.setTime(fajr_jamaat_max_Date);
+        fajr_jamaat_max1_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_max1_cal.set(Calendar.SECOND, 0);
+
+        long diff_max = fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max1_cal.getTime().getTime();
+        long diffMinutes_max = diff_max / (60 * 1000);
+//            System.out.println("fajr gap from max value");    
+//            System.out.println(diffMinutes_max); 
+
+        
+        if (fajr_summer_static_max1_bool &&  diffMinutes_max>=0)
+        { 
+            fajr_jamaat_cal = (Calendar)fajr_jamaat_max1_cal.clone(); 
+            System.out.println("fajr jamaa max1 applied "); 
+            fajr_static_max1_bool_flagged = true;
+            
+            diff_max = fajr_jamaat_max1_cal.getTime().getTime() - fajr_cal.getTime().getTime();
+            diffMinutes_max = diff_max / (60 * 1000);
+            System.out.println("fajr gap from max1 value");    
+            System.out.println(diffMinutes_max);
+            if (fajr_summer_static_max2_bool &&  diffMinutes_max<=fajr_summer_static_max_gap)
+            {
+                fajr_jamaat_cal = (Calendar)fajr_cal.clone();
+                fajr_jamaat_cal.add(Calendar.MINUTE, fajr_summer_static_max_adj);
+                fajr_static_max_adj_flagged = true;
+                fajr_static_max1_bool_flagged = false;
+                
+                Date fajr_jamaat_max2_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_max2);
+                cal.setTime(fajr_jamaat_max2_temp);
+                Date fajr_jamaat_max2_Date = cal.getTime();
+                Calendar fajr_jamaat_max2_cal = Calendar.getInstance();
+                fajr_jamaat_max2_cal.setTime(fajr_jamaat_max2_Date);
+                fajr_jamaat_max2_cal.set(Calendar.MILLISECOND, 0);
+                fajr_jamaat_max2_cal.set(Calendar.SECOND, 0);
+
+                diff_max = fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max2_cal.getTime().getTime();
+                diffMinutes_max = diff_max / (60 * 1000);
+                System.out.println("fajr gap from max2 value");    
+                System.out.println(diffMinutes_max);
+                
+                if (diff_max>=0)
+                {
+                    fajr_jamaat_cal = (Calendar)fajr_jamaat_max2_cal.clone(); 
+                    System.out.println("fajr jamaa max2 applied ");
+                    fajr_static_max2_bool_flagged = true;
+                    fajr_static_max_adj_flagged = false;
+                }
+                
+            }
+            
+        
+        
+        }
+        if (fajr_summer_static_min_bool &&  diffMinutes_min<=0){ fajr_jamaat_cal = (Calendar)fajr_jamaat_min_cal.clone(); System.out.println("fajr jamaa min applied "); }
+
+        c = DBConnect.connect();            
+        PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET fajr_jamaa_static_old='"+ fajr_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + fajr_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+        ps.executeUpdate();
+        c.close();
+
+        fajr_jamaat_update_cal = (Calendar)fajr_jamaat_cal.clone();
+        fajr_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
+    }
+
+
+    if (fajr_winter_static_adj_bool && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    {
+        try
+        {
+            c = DBConnect.connect();
+            SQL = "select fajr_jamaa_static_old from prayertime.temp_jamaa WHERE id='1'";
+            rs = c.createStatement().executeQuery(SQL);
+            while (rs.next())
+            {
+                fajr_jamaa_static_old =        rs.getTime("fajr_jamaa_static_old");
+            }
+            c.close();
+            //System.out.format("fajr_jamaa_static_old from database: %s \n", fajr_jamaa_static_old );
+        }
+
+        catch (Exception e){ e.printStackTrace(); System.out.println("Error in Line number"+ e.getStackTrace()[0].getLineNumber());}
+
+
+        if (fajr_jamaa_static_old== null || fajr_jamaa_static_old.getHours()== 0)
+        {
+            fajr_jamaat_cal = (Calendar)fajr_cal.clone();            
+            fajr_jamaat_cal.add(Calendar.MINUTE, fajr_winter_static_initial_adj);
+            fajr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+            fajr_jamaat_cal.set(Calendar.SECOND, 0);
+            fajr_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(fajr_jamaat_cal, fajr_winter_rounding));
+            c = DBConnect.connect();            
+            PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET fajr_jamaa_static_old='"+ fajr_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + fajr_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+            ps.executeUpdate();
+            c.close();
+            System.out.println(" Virgin Fajr jamaa: " + fajr_jamaat_cal + " used and inserted in Database ");
+        }
+
+        else
+        {                
+            Date fajr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_jamaa_static_old);
+            cal.setTime(fajr_jamaat_temp);
+            Date fajr_jamaat_Date = cal.getTime();
+            fajr_jamaat_cal = Calendar.getInstance();
+            fajr_jamaat_cal.setTime(fajr_jamaat_Date);
+            fajr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+            fajr_jamaat_cal.set(Calendar.SECOND, 0);
+            fajr_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(fajr_jamaat_cal, fajr_winter_rounding));
+            System.out.format("fajr_jamaa_static_old_cal from databases: %s \n", fajr_jamaat_cal.getTime() );
+
+            long diff = fajr_jamaat_cal.getTime().getTime() - fajr_cal.getTime().getTime();
+            long diffMinutes = diff / (60 * 1000);
+            System.out.println("fajr prayer / jamaa difference:  " + diffMinutes);    
+
+            while (diffMinutes<fajr_winter_static_rising_gap){
+                fajr_jamaat_cal.add(Calendar.MINUTE, fajr_winter_static_adj);
+                System.out.println("adjusting up fajr jamaat prayer by " + fajr_winter_static_adj);
+                System.out.format("new fajr_jamaa: %s \n", fajr_jamaat_cal.getTime() );
+                diff = fajr_jamaat_cal.getTime().getTime() - fajr_cal.getTime().getTime();
+                diffMinutes = diff / (60 * 1000);
+                System.out.println("fajr prayer / jamaa value:  " + diffMinutes); 
+                fajr_static_adj_flagged = true;
+
+            }
+
+
+            while (diffMinutes>fajr_winter_static_falling_gap){
+                fajr_jamaat_cal.add(Calendar.MINUTE, -fajr_winter_static_adj);
+                System.out.println("adjusting down fajr jamaat prayer by " + fajr_winter_static_adj);
+                System.out.format("new fajr_jamaa: %s \n", fajr_jamaat_cal.getTime() );
+                diff = fajr_jamaat_cal.getTime().getTime() - fajr_cal.getTime().getTime();
+                diffMinutes = diff / (60 * 1000);
+                System.out.println("fajr prayer / jamaa value:  " + diffMinutes); 
+
+            }
+            
+
+        }
+
+////////////////////min and max
+        Date fajr_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_min);
+        cal.setTime(fajr_jamaat_min_temp);
+        Date fajr_jamaat_min_Date = cal.getTime();
+        Calendar fajr_jamaat_min_cal = Calendar.getInstance();
+        fajr_jamaat_min_cal.setTime(fajr_jamaat_min_Date);
+        fajr_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+        long diff_min = fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_min_cal.getTime().getTime();
+        long diffMinutes_min = diff_min / (60 * 1000);
+//            System.out.println("fajr gap from min value");    
+//            System.out.println(diffMinutes_min); 
+
+
+        Date fajr_jamaat_max1_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_max1);
+        cal.setTime(fajr_jamaat_max1_temp);
+        Date fajr_jamaat_max1_Date = cal.getTime();
+        Calendar fajr_jamaat_max1_cal = Calendar.getInstance();
+        fajr_jamaat_max1_cal.setTime(fajr_jamaat_max1_Date);
+        fajr_jamaat_max1_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_max1_cal.set(Calendar.SECOND, 0);
+
+        long diff_max = fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max1_cal.getTime().getTime();
+        long diffMinutes_max = diff_max / (60 * 1000);
+//            System.out.println("fajr gap from max value");    
+//            System.out.println(diffMinutes_max); 
+
+        
+
+        if (fajr_winter_static_max1_bool &&  diffMinutes_max>=0)
+        { 
+            fajr_jamaat_cal = (Calendar)fajr_jamaat_max1_cal.clone(); 
+            System.out.println("fajr jamaa max1 applied "); 
+            fajr_static_max1_bool_flagged = true;
+            
+            diff_max = fajr_jamaat_max1_cal.getTime().getTime() - fajr_cal.getTime().getTime();
+            diffMinutes_max = diff_max / (60 * 1000);
+            System.out.println("fajr gap from max1 value");    
+            System.out.println(diffMinutes_max);
+            if (fajr_winter_static_max2_bool &&  diffMinutes_max<=fajr_winter_static_max_gap)
+            {
+                fajr_jamaat_cal = (Calendar)fajr_cal.clone();
+                fajr_jamaat_cal.add(Calendar.MINUTE, fajr_winter_static_max_adj);
+                fajr_static_max_adj_flagged = true;
+                fajr_static_max1_bool_flagged = false;
+                
+                Date fajr_jamaat_max2_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_max2);
+                cal.setTime(fajr_jamaat_max2_temp);
+                Date fajr_jamaat_max2_Date = cal.getTime();
+                Calendar fajr_jamaat_max2_cal = Calendar.getInstance();
+                fajr_jamaat_max2_cal.setTime(fajr_jamaat_max2_Date);
+                fajr_jamaat_max2_cal.set(Calendar.MILLISECOND, 0);
+                fajr_jamaat_max2_cal.set(Calendar.SECOND, 0);
+
+                diff_max = fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max2_cal.getTime().getTime();
+                diffMinutes_max = diff_max / (60 * 1000);
+                System.out.println("fajr gap from max2 value");    
+                System.out.println(diffMinutes_max);
+                
+                if (diff_max>=0)
+                {
+                    fajr_jamaat_cal = (Calendar)fajr_jamaat_max2_cal.clone(); 
+                    System.out.println("fajr jamaa max2 applied "); 
+                    fajr_static_max2_bool_flagged = true;
+                    fajr_static_max_adj_flagged = false;
+                }
+                
+            }
+            
+        
+        
+        }
+
+        if (fajr_winter_static_min_bool &&  diffMinutes_min<=0){ fajr_jamaat_cal = (Calendar)fajr_jamaat_min_cal.clone(); System.out.println("fajr jamaa min applied "); }
+
+        c = DBConnect.connect();            
+        PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET fajr_jamaa_static_old='"+ fajr_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + fajr_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+        ps.executeUpdate();
+        c.close();
+
+        fajr_jamaat_update_cal = (Calendar)fajr_jamaat_cal.clone();
+        fajr_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        fajr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        fajr_jamaat_update_cal.set(Calendar.SECOND, 0);
+    }
     
     if (zuhr_adj_enable)
     {
@@ -1685,7 +2264,7 @@ else
                 //        zuhr_cal.set(Calendar.HOUR_OF_DAY, 13); 
                 //        zuhr_begins_time = zuhr_cal.getTime();
                  ///////////////////////////////////////////////   
-
+                
                 Date zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + zuhr_jamaat);
                 Calendar zuhr_jamaat_temp_cal =  Calendar.getInstance();
                 zuhr_jamaat_temp_cal.setTime(zuhr_jamaat_temp);      
@@ -1695,10 +2274,10 @@ else
 
                 long diff = zuhr_jamaat_temp.getTime() - zuhr_begins_time.getTime();
                 long diffMinutes = diff / (60 * 1000) % 60; 
-                System.out.print("Zuhr gap:  ");    
+//                System.out.print("Zuhr gap:  ");    
                 System.out.println(diffMinutes);  
                 if (diffMinutes<=5)
-                { zuhr_jamaat = "01:20:00";}
+                { zuhr_jamaat = "01:20:00"; zuhr_custom_max_flagged = true;}
             }      
 
         } 
@@ -1725,10 +2304,13 @@ else
     zuhr_plus30_cal = (Calendar)zuhr_jamaat_cal.clone();
     zuhr_plus30_cal.add(Calendar.MINUTE, +30);
     
+//========================================================================    
+
+
     
-    if(asr_settime)
+    if(asr_winter_settime && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
     {
-        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){asr_jamaat = asr_summer.toString();} else{asr_jamaat = asr_winter.toString();}
+        asr_jamaat = asr_winter.toString();
         Date asr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + asr_jamaat);
         cal.setTime(asr_jamaat_temp);
         Date asr_jamaat_Date = cal.getTime();
@@ -1736,59 +2318,335 @@ else
         asr_jamaat_cal.setTime(asr_jamaat_Date);
         asr_jamaat_cal.set(Calendar.MILLISECOND, 0);
         asr_jamaat_cal.set(Calendar.SECOND, 0);            
-            
+
     }
     
-    else
+    if(asr_summer_settime && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    {
+        asr_jamaat = asr_summer.toString();
+        Date asr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + asr_jamaat);
+        cal.setTime(asr_jamaat_temp);
+        Date asr_jamaat_Date = cal.getTime();
+        asr_jamaat_cal = Calendar.getInstance();
+        asr_jamaat_cal.setTime(asr_jamaat_Date);
+        asr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+        asr_jamaat_cal.set(Calendar.SECOND, 0);            
+
+    }
+
+
+    if (asr_winter_dynamic_adj_bool && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
     {
         asr_jamaat_cal = (Calendar)asr_cal.clone();
-        asr_jamaat_cal.add(Calendar.MINUTE, asr_adj);
+        asr_jamaat_cal.add(Calendar.MINUTE, asr_winter_dynamic_adj);
+
         asr_jamaat_update_cal = (Calendar)asr_jamaat_cal.clone();
         asr_jamaat_update_cal.add(Calendar.MINUTE, 5);
         asr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
         asr_jamaat_update_cal.set(Calendar.SECOND, 0);
     }
-    
-    if (maghrib_adj ==60)
+
+
+    if (asr_summer_dynamic_adj_bool && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
     {
-        
+        asr_jamaat_cal = (Calendar)asr_cal.clone();
+        asr_jamaat_cal.add(Calendar.MINUTE, asr_summer_dynamic_adj);
+
+        asr_jamaat_update_cal = (Calendar)asr_jamaat_cal.clone();
+        asr_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        asr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        asr_jamaat_update_cal.set(Calendar.SECOND, 0);
+    }
+
+    if (asr_summer_static_adj_bool && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    {
         try
         {
             c = DBConnect.connect();
-            //                            System.out.println("connected");
-//            SQL = "select * from ESCA_prayertimes where DATE(date) = DATE(NOW())";
-            SQL = "select * from " +  prayertime_database +  " where DATE(date) = DATE(NOW())";
-//            SQL = "select * from prayertimes where DATE(date) = DATE(NOW())";
+            SQL = "select asr_jamaa_static_old from prayertime.temp_jamaa WHERE id='1'";
             rs = c.createStatement().executeQuery(SQL);
             while (rs.next())
             {
-                maghrib_jamaat_time =        rs.getTime("maghrib_jamaat");
+                asr_jamaa_static_old =        rs.getTime("asr_jamaa_static_old");
             }
             c.close();
-            maghrib_jamaat = maghrib_jamaat_time.toString();
-            // print the results
-            //                                System.out.format("%s,%s,%s,%s,%s \n", id, prayer_date, fajr_jamaat, asr_jamaat, isha_jamaat );
+            //System.out.format("asr_jamaa_static_old from database: %s \n", asr_jamaa_static_old );
         }
-        catch (Exception e){ e.printStackTrace();}
-        
-        Date maghrib_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + maghrib_jamaat);
-        cal.setTime(maghrib_jamaat_temp);
-        cal.add(Calendar.MINUTE, 5);
-        Date maghrib_jamaat = cal.getTime();
-        maghrib_jamaat_update_cal = Calendar.getInstance();
-        maghrib_jamaat_update_cal.setTime(maghrib_jamaat);
-        maghrib_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-        maghrib_jamaat_update_cal.set(Calendar.SECOND, 0);
-        //                            System.out.println("asr Jamaat update scheduled at:" + asr_jamaat_update_cal.getTime());
-        maghrib_jamaat_cal = (Calendar)maghrib_jamaat_update_cal.clone();
-        maghrib_jamaat_cal.add(Calendar.MINUTE, -5);
+
+        catch (Exception e){ e.printStackTrace(); System.out.println("Error in Line number"+ e.getStackTrace()[0].getLineNumber());}
+
+
+        if (asr_jamaa_static_old== null || asr_jamaa_static_old.getHours()== 0)
+        {
+            asr_jamaat_cal = (Calendar)asr_cal.clone();            
+            asr_jamaat_cal.add(Calendar.MINUTE, asr_summer_static_initial_adj);
+            asr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+            asr_jamaat_cal.set(Calendar.SECOND, 0);
+            asr_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(asr_jamaat_cal, asr_summer_rounding));
+            c = DBConnect.connect();            
+            PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET asr_jamaa_static_old='"+ asr_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + asr_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+            ps.executeUpdate();
+            c.close();
+            System.out.println(" Virgin Isha jamaa: " + asr_jamaat_cal + " used and inserted in Database ");
+        }
+
+        else
+        {
+            //set date?????
+
+            Date asr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + asr_jamaa_static_old);
+            cal.setTime(asr_jamaat_temp);
+            Date asr_jamaat_Date = cal.getTime();
+            asr_jamaat_cal = Calendar.getInstance();
+            asr_jamaat_cal.setTime(asr_jamaat_Date);
+            asr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+            asr_jamaat_cal.set(Calendar.SECOND, 0);
+            asr_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(asr_jamaat_cal, asr_summer_rounding));
+            System.out.format("asr_jamaa_static_old_cal from database: %s \n", asr_jamaat_cal.getTime() );
+
+            long diff = asr_jamaat_cal.getTime().getTime() - asr_cal.getTime().getTime();
+            long diffMinutes = diff / (60 * 1000);
+            System.out.println("asr prayer / jamaa difference:  " + diffMinutes);    
+
+            while (diffMinutes<asr_summer_static_rising_gap){
+                asr_jamaat_cal.add(Calendar.MINUTE, asr_summer_static_adj);
+                System.out.println("adjusting up asr jamaat prayer by " + asr_summer_static_adj);
+                System.out.format("new asr_jamaa: %s \n", asr_jamaat_cal.getTime() );
+                diff = asr_jamaat_cal.getTime().getTime() - asr_cal.getTime().getTime();
+                diffMinutes = diff / (60 * 1000);
+                System.out.println("asr prayer / jamaa value:  " + diffMinutes); 
+
+            }
+
+
+            while (diffMinutes>asr_summer_static_falling_gap){
+                asr_jamaat_cal.add(Calendar.MINUTE, -asr_summer_static_adj);
+                System.out.println("adjusting down asr jamaat prayer by " + asr_summer_static_adj);
+                System.out.format("new asr_jamaa: %s \n", asr_jamaat_cal.getTime() );
+                diff = asr_jamaat_cal.getTime().getTime() - asr_cal.getTime().getTime();
+                diffMinutes = diff / (60 * 1000);
+                System.out.println("asr prayer / jamaa value:  " + diffMinutes); 
+
+            }
+            c = DBConnect.connect();            
+            PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET asr_jamaa_static_old='"+ asr_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + asr_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+            ps.executeUpdate();
+            c.close();
+
+//                asr_summer_static_adj
+        }
+
+
+        asr_jamaat_update_cal = (Calendar)asr_jamaat_cal.clone();
+        asr_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        asr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        asr_jamaat_update_cal.set(Calendar.SECOND, 0);
     }
+
+
+    if (asr_winter_static_adj_bool && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    {
+        try
+        {
+            c = DBConnect.connect();
+            SQL = "select asr_jamaa_static_old from prayertime.temp_jamaa WHERE id='1'";
+            rs = c.createStatement().executeQuery(SQL);
+            while (rs.next())
+            {
+                asr_jamaa_static_old =        rs.getTime("asr_jamaa_static_old");
+            }
+            c.close();
+            //System.out.format("asr_jamaa_static_old from database: %s \n", asr_jamaa_static_old );
+        }
+
+        catch (Exception e){ e.printStackTrace(); System.out.println("Error in Line number"+ e.getStackTrace()[0].getLineNumber());}
+
+
+        if (asr_jamaa_static_old== null || asr_jamaa_static_old.getHours()== 0)
+        {
+            asr_jamaat_cal = (Calendar)asr_cal.clone();            
+            asr_jamaat_cal.add(Calendar.MINUTE, asr_winter_static_initial_adj);
+            asr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+            asr_jamaat_cal.set(Calendar.SECOND, 0);
+            asr_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(asr_jamaat_cal, asr_winter_rounding));
+            c = DBConnect.connect();            
+            PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET asr_jamaa_static_old='"+ asr_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + asr_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+            ps.executeUpdate();
+            c.close();
+            System.out.println(" Virgin Asr jamaa: " + asr_jamaat_cal + " used and inserted in Database ");
+        }
+
+        else
+        {                
+            Date asr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + asr_jamaa_static_old);
+            cal.setTime(asr_jamaat_temp);
+            Date asr_jamaat_Date = cal.getTime();
+            asr_jamaat_cal = Calendar.getInstance();
+            asr_jamaat_cal.setTime(asr_jamaat_Date);
+            asr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+            asr_jamaat_cal.set(Calendar.SECOND, 0);
+            asr_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(asr_jamaat_cal, asr_winter_rounding));
+            System.out.format("asr_jamaa_static_old_cal from databases: %s \n", asr_jamaat_cal.getTime() );
+
+            long diff = asr_jamaat_cal.getTime().getTime() - asr_cal.getTime().getTime();
+            long diffMinutes = diff / (60 * 1000);
+            System.out.println("asr prayer / jamaa difference:  " + diffMinutes); 
+            
+
+            while (diffMinutes<asr_winter_static_rising_gap){
+                asr_jamaat_cal.add(Calendar.MINUTE, asr_winter_static_adj);
+                System.out.println("adjusting up asr jamaat prayer by " + asr_winter_static_adj);
+                System.out.format("new asr_jamaa: %s \n", asr_jamaat_cal.getTime() );
+                diff = asr_jamaat_cal.getTime().getTime() - asr_cal.getTime().getTime();
+                diffMinutes = diff / (60 * 1000);
+                System.out.println("asr prayer / jamaa value:  " + diffMinutes); 
+
+            }
+
+
+            while (diffMinutes>asr_winter_static_falling_gap){
+                asr_jamaat_cal.add(Calendar.MINUTE, -asr_winter_static_adj);
+                System.out.println("adjusting down asr jamaat prayer by " + asr_winter_static_adj);
+                System.out.format("new asr_jamaa: %s \n", asr_jamaat_cal.getTime() );
+                diff = asr_jamaat_cal.getTime().getTime() - asr_cal.getTime().getTime();
+                diffMinutes = diff / (60 * 1000);
+                System.out.println("asr prayer / jamaa value:  " + diffMinutes); 
+
+            }
+            c = DBConnect.connect();            
+            PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET asr_jamaa_static_old='"+ asr_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + asr_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+            ps.executeUpdate();
+            c.close();
+            
+            
+            Date asr_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + asr_winter_min);
+            cal.setTime(asr_jamaat_min_temp);
+            Date asr_jamaat_min_Date = cal.getTime();
+            Calendar asr_jamaat_min_cal = Calendar.getInstance();
+            asr_jamaat_min_cal.setTime(asr_jamaat_min_Date);
+            asr_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+            asr_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+            long diff_min = asr_jamaat_cal.getTime().getTime() - asr_jamaat_min_cal.getTime().getTime();
+            long diffMinutes_min = diff_min / (60 * 1000);
+            
+//            System.out.println("asr_jamaat_cal");    
+//            System.out.println(asr_jamaat_cal.getTime());
+//            
+//            System.out.println("asr_jamaat_min_cal");    
+//            System.out.println(asr_jamaat_min_cal.getTime());
+//            
+//            
+//            System.out.println("asr gap from min value");    
+//            System.out.println(diffMinutes_min); 
+            
+            if (asr_winter_static_min_bool &&  diffMinutes_min<=0){ asr_jamaat_cal = (Calendar)asr_jamaat_min_cal.clone(); System.out.println("asr jamaa min applied "); asr_static_min_bool_flagged = true;}
+
+
+        }
+
+        asr_jamaat_update_cal = (Calendar)asr_jamaat_cal.clone();
+        asr_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        asr_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        asr_jamaat_update_cal.set(Calendar.SECOND, 0);
+    }
+//==============================================================================
     
-    else
+
+    if (maghrib_dynamic_adj_bool)
     {
         maghrib_jamaat_cal = (Calendar)maghrib_cal.clone();
-        maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_adj);
+        maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_dynamic_adj);
 
+        maghrib_jamaat_update_cal = (Calendar)maghrib_jamaat_cal.clone();
+        maghrib_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        maghrib_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        maghrib_jamaat_update_cal.set(Calendar.SECOND, 0);
+    }
+
+    if (maghrib_static_adj_bool)
+    {
+        try
+        {
+            c = DBConnect.connect();
+            SQL = "select maghrib_jamaa_static_old from prayertime.temp_jamaa WHERE id='1'";
+            rs = c.createStatement().executeQuery(SQL);
+            while (rs.next())
+            {
+                maghrib_jamaa_static_old =        rs.getTime("maghrib_jamaa_static_old");
+            }
+            c.close();
+            //System.out.format("maghrib_jamaa_static_old from database: %s \n", maghrib_jamaa_static_old );
+        }
+
+        catch (Exception e){ e.printStackTrace(); System.out.println("Error in Line number"+ e.getStackTrace()[0].getLineNumber());}
+
+
+        if (maghrib_jamaa_static_old== null || maghrib_jamaa_static_old.getHours()== 0)
+        {
+            maghrib_jamaat_cal = (Calendar)maghrib_cal.clone();            
+            maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_static_initial_adj);
+            maghrib_jamaat_cal.set(Calendar.MILLISECOND, 0);
+            maghrib_jamaat_cal.set(Calendar.SECOND, 0);
+            maghrib_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(maghrib_jamaat_cal, maghrib_rounding));
+            c = DBConnect.connect();            
+            PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET maghrib_jamaa_static_old='"+ maghrib_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + maghrib_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+            ps.executeUpdate();
+            c.close();
+            System.out.println(" Virgin maghrib jamaa: " + maghrib_jamaat_cal + " used and inserted in Database ");
+        }
+
+        else
+        {
+            //set date?????
+
+            Date maghrib_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + maghrib_jamaa_static_old);
+            cal.setTime(maghrib_jamaat_temp);
+            Date maghrib_jamaat_Date = cal.getTime();
+            maghrib_jamaat_cal = Calendar.getInstance();
+            maghrib_jamaat_cal.setTime(maghrib_jamaat_Date);
+            maghrib_jamaat_cal.set(Calendar.MILLISECOND, 0);
+            maghrib_jamaat_cal.set(Calendar.SECOND, 0);
+            maghrib_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(maghrib_jamaat_cal, maghrib_rounding));
+            System.out.format("maghrib_jamaa_static_old_cal from database: %s \n", maghrib_jamaat_cal.getTime() );
+
+            long diff = maghrib_jamaat_cal.getTime().getTime() - maghrib_cal.getTime().getTime();
+            long diffMinutes = diff / (60 * 1000);
+            System.out.println("maghrib prayer / jamaa difference:  " + diffMinutes);    
+
+            while (diffMinutes<maghrib_static_rising_gap){
+                maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_static_adj);
+                System.out.println("adjusting up maghrib jamaat prayer by " + maghrib_static_adj);
+                System.out.format("new maghrib_jamaa: %s \n", maghrib_jamaat_cal.getTime() );
+                diff = maghrib_jamaat_cal.getTime().getTime() - maghrib_cal.getTime().getTime();
+                diffMinutes = diff / (60 * 1000);
+                System.out.println("maghrib prayer / jamaa value:  " + diffMinutes); 
+
+            }
+
+
+            while (diffMinutes>maghrib_static_falling_gap){
+                maghrib_jamaat_cal.add(Calendar.MINUTE, -maghrib_static_adj);
+                System.out.println("adjusting down maghrib jamaat prayer by " + maghrib_static_adj);
+                System.out.format("new maghrib_jamaa: %s \n", maghrib_jamaat_cal.getTime() );
+                diff = maghrib_jamaat_cal.getTime().getTime() - maghrib_cal.getTime().getTime();
+                diffMinutes = diff / (60 * 1000);
+                System.out.println("maghrib prayer / jamaa value:  " + diffMinutes); 
+
+            }
+            c = DBConnect.connect();            
+            PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET maghrib_jamaa_static_old='"+ maghrib_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + maghrib_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+            ps.executeUpdate();
+            c.close();
+
+//                maghrib_static_adj
+        }
+
+
+        maghrib_jamaat_update_cal = (Calendar)maghrib_jamaat_cal.clone();
+        maghrib_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        maghrib_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        maghrib_jamaat_update_cal.set(Calendar.SECOND, 0);
     }
     
 //    System.out.println(dtIslamic.getMonthOfYear());
@@ -1799,7 +2657,7 @@ else
     DateTime dtHijri = new DateTime(dtIslamic.getYear(),9,01,22,22,hijri);
     DateTime dtIso = new DateTime(dtHijri, iso);
     Date dtIso_date_minus_one = dtIso.toDate();
-    Calendar dtIso_cal_minus_one = Calendar.getInstance();;
+    dtIso_cal_minus_one = Calendar.getInstance();;
     dtIso_cal_minus_one.setTime(dtIso_date_minus_one);
     
 
@@ -1816,201 +2674,43 @@ else
                        
     if ( !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) &&  isha_ramadan_winter_bool && (dtIslamic.getMonthOfYear() == 9 ||  Calendar_now.compareTo(dtIso_cal_minus_one)==0))
     { 
-        Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_ramadan_winter.toString());   
-        Calendar isha_jamaat_temp_cal = Calendar.getInstance();
-        isha_jamaat_temp_cal.setTime(isha_jamaat_temp);
-        isha_jamaat_temp_cal.set(Calendar.AM_PM, Calendar.PM );
-        isha_jamaat_temp = isha_jamaat_temp_cal.getTime();
-
-        //test
-            
-//        Calendar isha_begins_cal = Calendar.getInstance();
-//        isha_begins_cal.setTime(isha_begins_time);
-//        isha_begins_cal.add(Calendar.MINUTE, 52 );
-//        isha_begins_time = isha_begins_cal.getTime();
-//        System.out.println(isha_begins_time);
-        //////////////
-        
-        
-        long diff = isha_jamaat_temp.getTime() - isha_begins_time.getTime();
-        long diffMinutes = diff / (60 * 1000);
-
-        System.out.println("isha gap from initial");    
-        System.out.println(diffMinutes); 
-
-        if (diffMinutes>5  )
-        {
-
-            isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_ramadan_winter.toString());
-            cal.setTime(isha_jamaat_temp);
-            Date isha_jamaat_Date = cal.getTime();
-            isha_jamaat_cal = Calendar.getInstance();
-            isha_jamaat_cal.setTime(isha_jamaat_Date);
-            isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_cal.set(Calendar.SECOND, 0);
-
-            isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
-            isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
-            isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_update_cal.set(Calendar.SECOND, 0);
-
-        }
-
-        else if (diffMinutes<=5 && diffMinutes>=-(isha_ramadan_winter_adj-6) )
-
-        {
-            isha_jamaat_cal = Calendar.getInstance();
-            isha_jamaat_cal.setTime(isha_jamaat_temp);
-            isha_jamaat_cal.add(Calendar.MINUTE, isha_ramadan_winter_adj );
-            isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_cal.set(Calendar.SECOND, 0);
-
-            isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
-            isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
-            isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_update_cal.set(Calendar.SECOND, 0);
-
-        }
-
-        else if (diffMinutes<=-(isha_ramadan_winter_adj-5) && diffMinutes>-((isha_ramadan_winter_adj*2)-5))
-
-        {
-            isha_jamaat_cal = Calendar.getInstance();
-            isha_jamaat_cal.setTime(isha_jamaat_temp);
-            isha_jamaat_cal.add(Calendar.MINUTE, isha_ramadan_winter_adj*2 );
-            isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_cal.set(Calendar.SECOND, 0);
-
-            isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
-            isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
-            isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_update_cal.set(Calendar.SECOND, 0);
-
-        }
-        
-        else if (diffMinutes<=-((isha_ramadan_winter_adj*2)-5))
-
-        {
-            isha_jamaat_cal = Calendar.getInstance();
-            isha_jamaat_cal.setTime(isha_jamaat_temp);
-            isha_jamaat_cal.add(Calendar.MINUTE, isha_ramadan_winter_adj*3 );
-            isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_cal.set(Calendar.SECOND, 0);
-
-            isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
-            isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
-            isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_update_cal.set(Calendar.SECOND, 0);
-
-        }
+        isha_ramadan_flag = true;
+        Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_ramadan_winter.toString());
+        cal.setTime(isha_jamaat_temp);
+        Date isha_jamaat_Date = cal.getTime();
+        isha_jamaat_cal = Calendar.getInstance();
+        isha_jamaat_cal.setTime(isha_jamaat_Date);
+        isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+        isha_jamaat_cal.set(Calendar.SECOND, 0);
+        isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
+        isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        isha_jamaat_update_cal.set(Calendar.SECOND, 0);
         System.out.println("==========Ramadan Moubarik====Ramadan winter Isha used======");
-            
-            
-        
-        
-    
+
     }
     
     else if ( TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) &&  isha_ramadan_summer_bool && (dtIslamic.getMonthOfYear() == 9 ||  Calendar_now.compareTo(dtIso_cal_minus_one)==0))
     { 
-        Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_ramadan_summer.toString());   
-        Calendar isha_jamaat_temp_cal = Calendar.getInstance();
-        isha_jamaat_temp_cal.setTime(isha_jamaat_temp);
-        isha_jamaat_temp_cal.set(Calendar.AM_PM, Calendar.PM );
-        isha_jamaat_temp = isha_jamaat_temp_cal.getTime();
-
-        //test
-            
-//        Calendar isha_begins_cal = Calendar.getInstance();
-//        isha_begins_cal.setTime(isha_begins_time);
-//        isha_begins_cal.add(Calendar.MINUTE, 52 );
-//        isha_begins_time = isha_begins_cal.getTime();
-//        System.out.println(isha_begins_time);
-        //////////////
-        
-        
-        long diff = isha_jamaat_temp.getTime() - isha_begins_time.getTime();
-        long diffMinutes = diff / (60 * 1000);
-
-        System.out.println("isha gap from initial");    
-        System.out.println(diffMinutes); 
-
-        if (diffMinutes>5  )
-        {
-
-            isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_ramadan_summer.toString());
-            cal.setTime(isha_jamaat_temp);
-            Date isha_jamaat_Date = cal.getTime();
-            isha_jamaat_cal = Calendar.getInstance();
-            isha_jamaat_cal.setTime(isha_jamaat_Date);
-            isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_cal.set(Calendar.SECOND, 0);
-
-            isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
-            isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
-            isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_update_cal.set(Calendar.SECOND, 0);
-
-        }
-
-        else if (diffMinutes<=5 && diffMinutes>=-(isha_ramadan_summer_adj-6) )
-
-        {
-            isha_jamaat_cal = Calendar.getInstance();
-            isha_jamaat_cal.setTime(isha_jamaat_temp);
-            isha_jamaat_cal.add(Calendar.MINUTE, isha_ramadan_summer_adj );
-            isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_cal.set(Calendar.SECOND, 0);
-
-            isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
-            isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
-            isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_update_cal.set(Calendar.SECOND, 0);
-
-        }
-
-        else if (diffMinutes<=-(isha_ramadan_summer_adj-5) && diffMinutes>-((isha_ramadan_summer_adj*2)-5))
-
-        {
-            isha_jamaat_cal = Calendar.getInstance();
-            isha_jamaat_cal.setTime(isha_jamaat_temp);
-            isha_jamaat_cal.add(Calendar.MINUTE, isha_ramadan_summer_adj*2 );
-            isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_cal.set(Calendar.SECOND, 0);
-
-            isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
-            isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
-            isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_update_cal.set(Calendar.SECOND, 0);
-
-        }
-        
-        else if (diffMinutes<=-((isha_ramadan_summer_adj*2)-5))
-
-        {
-            isha_jamaat_cal = Calendar.getInstance();
-            isha_jamaat_cal.setTime(isha_jamaat_temp);
-            isha_jamaat_cal.add(Calendar.MINUTE, isha_ramadan_summer_adj*3 );
-            isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_cal.set(Calendar.SECOND, 0);
-
-            isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
-            isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
-            isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_update_cal.set(Calendar.SECOND, 0);
-
-        }
+        isha_ramadan_flag = true;
+        Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_ramadan_summer.toString());
+        cal.setTime(isha_jamaat_temp);
+        Date isha_jamaat_Date = cal.getTime();
+        isha_jamaat_cal = Calendar.getInstance();
+        isha_jamaat_cal.setTime(isha_jamaat_Date);
+        isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+        isha_jamaat_cal.set(Calendar.SECOND, 0);
+        isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
+        isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
+        isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+        isha_jamaat_update_cal.set(Calendar.SECOND, 0);
         System.out.println("==========Ramadan Moubarik====Ramadan summer Isha used======");
-            
-            
-        
-        
     
     }
 
     else
     {
-
+        isha_ramadan_flag = false;
         if(isha_winter_settime && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
         {
             isha_jamaat = isha_winter.toString();
@@ -2044,7 +2744,7 @@ else
             System.out.println(diffMinutes_min); 
             
             
-            Date isha_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_max);
+            Date isha_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_max1);
             cal.setTime(isha_jamaat_max_temp);
             Date isha_jamaat_max_Date = cal.getTime();
             Calendar isha_jamaat_max_cal = Calendar.getInstance();
@@ -2057,11 +2757,12 @@ else
             System.out.println("isha gap from max value");    
             System.out.println(diffMinutes_max); 
             
-            if (isha_winter_dynamic_max_bool &&  diffMinutes_max>=0){ isha_jamaat_cal = (Calendar)isha_jamaat_max_cal.clone(); System.out.println("isha jamaa max applied "); }
+            if (isha_winter_dynamic_max_bool &&  diffMinutes_max>=0){ isha_jamaat_cal = (Calendar)isha_jamaat_max_cal.clone(); System.out.println("isha jamaa max applied "); isha_winter_dynamic_max_bool_flagged = true; }
             
-            if (isha_winter_dynamic_min_bool &&  diffMinutes_min<=0){ isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); System.out.println("isha jamaa min applied "); }
+            if (isha_winter_dynamic_min_bool &&  diffMinutes_min<=0){ isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); System.out.println("isha jamaa min applied "); isha_winter_dynamic_min_bool_flagged = true;}
             
-            
+
+
             
             isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
             isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
@@ -2089,7 +2790,7 @@ else
 //            System.out.println(diffMinutes_min); 
             
             
-            Date isha_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_max);
+            Date isha_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_max1);
             cal.setTime(isha_jamaat_max_temp);
             Date isha_jamaat_max_Date = cal.getTime();
             Calendar isha_jamaat_max_cal = Calendar.getInstance();
@@ -2102,9 +2803,9 @@ else
 //            System.out.println("isha gap from max value");    
 //            System.out.println(diffMinutes_max); 
             
-            if (isha_summer_dynamic_max_bool &&  diffMinutes_max>=0){ isha_jamaat_cal = (Calendar)isha_jamaat_max_cal.clone(); System.out.println("isha jamaa max applied "); }
+            if (isha_summer_dynamic_max_bool &&  diffMinutes_max>=0){ isha_jamaat_cal = (Calendar)isha_jamaat_max_cal.clone(); System.out.println("isha jamaa max applied "); isha_summer_dynamic_max_bool_flagged = true;}
             
-            if (isha_summer_dynamic_min_bool &&  diffMinutes_min<=0){ isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); System.out.println("isha jamaa min applied "); }
+            if (isha_summer_dynamic_min_bool &&  diffMinutes_min<=0){ isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); System.out.println("isha jamaa min applied "); isha_summer_dynamic_min_bool_flagged = true;}
             
 
             isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
@@ -2156,6 +2857,7 @@ else
                 isha_jamaat_cal.setTime(isha_jamaat_Date);
                 isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
                 isha_jamaat_cal.set(Calendar.SECOND, 0);
+                isha_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(isha_jamaat_cal, isha_summer_rounding));
                 System.out.format("isha_jamaa_static_old_cal from database: %s \n", isha_jamaat_cal.getTime() );
                 
                 long diff = isha_jamaat_cal.getTime().getTime() - isha_cal.getTime().getTime();
@@ -2168,10 +2870,9 @@ else
                     System.out.format("new isha_jamaa: %s \n", isha_jamaat_cal.getTime() );
                     diff = isha_jamaat_cal.getTime().getTime() - isha_cal.getTime().getTime();
                     diffMinutes = diff / (60 * 1000);
-                    System.out.println("isha prayer / jamaa value:  " + diffMinutes); 
-                
-                
-                
+                    System.out.println("isha prayer / jamaa value:  " + diffMinutes);
+                    isha_static_adj_flagged = true;
+
                 }
                 
                 
@@ -2192,42 +2893,167 @@ else
 //                isha_summer_static_adj
             }
             
+
+            
+ ////////////////////min and max
+            Date isha_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_min);
+            cal.setTime(isha_jamaat_min_temp);
+            Date isha_jamaat_min_Date = cal.getTime();
+            Calendar isha_jamaat_min_cal = Calendar.getInstance();
+            isha_jamaat_min_cal.setTime(isha_jamaat_min_Date);
+            isha_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+            isha_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+            long diff_min = isha_jamaat_cal.getTime().getTime() - isha_jamaat_min_cal.getTime().getTime();
+            long diffMinutes_min = diff_min / (60 * 1000);
+//            System.out.println("isha gap from min value");    
+//            System.out.println(diffMinutes_min); 
+            
+            
+            Date isha_jamaat_max1_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_max1);
+            cal.setTime(isha_jamaat_max1_temp);
+            Date isha_jamaat_max1_Date = cal.getTime();
+            Calendar isha_jamaat_max1_cal = Calendar.getInstance();
+            isha_jamaat_max1_cal.setTime(isha_jamaat_max1_Date);
+            isha_jamaat_max1_cal.set(Calendar.MILLISECOND, 0);
+            isha_jamaat_max1_cal.set(Calendar.SECOND, 0);
+            
+            long diff_max = isha_jamaat_cal.getTime().getTime() - isha_jamaat_max1_cal.getTime().getTime();
+            long diffMinutes_max = diff_max / (60 * 1000);
+//            System.out.println("isha gap from max value");    
+//            System.out.println(diffMinutes_max); 
+            
+            if (isha_summer_static_max1_bool &&  diffMinutes_max>=0)
+            { 
+                isha_jamaat_cal = (Calendar)isha_jamaat_max1_cal.clone(); 
+                System.out.println("isha jamaa max1 applied "); 
+                isha_static_max1_bool_flagged = true;
+
+                diff_max = isha_jamaat_max1_cal.getTime().getTime() - isha_cal.getTime().getTime();
+                diffMinutes_max = diff_max / (60 * 1000);
+                System.out.println("isha gap from max1 value");    
+                System.out.println(diffMinutes_max);
+                if (isha_summer_static_max2_bool &&  diffMinutes_max<=isha_summer_static_max_gap)
+                {
+                    isha_jamaat_cal = (Calendar)isha_cal.clone();
+                    isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_static_max_adj);
+                    isha_static_max_adj_flagged = true;
+                    isha_static_max1_bool_flagged = false;
+
+                    Date isha_jamaat_max2_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_max2);
+                    cal.setTime(isha_jamaat_max2_temp);
+                    Date isha_jamaat_max2_Date = cal.getTime();
+                    Calendar isha_jamaat_max2_cal = Calendar.getInstance();
+                    isha_jamaat_max2_cal.setTime(isha_jamaat_max2_Date);
+                    isha_jamaat_max2_cal.set(Calendar.MILLISECOND, 0);
+                    isha_jamaat_max2_cal.set(Calendar.SECOND, 0);
+
+                    diff_max = isha_jamaat_cal.getTime().getTime() - isha_jamaat_max2_cal.getTime().getTime();
+                    diffMinutes_max = diff_max / (60 * 1000);
+                    System.out.println("isha gap from max2 value");    
+                    System.out.println(diffMinutes_max);
+
+                    if (diff_max>=0)
+                    {
+                        isha_jamaat_cal = (Calendar)isha_jamaat_max2_cal.clone(); 
+                        System.out.println("isha jamaa max2 applied "); 
+                        isha_static_max2_bool_flagged = true;
+                        isha_static_max_adj_flagged = false;
+                    }
+
+                }
+
+
+
+            }
+            
+            if (isha_summer_static_min_bool &&  diffMinutes_min<=0){ isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); System.out.println("isha jamaa min applied "); }
             
             
             
+            isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
+            isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
+            isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+            isha_jamaat_update_cal.set(Calendar.SECOND, 0);
+        }
+        
+        
+        if (isha_winter_static_adj_bool && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+        {
+            try
+            {
+                c = DBConnect.connect();
+                SQL = "select isha_jamaa_static_old from prayertime.temp_jamaa WHERE id='1'";
+                rs = c.createStatement().executeQuery(SQL);
+                while (rs.next())
+                {
+                    isha_jamaa_static_old =        rs.getTime("isha_jamaa_static_old");
+                }
+                c.close();
+                //System.out.format("isha_jamaa_static_old from database: %s \n", isha_jamaa_static_old );
+            }
+            
+            catch (Exception e){ e.printStackTrace(); System.out.println("Error in Line number"+ e.getStackTrace()[0].getLineNumber());}
             
             
+            if (isha_jamaa_static_old== null || isha_jamaa_static_old.getHours()== 0)
+            {
+                isha_jamaat_cal = (Calendar)isha_cal.clone();            
+                isha_jamaat_cal.add(Calendar.MINUTE, isha_winter_static_initial_adj);
+                isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                isha_jamaat_cal.set(Calendar.SECOND, 0);
+                isha_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(isha_jamaat_cal, isha_winter_rounding));
+                c = DBConnect.connect();            
+                PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET isha_jamaa_static_old='"+ isha_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + isha_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+                ps.executeUpdate();
+                c.close();
+                System.out.println(" Virgin Isha jamaa: " + isha_jamaat_cal + " used and inserted in Database ");
+            }
             
+            else
+            {                
+                Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaa_static_old);
+                cal.setTime(isha_jamaat_temp);
+                Date isha_jamaat_Date = cal.getTime();
+                isha_jamaat_cal = Calendar.getInstance();
+                isha_jamaat_cal.setTime(isha_jamaat_Date);
+                isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                isha_jamaat_cal.set(Calendar.SECOND, 0);
+                isha_jamaat_cal.add(Calendar.MINUTE, calendar_rounding(isha_jamaat_cal, isha_winter_rounding));
+                System.out.format("isha_jamaa_static_old_cal from databases: %s \n", isha_jamaat_cal.getTime() );
                 
-            
-            //get last stored value isha_jamaa_static_old
-            
-            //if value is empty - virgin start
-                //jamaa prayer = athan prayer + isha_winter_static_initial_adj
-                //round prayer clock mark isha_winter_rounding  (get this value from database) 
-                //store new jamaa prayer
-            
-            
-            
-            //else value is available
-            
-                //if isha_jamaa_static_old - athan time < isha_winter_static_gap
-                    //for loop untill adjust satisfied
-                    // jamaa prayer = isha_jamaa_static_old + isha_winter_static_adj
-                    //round prayer clock mark isha_winter_rounding  (get this value from database) 
-                    //store new jamaa prayer
-                    
-                //if isha_jamaa_static_old - athan time > isha_winter_static_gap
-                    //for loop untill adjust satisfied
-                    // jamaa prayer = isha_jamaa_static_old - isha_winter_static_adj
-                    //round prayer clock mark isha_winter_rounding  (get this value from database) 
-                    //store new jamaa prayer
-            
-           
-            
-            
-            
-            
+                long diff = isha_jamaat_cal.getTime().getTime() - isha_cal.getTime().getTime();
+                long diffMinutes = diff / (60 * 1000);
+                System.out.println("isha prayer / jamaa difference:  " + diffMinutes);    
+                
+                while (diffMinutes<isha_winter_static_rising_gap){
+                    isha_jamaat_cal.add(Calendar.MINUTE, isha_winter_static_adj);
+                    System.out.println("adjusting up isha jamaat prayer by " + isha_winter_static_adj);
+                    System.out.format("new isha_jamaa: %s \n", isha_jamaat_cal.getTime() );
+                    diff = isha_jamaat_cal.getTime().getTime() - isha_cal.getTime().getTime();
+                    diffMinutes = diff / (60 * 1000);
+                    System.out.println("isha prayer / jamaa value:  " + diffMinutes); 
+                    isha_static_adj_flagged = true;
+
+                }
+                
+                
+                while (diffMinutes>isha_winter_static_falling_gap){
+                    isha_jamaat_cal.add(Calendar.MINUTE, -isha_winter_static_adj);
+                    System.out.println("adjusting down isha jamaat prayer by " + isha_winter_static_adj);
+                    System.out.format("new isha_jamaa: %s \n", isha_jamaat_cal.getTime() );
+                    diff = isha_jamaat_cal.getTime().getTime() - isha_cal.getTime().getTime();
+                    diffMinutes = diff / (60 * 1000);
+                    System.out.println("isha prayer / jamaa value:  " + diffMinutes); 
+                
+                }
+                c = DBConnect.connect();            
+                PreparedStatement ps = c.prepareStatement("UPDATE prayertime.temp_jamaa SET isha_jamaa_static_old='"+ isha_jamaat_cal.get(Calendar.HOUR_OF_DAY) + ":" + isha_jamaat_cal.get(Calendar.MINUTE)+ ":00" + "' WHERE id='1'");
+                ps.executeUpdate();
+                c.close();
+
+            }
+
  ////////////////////min and max
             Date isha_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_min);
             cal.setTime(isha_jamaat_min_temp);
@@ -2243,22 +3069,64 @@ else
 //            System.out.println(diffMinutes_min); 
             
             
-            Date isha_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_max);
-            cal.setTime(isha_jamaat_max_temp);
-            Date isha_jamaat_max_Date = cal.getTime();
-            Calendar isha_jamaat_max_cal = Calendar.getInstance();
-            isha_jamaat_max_cal.setTime(isha_jamaat_max_Date);
-            isha_jamaat_max_cal.set(Calendar.MILLISECOND, 0);
-            isha_jamaat_max_cal.set(Calendar.SECOND, 0);
+            Date isha_jamaat_max1_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_max1);
+            cal.setTime(isha_jamaat_max1_temp);
+            Date isha_jamaat_max1_Date = cal.getTime();
+            Calendar isha_jamaat_max1_cal = Calendar.getInstance();
+            isha_jamaat_max1_cal.setTime(isha_jamaat_max1_Date);
+            isha_jamaat_max1_cal.set(Calendar.MILLISECOND, 0);
+            isha_jamaat_max1_cal.set(Calendar.SECOND, 0);
             
-            long diff_max = isha_jamaat_cal.getTime().getTime() - isha_jamaat_max_cal.getTime().getTime();
+            long diff_max = isha_jamaat_cal.getTime().getTime() - isha_jamaat_max1_cal.getTime().getTime();
             long diffMinutes_max = diff_max / (60 * 1000);
 //            System.out.println("isha gap from max value");    
 //            System.out.println(diffMinutes_max); 
             
-            if (isha_summer_static_max_bool &&  diffMinutes_max>=0){ isha_jamaat_cal = (Calendar)isha_jamaat_max_cal.clone(); System.out.println("isha jamaa max applied "); }
             
-            if (isha_summer_static_min_bool &&  diffMinutes_min<=0){ isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); System.out.println("isha jamaa min applied "); }
+            if (isha_winter_static_max1_bool &&  diffMinutes_max>=0)
+            { 
+                isha_jamaat_cal = (Calendar)isha_jamaat_max1_cal.clone(); 
+                System.out.println("isha jamaa max1 applied ");
+                isha_static_max1_bool_flagged = true;
+
+                diff_max = isha_jamaat_max1_cal.getTime().getTime() - isha_cal.getTime().getTime();
+                diffMinutes_max = diff_max / (60 * 1000);
+                System.out.println("isha gap from max1 value");    
+                System.out.println(diffMinutes_max);
+                if (isha_winter_static_max2_bool &&  diffMinutes_max<=isha_winter_static_max_gap)
+                {
+                    isha_jamaat_cal = (Calendar)isha_cal.clone();
+                    isha_jamaat_cal.add(Calendar.MINUTE, isha_winter_static_max_adj);
+                    isha_static_max_adj_flagged = true;
+                    isha_static_max1_bool_flagged = false;
+
+                    Date isha_jamaat_max2_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_max2);
+                    cal.setTime(isha_jamaat_max2_temp);
+                    Date isha_jamaat_max2_Date = cal.getTime();
+                    Calendar isha_jamaat_max2_cal = Calendar.getInstance();
+                    isha_jamaat_max2_cal.setTime(isha_jamaat_max2_Date);
+                    isha_jamaat_max2_cal.set(Calendar.MILLISECOND, 0);
+                    isha_jamaat_max2_cal.set(Calendar.SECOND, 0);
+
+                    diff_max = isha_jamaat_cal.getTime().getTime() - isha_jamaat_max2_cal.getTime().getTime();
+                    diffMinutes_max = diff_max / (60 * 1000);
+                    System.out.println("isha gap from max2 value");    
+                    System.out.println(diffMinutes_max);
+
+                    if (diff_max>=0)
+                    {
+                        isha_jamaat_cal = (Calendar)isha_jamaat_max2_cal.clone(); 
+                        System.out.println("isha jamaa max2 applied "); 
+                        isha_static_max2_bool_flagged = true;
+                        isha_static_max_adj_flagged = false;
+                    }
+
+                }
+
+
+
+            }
+            if (isha_winter_static_min_bool &&  diffMinutes_min<=0){ isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); System.out.println("isha jamaa min applied "); }
             
             
             
@@ -2271,38 +3139,14 @@ else
         
         
         
-        
-        
-        
-        
-        
-        
+
         
         if(isha_custom)
         {
             
-            if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+            if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
             {                          
-                
-                isha_jamaat = isha_winter.toString();
-                Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
-                cal.setTime(isha_jamaat_temp);
-                Date isha_jamaat_Date = cal.getTime();
-                isha_jamaat_cal = Calendar.getInstance();
-                isha_jamaat_cal.setTime(isha_jamaat_Date);
-                isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-                isha_jamaat_cal.set(Calendar.SECOND, 0);
-
-                isha_jamaat_update_cal = (Calendar)isha_jamaat_cal.clone();
-                isha_jamaat_update_cal.add(Calendar.MINUTE, 5);
-                isha_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
-                isha_jamaat_update_cal.set(Calendar.SECOND, 0);
             
-            }
-            
-            
-            else
-            {
 ////////Debugin
 //                isha_cal.add(Calendar.MINUTE, 27);
 //                isha_begins_time = isha_cal.getTime();
@@ -2347,6 +3191,7 @@ else
                 else if (diffMinutes<=isha_summer_min_gap && diffMinutes>=0 )
                 {
                     System.out.print("option 2"); 
+                    isha_custom_option2_flag = true;
                     isha_jamaat_cal = Calendar.getInstance();
                     isha_jamaat_cal.setTime(isha_jamaat_temp);
                     isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment );
@@ -2362,6 +3207,7 @@ else
                 else if (diffMinutes<=-1 && diffMinutes>=-10)
                 {
                     System.out.print("option 3"); 
+                    isha_custom_option3_flag = true;
                     isha_jamaat_cal = Calendar.getInstance();
                     isha_jamaat_cal.setTime(isha_jamaat_temp);
                     isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment*2 );
@@ -2380,7 +3226,8 @@ else
                 {
                     isha_jamaat_cal = Calendar.getInstance();
                     isha_jamaat_cal.setTime(isha_jamaat_temp);
-                    System.out.print("option 4");  
+                    System.out.print("option 4"); 
+                    isha_custom_option4_flag = true;
                     isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment*3 );
                     isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
                     isha_jamaat_cal.set(Calendar.SECOND, 0);
@@ -2396,7 +3243,8 @@ else
                 {
                     isha_jamaat_cal = Calendar.getInstance();
                     isha_jamaat_cal.setTime(isha_jamaat_temp);
-                    System.out.print("option 5");  
+                    System.out.print("option 5"); 
+                    isha_custom_option5_flag = true;
                     isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment*4+5 );
                     isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
                     isha_jamaat_cal.set(Calendar.SECOND, 0);
@@ -2417,17 +3265,35 @@ else
     }
     
     
+    if (friday_winter_dynamic_adj_bool && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    {
+        friday_jamaat_cal = (Calendar)zuhr_cal.clone();
+        friday_jamaat_cal.add(Calendar.MINUTE, friday_winter_dynamic_adj);
+        System.out.println("======= friday_winter_dynamic_adj_bool selected===="); 
+
+
+    }
+        
+        
+    else if (friday_summer_dynamic_adj_bool && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+    {
+        friday_jamaat_cal = (Calendar)zuhr_cal.clone();
+        friday_jamaat_cal.add(Calendar.MINUTE, friday_summer_dynamic_adj);
+
+
+    }
     
-    
-    
-    Date friday_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + friday_jamaat);
-    cal.setTime(friday_jamaat_temp);
-    Date friday_jamaat_jamaat_Date = cal.getTime();
-    friday_jamaat_cal = Calendar.getInstance();
-    friday_jamaat_cal.setTime(friday_jamaat_jamaat_Date);
-    friday_jamaat_cal.set(Calendar.MILLISECOND, 0);
-    friday_jamaat_cal.set(Calendar.SECOND, 0);
-    //                            System.out.println("=============friday_jamaat Jamaat at:" + friday_jamaat_cal.getTime() + "day int" + dayofweek_int);
+    else
+    {
+        Date friday_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + friday_jamaat);
+        cal.setTime(friday_jamaat_temp);
+        Date friday_jamaat_jamaat_Date = cal.getTime();
+        friday_jamaat_cal = Calendar.getInstance();
+        friday_jamaat_cal.setTime(friday_jamaat_jamaat_Date);
+        friday_jamaat_cal.set(Calendar.MILLISECOND, 0);
+        friday_jamaat_cal.set(Calendar.SECOND, 0);
+        //                            System.out.println("=============friday_jamaat Jamaat at:" + friday_jamaat_cal.getTime() + "day int" + dayofweek_int);
+    }
     
     friday_plus30_cal = (Calendar)friday_jamaat_cal.clone();
     friday_plus30_cal.add(Calendar.MINUTE, +30);
@@ -2580,55 +3446,10 @@ if(jammat_from_database && prayer_change_notification)
             System.out.println ("looking for changes in the next 3 days : " + future_prayer_cal.getTime());
             
                 
-            if ( fajr_ramadan_bool && future_prayer_cal.compareTo(dtIso_cal)==0)
-                    
-            {
-                prayerTimes = getprayertime.getPrayerTimes(future_prayer_cal, latitude, longitude, timezone);
-                prayerNames = getprayertime.getTimeNames();
             
-                formatter = new SimpleDateFormat("HH:mm");
-                Date future_fajr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(0)).getTime()));
-                Calendar future_fajr_jammat_cal = future_prayer_cal.getInstance();
-                future_fajr_jammat_cal.setTime(future_fajr_temp);
-                future_fajr_jammat_cal.add(Calendar.MINUTE, fajr_ramadan_inc);
-                Date future_fajr_jamaat_time = future_fajr_jammat_cal.getTime();
-
-                System.out.println(" future fajr jamaat time " + future_fajr_jamaat_time);
- 
-                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                c = DBConnect.connect();
-                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                ps.setDate(1, sqlDate);
-                ps.executeUpdate();
-                c.close();
-                                        
-                fajr_jamma_time_change =true;
-                notification = true;
-                
-
-            }
-            
-            else if ( fajr_ramadan_bool && future_prayer_cal.compareTo(dtIso_cal_shawal)==0)
-                    
-            {
-
-                System.out.println(":) future fajr jamaat time " + future_fajr_jamaat_time);
- 
-                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                c = DBConnect.connect();
-                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                ps.setDate(1, sqlDate);
-                ps.executeUpdate();
-                c.close();
-                                        
-                fajr_jamma_time_change =true;
-                notification = true;
-                
-
-            }
 
 
-            else if (!fajr_jamaat_time.equals(future_fajr_jamaat_time) && !(( fajr_ramadan_bool && (Calendar_now.compareTo(dtIso_cal)==0 || dtIslamic.getMonthOfYear()==9) && !(Calendar_now.compareTo(dtIso_cal_shawal)==0))))
+            if (!fajr_jamaat_time.equals(future_fajr_jamaat_time) )
             {
 
                 System.out.println("Fajr Prayer Time Difference" );
@@ -2660,7 +3481,7 @@ if(jammat_from_database && prayer_change_notification)
                 notification = true;
             }
 
-            if (!maghrib_jamaat_time.equals(future_maghrib_jamaat_time) && maghrib_adj == 60)
+            if (!maghrib_jamaat_time.equals(future_maghrib_jamaat_time) && maghrib_from_database_bool)
             {
             //                                            System.out.println("asr Prayer Time Difference" );
                 maghrib_jamma_time_change =true;
@@ -2743,12 +3564,14 @@ else
             en_notification_Msg_Lines = en_notification_Msg.split("\\r?\\n");
 
             en_Marquee_Notification_string = "Prayer Time Change from " + new SimpleDateFormat("EEEE").format(notification_Date) +":   " + en_notification_Msg_Lines[1];
+//            en_Marquee_Notification_string =  en_notification_Msg_Lines[0];
             if (orientation.equals("vertical") )
             {
                 en_Marquee_Notification_string =  "Prayer Time Change from " + new SimpleDateFormat("EEEE").format(notification_Date) +"\n" + en_notification_Msg_Lines[1];
             }
                     
             ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(notification_Date) + "ستتغير اوقات الصلاة   " + ar_notification_Msg_Lines[1];
+//            ar_Marquee_Notification_string =  ar_notification_Msg_Lines[];
             if (orientation.equals("vertical") )
             {
                 ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(notification_Date) + "ستتغير اوقات الصلاة  \n " + ar_notification_Msg_Lines[1];
@@ -2768,595 +3591,1573 @@ else
             System.out.println(" ****************no database notification is not available, will now calculate prayer changes");
             athan_Change_Label_visible = false;
             notification_Marquee_visible = false;
-        
-            prayerTimes = getprayertime.getPrayerTimes(nextTransitionCal, latitude, longitude, timezone);
-            prayerNames = getprayertime.getTimeNames();
-
             formatter = new SimpleDateFormat("HH:mm");
-
-
-            //                        System.out.println(" fajr time " + fajr_begins_time);
-
-            //Test this other masjid
 
     //debug//////////////////////////////
 //            Calendar_now = (Calendar)nextTransitionCal_min_3.clone();
     /////////////////////////////////////
-            if(Calendar_now.compareTo(nextTransitionCal_min_3)==0 )
-            {
-                future_prayer_date = nextTransitionCal.getTime();
-                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                c = DBConnect.connect();
-                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                ps.setDate(1, sqlDate);
-                ps.executeUpdate();
-                c.close();
-                if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))   // notification going to winter
-                {
-                    //will this fit in notification pane?????
-
-                    //fajr, asr, maghrib, isha
-                    notification = true;
-
-
-                    fajr_jamma_time_change =true;
-                    Date future_fajr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(0)).getTime()));
-                    cal.setTime(future_fajr_temp);
-                    cal.add(Calendar.MINUTE, fajr_adj);
-                    future_fajr_jamaat_time = cal.getTime();
-
-                    asr_jamma_time_change =true;
-                    if(asr_settime)
-                    {
-                        asr_jamaat = asr_winter.toString();
-                        Date asr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + asr_jamaat);
-                        cal.setTime(asr_jamaat_temp);
-                        future_asr_jamaat_time = cal.getTime();          
-                    }
-
-                    else
-                    {
-                        Date future_asr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(3)).getTime()));
-                        cal.setTime(future_asr_temp);
-                        cal.add(Calendar.MINUTE, asr_adj);
-                        future_asr_jamaat_time = cal.getTime();
-                    } 
-
-                    maghrib_jamma_time_change =true;
-                    maghrib_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(5)).getTime()));
-                    cal.setTime(maghrib_temp);
-                    cal.add(Calendar.MINUTE, maghrib_adj);
-                    future_maghrib_jamaat_time = cal.getTime();
-                    //                        System.out.println(" maghrib time " + maghrib_begins_time);
-
-                    isha_jamma_time_change =true;
-                    if(isha_winter_settime)
-                    {
-                        isha_jamaat = isha_winter.toString();
-                        Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
-                        cal.setTime(isha_jamaat_temp);
-                        future_isha_jamaat_time = cal.getTime();          
-                    }
-
-                    else
-                    {
-                        Date future_isha_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(6)).getTime()));
-                        cal.setTime(future_isha_temp);
-                        cal.add(Calendar.MINUTE, isha_winter_dynamic_adj);
-                        future_isha_jamaat_time = cal.getTime();
-                    } 
-
-
-                }
-
-                else //going to summer
-                {
-                    
-
-                    //fajr, zuhr, asr, maghrib, isha
-                    fajr_jamma_time_change =true;
-                    notification = true;
-                    Date future_fajr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(0)).getTime()));
-                    cal.setTime(future_fajr_temp);
-                    cal.add(Calendar.MINUTE, 60);
-                    cal.add(Calendar.MINUTE, fajr_adj);
-                    future_fajr_jamaat_time = cal.getTime();
-
-                    asr_jamma_time_change =true;
-                    if(asr_settime)
-                    {
-                        asr_jamaat = asr_summer.toString();
-                        Date asr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + asr_jamaat);
-                        cal.setTime(asr_jamaat_temp);
-                        future_asr_jamaat_time = cal.getTime();          
-                    }
-
-                    else
-                    {
-                        Date future_asr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(3)).getTime()));
-                        cal.setTime(future_asr_temp);
-                        cal.add(Calendar.MINUTE, asr_adj);
-                        cal.add(Calendar.MINUTE, 60);
-                        future_asr_jamaat_time = cal.getTime();
-                    } 
-
-                    maghrib_jamma_time_change =true;
-                    maghrib_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(5)).getTime()));
-                    cal.setTime(maghrib_temp);
-                    cal.add(Calendar.MINUTE, 60);
-                    cal.add(Calendar.MINUTE, maghrib_adj);
-                    future_maghrib_jamaat_time = cal.getTime();
-                    //                        System.out.println(" maghrib time " + maghrib_begins_time);
-
-
-                    isha_jamma_time_change =true;
-                    if(isha_winter_settime)
-                    {
-                        isha_jamaat = isha_summer_start_time.toString();
-                        Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
-                        cal.setTime(isha_jamaat_temp);
-                        future_isha_jamaat_time = cal.getTime();          
-                    }
-
-                    else
-                    {
-                        Date future_isha_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(6)).getTime()));
-                        cal.setTime(future_isha_temp);
-                        cal.add(Calendar.MINUTE, isha_summer_dynamic_adj);
-                        cal.add(Calendar.MINUTE, 60);
-                        future_isha_jamaat_time = cal.getTime();
-                    } 
-                    
-                    
-
-                }
-                zuhr_custom_notification_set = false;
-            }
-
-            else 
+            if (Calendar_now.compareTo(nextTransitionCal_min_3)!=0)
             //only if custom  i.e. isha, zuhr for MIA??
             {
-                Calendar future_prayer_cal = Calendar.getInstance();
-                future_prayer_cal.add(Calendar.DAY_OF_MONTH, +3);
-                System.out.println ("looking for changes in the next 3 days : " + future_prayer_cal.getTime());
-                prayerTimes = getprayertime.getPrayerTimes(future_prayer_cal, latitude, longitude, timezone);
-                prayerNames = getprayertime.getTimeNames();
-                future_prayer_date = future_prayer_cal.getTime();
-                System.out.println(" future prayer date change " + future_prayer_date);
-                
-                if (isha_custom && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
+                for (int i=2; i<=3; i++)
                 {
+                    System.out.println("i:  " + i +"================================="); 
+                    Calendar future_prayer_cal = Calendar.getInstance();
+                    future_prayer_cal.add(Calendar.DAY_OF_MONTH, +i);
+                    future_prayer_cal.set(Calendar.MILLISECOND, 0);
+                    future_prayer_cal.set(Calendar.SECOND, 0);
+                    future_prayer_cal.set(Calendar.MINUTE, 0);
+                    future_prayer_cal.set(Calendar.HOUR_OF_DAY, 3);
                     
                     
-                    formatter = new SimpleDateFormat("HH:mm");
-                    Date future_isha_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(6)).getTime()));
-                    Calendar future_isha_cal = future_prayer_cal.getInstance();
-                    future_isha_cal.setTime(future_isha_temp);
-                    future_isha_cal.add(Calendar.MINUTE, 60);
-//                    future_isha_cal.add(Calendar.DAY_OF_MONTH, -3);
-                    Date future_isha_time = future_isha_cal.getTime();
-
-                    System.out.println(" future isha time " + future_isha_time);
                     
-        ////////Debugin
-        //                isha_cal.add(Calendar.MINUTE, 27);
-        //                isha_begins_time = isha_cal.getTime();
-
-                    isha_jamaat_current = isha_summer_start_time.toString();
-
-                    Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat_current);
-                                       
-                    Calendar isha_jamaat_temp_cal = Calendar.getInstance();
-                     isha_jamaat_temp_cal.setTime(isha_jamaat_temp);
-                    isha_jamaat_temp_cal.set(Calendar.AM_PM, Calendar.PM );
-                    isha_jamaat_temp = isha_jamaat_temp_cal.getTime();
+                    System.out.println ("looking for changes in the next " + i +" days " + future_prayer_cal.getTime());
+                    prayerTimes = getprayertime.getPrayerTimes(future_prayer_cal, latitude, longitude, timezone);
+                    prayerNames = getprayertime.getTimeNames();
+                    future_prayer_date = future_prayer_cal.getTime(); 
+                    System.out.println ("future_prayer_date: " + future_prayer_date);
                     
-                    System.out.println("  isha jamaa temp  " + isha_jamaat_temp);
-
-                    diff = isha_jamaat_temp.getTime() - future_isha_time.getTime();
-                    long diffMinutes = diff / (60 * 1000) % 60;
-                    long diffHours = diff / (60 * 60 * 1000);
-                    System.out.println(diffHours); 
-                    System.out.print("future isha gap from initial: ");    
-                    System.out.println(diffMinutes);  
-                    
-                    if (diffMinutes<=isha_summer_min_gap && diffMinutes>=0)
+                    if (!fajr_jamma_time_change )
                     {
-                        System.out.print("option 1: diffMinutes<=isha_summer_min_gap && diffMinutes>=0"); 
-                        future_isha_jamaat_cal = future_prayer_cal.getInstance();
-                        future_isha_jamaat_cal.setTime(isha_jamaat_temp);
-                        future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment );
-                        future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-                        future_isha_jamaat_cal.set(Calendar.SECOND, 0);
-                        future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
-                        
-
-                        isha_jamaat_time = isha_jamaat_cal.getTime();
-                        long diff1 = isha_jamaat_time.getTime() - future_isha_jamaat_time.getTime();
-                        
-                        if(diff1 != 0)
-                        {
-                            System.out.println("future isha change 1 detected in 3 days");
-                            isha_jamma_time_change =true;
-                            if(!notification)
-                            {
-                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                c = DBConnect.connect();
-                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                                ps.setDate(1, sqlDate);
-                                ps.executeUpdate();
-                                c.close();
-                            }
-                            notification = true;
-                        }
-
-                        
-                    }
+                        System.out.println("");
+                        System.out.println("Future Fajr Calculation================== ");
+                        Date future_fajr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(0)).getTime()));         
+                        cal.setTime(future_fajr_temp);
+                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date )){cal.add(Calendar.MINUTE, 60); }
+                        Date future_fajr = cal.getTime();
+                        Calendar future_fajr_cal = Calendar.getInstance();
+                        future_fajr_cal.setTime(future_fajr);
+                        future_fajr_cal.add(Calendar.MINUTE, fajr_athan_inc);
+                        System.out.println("current fajr athan:  " + fajr_cal.getTime());
+                        System.out.println("future fajr athan:  " + future_fajr_cal.getTime());
                     
-                    else if ( diffMinutes<=-1 && diffMinutes>=-10)
-                    {                        
-                        future_isha_jamaat_cal = future_prayer_cal.getInstance();
-                        future_isha_jamaat_cal.setTime(isha_jamaat_temp);
-                        future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment*2 );
-                        future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-                        future_isha_jamaat_cal.set(Calendar.SECOND, 0);
-                        future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
-                        
-                        isha_jamaat_time = isha_jamaat_cal.getTime();
-                        long diff1 = isha_jamaat_time.getTime() - future_isha_jamaat_time.getTime();
-                        
-                        if(diff1 != 0)
+                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && fajr_summer_dynamic_adj_bool   )
                         {
-                            System.out.println("future isha change 2 detected in 3 days");
-                            isha_jamma_time_change =true;
-                            if(!notification)
+                            future_fajr_jamaat_cal = (Calendar)future_fajr_cal.clone();
+                            future_fajr_jamaat_cal.add(Calendar.MINUTE, fajr_summer_dynamic_adj);
+//                            System.out.println("future fajr iqama:  "+ future_fajr_jamaat_cal.getTime()); 
+
+                            Date fajr_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_min);
+                            cal.setTime(fajr_jamaat_min_temp);
+                            Date fajr_jamaat_min_Date = cal.getTime();
+                            Calendar fajr_jamaat_min_cal = Calendar.getInstance();
+                            fajr_jamaat_min_cal.setTime(fajr_jamaat_min_Date);
+                            fajr_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+                            fajr_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+                            long diff_min = future_fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_min_cal.getTime().getTime();
+                            long diffMinutes_min = diff_min / (60 * 1000);
+                            //System.out.println("future fajr gap from min value: " + diffMinutes_min); 
+
+
+                            Date fajr_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_max1);
+                            cal.setTime(fajr_jamaat_max_temp);
+                            Date fajr_jamaat_max_Date = cal.getTime();
+                            Calendar fajr_jamaat_max_cal = Calendar.getInstance();
+                            fajr_jamaat_max_cal.setTime(fajr_jamaat_max_Date);
+                            fajr_jamaat_max_cal.set(Calendar.MILLISECOND, 0);
+                            fajr_jamaat_max_cal.set(Calendar.SECOND, 0);
+
+                            long diff_max = future_fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max_cal.getTime().getTime();
+                            long diffMinutes_max = diff_max / (60 * 1000);
+                            //System.out.println("future fajr gap from max value: " +diffMinutes_max); 
+
+
+                            if(fajr_summer_dynamic_min_bool && !fajr_summer_dynamic_min_bool_flagged && diffMinutes_min<0)
                             {
-                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                c = DBConnect.connect();
-                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                                ps.setDate(1, sqlDate);
-                                ps.executeUpdate();
-                                c.close();
+                                System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"   Fajr prayer is fixed at " +   fajr_summer_min  +" this time of the year;");
+                                future_fajr_jamaat_cal = (Calendar)fajr_jamaat_min_cal.clone();
+                                fajr_notification_type = "dynamic_entering_minmax";
                             }
-                            notification = true;
+
+                            else if (fajr_summer_dynamic_min_bool && fajr_summer_dynamic_min_bool_flagged && diffMinutes_min>0)
+                            {
+                                System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"    Fajr prayer will no longer be fixed at " + fajr_summer_min  +"  ");
+                                fajr_notification_type = "dynamic_leaving_minmax";
+                            }
+
+
+
+                            if(fajr_summer_dynamic_max_bool && !fajr_summer_dynamic_max_bool_flagged && diffMinutes_max>0)
+                            {
+                                System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date) +"   Fajr prayer is fixed at " +   fajr_summer_max1  +" this time of the year;");
+                                future_fajr_jamaat_cal = (Calendar)fajr_jamaat_max_cal.clone();
+                                fajr_notification_type = "dynamic_entering_minmax";
+                            }
+
+                            else if (fajr_summer_dynamic_max_bool && fajr_summer_dynamic_max_bool_flagged && diffMinutes_max<0)
+                            {
+                                System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date) +"    Fajr prayer will no longer be fixed at " + fajr_summer_max1  +"  ");
+                                fajr_notification_type = "dynamic_leaving_minmax";
+                            }
                             
-                        }
-                        
-                    }
+                            if (Calendar_now.compareTo(nextTransitionCal_min_2)==0)
+                            {
+                                System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date) +"    Fajr prayer will be at " + future_fajr_jamaat_cal.getTime()  +"  ");
+                                fajr_notification_type = "standard";
+                            
+                            }
 
-                    else if ( diffMinutes<=-10 && diffMinutes>=-20)
-                    {
-                        future_isha_jamaat_cal = future_prayer_cal.getInstance();
-                        future_isha_jamaat_cal.setTime(isha_jamaat_temp);
-                        future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment*3);
-                        future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-                        future_isha_jamaat_cal.set(Calendar.SECOND, 0);
-                        future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
-                        
-                        isha_jamaat_time = isha_jamaat_cal.getTime();
-                        long diff1 = isha_jamaat_time.getTime() - future_isha_jamaat_time.getTime();
-                        System.out.println(diff1);
-                        
-                        if(diff1 != 0)
+                        }        
+
+                        else if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && fajr_winter_dynamic_adj_bool    )
                         {
-                            System.out.println("future isha change 3 detected in 3 days");
-                            isha_jamma_time_change =true;
-                            if(!notification)
+//                            System.out.println("future fajr athan:  "+future_fajr_cal.getTime()); 
+                            future_fajr_jamaat_cal = (Calendar)future_fajr_cal.clone();
+                            future_fajr_jamaat_cal.add(Calendar.MINUTE, fajr_winter_dynamic_adj);
+//                            System.out.println("future fajr iqama:  "+future_fajr_jamaat_cal.getTime()); 
+
+                            Date fajr_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_min);
+                            cal.setTime(fajr_jamaat_min_temp);
+                            Date fajr_jamaat_min_Date = cal.getTime();
+                            Calendar fajr_jamaat_min_cal = Calendar.getInstance();
+                            fajr_jamaat_min_cal.setTime(fajr_jamaat_min_Date);
+                            fajr_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+                            fajr_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+                            long diff_min = future_fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_min_cal.getTime().getTime();
+                            long diffMinutes_min = diff_min / (60 * 1000);
+                            //System.out.println("future fajr gap from min value: "+diffMinutes_min); 
+
+
+                            Date fajr_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_max1);
+                            cal.setTime(fajr_jamaat_max_temp);
+                            Date fajr_jamaat_max_Date = cal.getTime();
+                            Calendar fajr_jamaat_max_cal = Calendar.getInstance();
+                            fajr_jamaat_max_cal.setTime(fajr_jamaat_max_Date);
+                            fajr_jamaat_max_cal.set(Calendar.MILLISECOND, 0);
+                            fajr_jamaat_max_cal.set(Calendar.SECOND, 0);
+
+                            long diff_max = future_fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max_cal.getTime().getTime();
+                            long diffMinutes_max = diff_max / (60 * 1000);
+                            //System.out.println("future fajr gap from max value: "+diffMinutes_max); 
+
+                            if(fajr_winter_dynamic_min_bool)
                             {
-                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                c = DBConnect.connect();
-                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                                ps.setDate(1, sqlDate);
-                                ps.executeUpdate();
-                                c.close();
-                            }
-                            notification = true;
-                        }
-                    }
-                    
-                    else if ( diffMinutes<=-20 && diffMinutes>=-40)
-                    {
-                        future_isha_jamaat_cal = future_prayer_cal.getInstance();
-                        future_isha_jamaat_cal.setTime(isha_jamaat_temp);
-                        future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment*4+5);
-                        future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-                        future_isha_jamaat_cal.set(Calendar.SECOND, 0);
-                        future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
-                        
-                        isha_jamaat_time = isha_jamaat_cal.getTime();
-                        long diff1 = isha_jamaat_time.getTime() - future_isha_jamaat_time.getTime();
-                        System.out.println(diff1);
-                        
-                        if(diff1 != 0)
-                        {
-                            System.out.println("future isha change 4 detected in 3 days");
-                            isha_jamma_time_change =true;
-                            if(!notification)
-                            {
-                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                c = DBConnect.connect();
-                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                                ps.setDate(1, sqlDate);
-                                ps.executeUpdate();
-                                c.close();
-                            }
-                            notification = true;
-                        }
-                    }
-                }
-                
-                if (isha_ramadan_winter_bool || isha_ramadan_summer_bool)
-                {
-                    
-                    Chronology iso = ISOChronology.getInstanceUTC();
-                    Chronology hijri = IslamicChronology.getInstanceUTC();
-                    DateTime dtHijri = new DateTime(dtIslamic.getYear(),9,01,22,22,hijri);
-
-                    DateTime dtIso = new DateTime(dtHijri, iso);
-                    System.out.println(dtIso);
-                    Date dtIso_date = dtIso.toDate();
-                    Calendar dtIso_cal = Calendar.getInstance();;
-                    dtIso_cal.setTime(dtIso_date);
-                    
-                    Date dtIso_date_minus_four = dtIso.toDate();
-                    Calendar dtIso_cal_minus_four = Calendar.getInstance();;
-                    dtIso_cal_minus_four.setTime(dtIso_date_minus_four);
-                    dtIso_cal_minus_four.add(Calendar.DAY_OF_MONTH, -4);
-                    
-                    dtIso_cal_minus_four.set(Calendar.MILLISECOND, 0);
-                    dtIso_cal_minus_four.set(Calendar.SECOND, 0);
-                    dtIso_cal_minus_four.set(Calendar.MINUTE, 0);
-                    dtIso_cal_minus_four.set(Calendar.HOUR_OF_DAY, 0);
-                    System.out.println(dtIso_cal_minus_four.getTime()); 
-                    System.out.print("Ramadan -4 day: "); 
-                    System.out.println(dtIso_cal_minus_four.getTime());
-                    
-                    Date dtIso_date_minus_one = dtIso.toDate();
-                    Calendar dtIso_cal_minus_one = Calendar.getInstance();
-                    dtIso_cal_minus_one.setTime(dtIso_date_minus_one);
-
-
-                    dtIso_cal_minus_one.set(Calendar.MILLISECOND, 0);
-                    dtIso_cal_minus_one.set(Calendar.SECOND, 0);
-                    dtIso_cal_minus_one.set(Calendar.MINUTE, 0);
-                    dtIso_cal_minus_one.set(Calendar.HOUR_OF_DAY, 0);
-                    dtIso_cal_minus_one.add(Calendar.DAY_OF_MONTH, -1);
-                    
-                    //.......
-                    
-                    DateTime dtHijri_end = new DateTime(dtIslamic.getYear(),10,01,00,00,hijri);
-
-                    DateTime dtIso_end = new DateTime(dtHijri_end, iso);
-                    System.out.println("1st day of Shawal");
-                    System.out.println(dtIso_end);
-                    Date dtIso_end_date = dtIso_end.toDate();
-                    Calendar dtIso_end_cal = Calendar.getInstance();;
-                    dtIso_end_cal.setTime(dtIso_end_date);
-                    System.out.println("1st day of Shawal");
-                    System.out.println(dtIso_end_cal.getTime());
-                    
-                    Date dtIso_end_date_minus_four = dtIso_end.toDate();
-                    Calendar dtIso_end_cal_minus_four = Calendar.getInstance();;
-                    dtIso_end_cal_minus_four.setTime(dtIso_end_date_minus_four);
-                    dtIso_end_cal_minus_four.add(Calendar.DAY_OF_MONTH, -3);
-                    
-                    dtIso_end_cal_minus_four.set(Calendar.MILLISECOND, 0);
-                    dtIso_end_cal_minus_four.set(Calendar.SECOND, 0);
-                    dtIso_end_cal_minus_four.set(Calendar.MINUTE, 0);
-                    dtIso_end_cal_minus_four.set(Calendar.HOUR_OF_DAY, 0);
-                    System.out.println(dtIso_end_cal_minus_four.getTime()); 
-                    System.out.print("Ramadan end -3 day: "); 
-                    System.out.println(dtIso_end_cal_minus_four.getTime());
-                    
-
-                                        
-                    if (Calendar_now.compareTo(dtIso_end_cal_minus_four)==0  && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) && isha_winter_settime) 
-                    {
-                        System.out.println("Ramadan end -3"); 
-                        future_prayer_date = dtIso_end_cal.getTime();
-                         
-                        isha_jamaat = isha_winter.toString();
-                        Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
-                        cal.setTime(isha_jamaat_temp);
-                        future_isha_jamaat_time = cal.getTime();
-                        Calendar isha_ramadan_cal;
-                        isha_ramadan_cal = Calendar.getInstance();
-                        isha_ramadan_cal.setTime(future_isha_jamaat_time);
-                        
-                        System.out.println(isha_ramadan_cal.getTime());
-                        System.out.println(isha_jamaat_cal.getTime());
-                        
-                        
-                        if(isha_ramadan_cal.compareTo(isha_jamaat_cal)<0 || isha_ramadan_cal.compareTo(isha_jamaat_cal)>0)
-                        {   
-                            System.out.println("Ramadan Isha notification");
-                        
-                            isha_jamma_time_change =true;
-                            if(!notification)
-                            {
-                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                c = DBConnect.connect();
-                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                                ps.setDate(1, sqlDate);
-                                ps.executeUpdate();
-                                c.close();
-                            }
-                            notification = true;
-                        }
-                        
-                        
-                    }
-                       
-                    if (Calendar_now.compareTo(dtIso_cal_minus_four)==0  ) 
-                    {
-                        
-//                        DateTime future_prayer_date_dateTime  = dtIslamic.withChronology(ISOChronology.getInstance()) ;
-//                        future_prayer_date = future_prayer_date_dateTime.toDate();
-                        
-                        future_prayer_date = dtIso_cal_minus_one.getTime();
-                        if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) ){isha_jamaat = isha_ramadan_winter.toString();}
-                        else {isha_jamaat = isha_ramadan_summer.toString();}
-                        Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
-                        cal.setTime(isha_jamaat_temp);
-                        future_isha_jamaat_time = cal.getTime();
-                        Calendar isha_ramadan_cal;
-                        isha_ramadan_cal = Calendar.getInstance();
-                        isha_ramadan_cal.setTime(future_isha_jamaat_time);
-                        
-                        
-                        if(isha_ramadan_cal.compareTo(isha_jamaat_cal)<0 || isha_ramadan_cal.compareTo(isha_jamaat_cal)>0)
-                        {   
-                            System.out.println("Ramadan Isha notification");
-                        
-                            isha_jamma_time_change =true;
-                            if(!notification)
-                            {
-                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                c = DBConnect.connect();
-                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                                ps.setDate(1, sqlDate);
-                                ps.executeUpdate();
-                                c.close();
-                            }
-                            notification = true;
-                        }
-                        
-                    }
-                }
-
-                        
-                        
-
-                    
-
-//                    else if (diffMinutes<-35 && diffMinutes>=-50)
-//                    {
-//                        isha_jamma_time_change =true;
-//                        future_isha_jamaat_cal = future_prayer_cal.getInstance();
-//                        future_isha_jamaat_cal.setTime(isha_jamaat_temp);
-//                        int add = isha_summer_increment_initial + isha_summer_increment + isha_summer_increment;
-//                        future_isha_jamaat_cal.add(Calendar.MINUTE, add);
-//                        future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
-//                        future_isha_jamaat_cal.set(Calendar.SECOND, 0);
-//                        future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
-//                        
-//                        isha_jamaat_time = isha_jamaat_cal.getTime();
-//                        long diff1 = isha_jamaat_time.getTime() - future_isha_jamaat_time.getTime();
-//                        System.out.println(diff1);
-//                        
-//                        if(diff1 != 0)
-//                        {
-//                            System.out.println("future isha change detected in 3 days");
-//                            isha_jamma_time_change =true;
-//                            if(!notification)
-//                            {
-//                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-//                                c = DBConnect.connect();
-//                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-//                                ps.setDate(1, sqlDate);
-//                                ps.executeUpdate();
-//                                c.close();
-//                            }
-//                            notification = true;
-//                        }
-//                        
-//                    }
-
-
-                if (zuhr_custom)
-                {
-                    //When athan goes 1:10 move iqamah to 1:20
-                    
-                    if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ))
-                    {                                       
+                                if(!fajr_winter_dynamic_min_bool_flagged && diffMinutes_min<0)
+                                {
+                                    future_fajr_jamaat_cal = (Calendar)fajr_jamaat_min_cal.clone();
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date) +"   Fajr prayer is fixed at " +   fajr_winter_min  +" this time of the year;");
+                                    fajr_notification_type = "dynamic_entering_minmax";
+                                }
                                 
-                        formatter = new SimpleDateFormat("HH:mm");
-                        Date future_zuhr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(2)).getTime()));
-                        cal.setTime(future_zuhr_temp);
-                        cal.add(Calendar.MINUTE, 60);
-                        future_zuhr_temp = cal.getTime();
-
-                        System.out.println(" future zuhr time " + future_zuhr_temp);
-
-                        Date zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + zuhr_jamaat);
-                        Calendar zuhr_jamaat_temp_cal =  Calendar.getInstance();
-                        zuhr_jamaat_temp_cal.setTime(zuhr_jamaat_temp);      
-                //        zuhr_jamaat_temp_cal.set(Calendar.HOUR, 13);
-                        zuhr_jamaat_temp_cal.set(Calendar.AM_PM, Calendar.PM );
-                        zuhr_jamaat_temp = zuhr_jamaat_temp_cal.getTime();       
-
-                        long diff = zuhr_jamaat_temp.getTime() - future_zuhr_temp.getTime();
-                        long diffMinutes = diff / (60 * 1000) % 60; 
-                        System.out.print("future Zuhr gap:  ");    
-                        System.out.println(diffMinutes);  
-                        
-//                        compare future_zuhr_jamaat and zuhr_jamaat
-                        zuhr_jamaat_time = zuhr_jamaat_cal.getTime();
-                              
-                               
-                        if (diffMinutes<=5 )
-                        { 
-                            Date future_zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + "01:20");
-                            long diff1 = zuhr_jamaat_time.getTime() - future_zuhr_jamaat_temp.getTime();
-                            System.out.println(diff1); 
-                            if(diff1 !=0)
-                            {    
-                                zuhr_jamma_time_change =true;
-                                zuhr_custom_notification_set = true;
-                                future_zuhr_jamaat = "01:20";
-                                if(!notification)
+                                else if(fajr_winter_dynamic_min_bool_flagged && diffMinutes_min<0)
                                 {
-                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                    c = DBConnect.connect();
-                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                                    ps.setDate(1, sqlDate);
-                                    ps.executeUpdate();
-                                    c.close();
+                                    future_fajr_jamaat_cal = (Calendar)fajr_jamaat_min_cal.clone();
+                                    
                                 }
-                                notification = true;
+
+                                else if (fajr_winter_dynamic_min_bool_flagged && diffMinutes_min>0)
+                                {
+                                    fajr_notification_type = "dynamic_leaving_minmax";
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"  Fajr prayer will no longer be fixed at " + fajr_winter_min  +"  ");
+                                }
                             }
 
-                        }
-                        else if (diffMinutes==11)
-                        { 
+
+                            if(fajr_winter_dynamic_max_bool)
+                            {
+                                if(!fajr_winter_dynamic_max_bool_flagged && diffMinutes_max>0)
+                                {
+                                    future_fajr_jamaat_cal = (Calendar)fajr_jamaat_max_cal.clone();
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"   Fajr prayer is fixed at " +   fajr_winter_max1  +" this time of the year;");
+                                    fajr_notification_type = "dynamic_entering_minmax";
+                                }
+
+                                else if (fajr_winter_dynamic_max_bool_flagged && diffMinutes_max>0)
+                                {
+                                    future_fajr_jamaat_cal = (Calendar)fajr_jamaat_max_cal.clone();
+                                }
+
+                                else if (fajr_winter_dynamic_max_bool_flagged && diffMinutes_max<0)
+                                {
+                                    fajr_notification_type = "dynamic_leaving_minmax";
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"    Fajr prayer will no longer be fixed at " + fajr_winter_max1  +"  ");
+                                }
+                            }
                             
-                            Date future_zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + "01:15");
-                            long diff1 = zuhr_jamaat_time.getTime() - future_zuhr_jamaat_temp.getTime();
-                            System.out.println(diff1); 
-                            if(diff1 !=0)
-                            {    
-                                zuhr_jamma_time_change =true;
-                                zuhr_custom_notification_set = true;
-                                future_zuhr_jamaat = "01:15";
-                                if(!notification)
-                                {
-                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-                                    c = DBConnect.connect();
-                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-                                    ps.setDate(1, sqlDate);
-                                    ps.executeUpdate();
-                                    c.close();
-                                }
-                                notification = true;
+                            if (Calendar_now.compareTo(nextTransitionCal_min_2)==0)
+                            {
+                                System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date) +"    Fajr prayer will be at " + future_fajr_jamaat_cal.getTime()  +"  ");
+                                fajr_notification_type = "standard";
+                            
                             }
 
                         }
-                        else zuhr_custom_notification_set = false;
-            
-                        
-                //////////////testing zuhr 5 mins gap////////////////////////
-                            //        zuhr_cal.set(Calendar.SECOND, 0); 
-                            //        zuhr_cal.set(Calendar.MINUTE, 12); 
-                            //        zuhr_cal.set(Calendar.HOUR_OF_DAY, 13); 
-                            //        zuhr_begins_time = zuhr_cal.getTime();
-                             ///////////////////////////////////////////////   
 
-                        
-                             
+                        else if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && fajr_winter_static_adj_bool    )
+                        {
+                            future_fajr_jamaat_cal = (Calendar)fajr_jamaat_cal.clone();
+                            long diff = fajr_jamaat_cal.getTime().getTime() - future_fajr_cal.getTime().getTime();
+                            long diffMinutes = diff / (60 * 1000);
+//                            System.out.println("future fajr prayer / jamaa difference:  " + diffMinutes);    
 
-                    } 
+                            while (diffMinutes<fajr_winter_static_rising_gap){
+                                future_fajr_jamaat_cal.add(Calendar.MINUTE, fajr_winter_static_adj);
+//                                System.out.println("adjusting up future fajr jamaat prayer by " + fajr_winter_static_adj);
+//                                System.out.format("new future fajr_jamaa: %s \n", future_fajr_jamaat_cal.getTime() );
+                                diff = future_fajr_jamaat_cal.getTime().getTime() - future_fajr_cal.getTime().getTime();
+                                diffMinutes = diff / (60 * 1000);
+//                                System.out.println("future fajr prayer / jamaa diff value:  " + diffMinutes); 
+                                if(!fajr_static_adj_flagged && !fajr_static_max_adj_flagged){fajr_notification_type = "standard";}
+
+                            }
+                            while (diffMinutes>fajr_winter_static_falling_gap){
+                                future_fajr_jamaat_cal.add(Calendar.MINUTE, -fajr_winter_static_adj);
+//                                System.out.println("adjusting down future fajr jamaat prayer by " + fajr_winter_static_adj);
+//                                System.out.format("new future fajr_jamaa: %s \n", future_fajr_jamaat_cal.getTime() );
+                                diff = future_fajr_jamaat_cal.getTime().getTime() - future_fajr_cal.getTime().getTime();
+                                diffMinutes = diff / (60 * 1000);
+//                                System.out.println("future fajr prayer / jamaa value:  " + diffMinutes); 
+                                if(!fajr_static_adj_flagged && !fajr_static_max_adj_flagged){fajr_notification_type = "standard";}
+
+                            }
+
+                    ////////////////////min and max
+                            Date fajr_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_min);
+                            cal.setTime(fajr_jamaat_min_temp);
+                            Date fajr_jamaat_min_Date = cal.getTime();
+                            Calendar fajr_jamaat_min_cal = Calendar.getInstance();
+                            fajr_jamaat_min_cal.setTime(fajr_jamaat_min_Date);
+                            fajr_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+                            fajr_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+                            long diff_min = future_fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_min_cal.getTime().getTime();
+                            long diffMinutes_min = diff_min / (60 * 1000);
+                    //            System.out.println("fajr gap from min value");    
+                    //            System.out.println(diffMinutes_min); 
+
+
+                            Date fajr_jamaat_max1_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_max1);
+                            cal.setTime(fajr_jamaat_max1_temp);
+                            Date fajr_jamaat_max1_Date = cal.getTime();
+                            Calendar fajr_jamaat_max1_cal = Calendar.getInstance();
+                            fajr_jamaat_max1_cal.setTime(fajr_jamaat_max1_Date);
+                            fajr_jamaat_max1_cal.set(Calendar.MILLISECOND, 0);
+                            fajr_jamaat_max1_cal.set(Calendar.SECOND, 0);
+
+                            long diff_max = future_fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max1_cal.getTime().getTime();
+                            long diffMinutes_max = diff_max / (60 * 1000);
+                    //            System.out.println("fajr gap from max value");    
+                    //            System.out.println(diffMinutes_max); 
+
+
+
+                            if (fajr_winter_static_max1_bool &&  diffMinutes_max>=0)
+                            { 
+                                future_fajr_jamaat_cal = (Calendar)fajr_jamaat_max1_cal.clone(); 
+//                                System.out.println("future fajr jamaa max1 applied "); 
+                                if (!fajr_static_max1_bool_flagged && !fajr_static_max_adj_flagged){fajr_notification_type = "standard";}
+                                                                
+                                diff_max = fajr_jamaat_max1_cal.getTime().getTime() - future_fajr_cal.getTime().getTime();
+                                diffMinutes_max = diff_max / (60 * 1000);
+                                if (fajr_static_max_adj_flagged && fajr_winter_static_max2_bool &&  diffMinutes_max>fajr_winter_static_max_gap){fajr_notification_type = "entering_minmax";}
+//                                System.out.println("future fajr gap from max1 value: "+diffMinutes_max);
+                                if (fajr_winter_static_max2_bool &&  diffMinutes_max<=fajr_winter_static_max_gap)
+                                {
+                                    future_fajr_jamaat_cal = (Calendar)future_fajr_cal.clone();
+                                    future_fajr_jamaat_cal.add(Calendar.MINUTE, fajr_winter_static_max_adj);
+                                    if (fajr_static_max2_bool_flagged){fajr_notification_type = "exiting_static_max_dynamic_mode";}
+                                    if (!fajr_static_max_adj_flagged) {fajr_notification_type = "entering_static_max_dynamic_mode";}
+                                    Date fajr_jamaat_max2_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_winter_max2);
+                                    cal.setTime(fajr_jamaat_max2_temp);
+                                    Date fajr_jamaat_max2_Date = cal.getTime();
+                                    Calendar fajr_jamaat_max2_cal = Calendar.getInstance();
+                                    fajr_jamaat_max2_cal.setTime(fajr_jamaat_max2_Date);
+                                    fajr_jamaat_max2_cal.set(Calendar.MILLISECOND, 0);
+                                    fajr_jamaat_max2_cal.set(Calendar.SECOND, 0);
+
+                                    diff_max = future_fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max2_cal.getTime().getTime();
+                                    diffMinutes_max = diff_max / (60 * 1000);
+//                                    System.out.println("future fajr gap from max2 value: "+diffMinutes_max);
+
+                                    if (diff_max>=0)
+                                    {
+                                        future_fajr_jamaat_cal = (Calendar)fajr_jamaat_max2_cal.clone(); 
+//                                        System.out.println("future fajr jamaa max2 applied "); 
+                                        fajr_notification_type = "entering_minmax";
+                                    }
+
+                                }
+
+
+
+                            }
+
+                            if (fajr_winter_static_min_bool &&  diffMinutes_min<=0)
+                            { 
+                                future_fajr_jamaat_cal = (Calendar)fajr_jamaat_min_cal.clone(); 
+//                                System.out.println("Future fajr jamaa min applied "); 
+//                                fajr_notification_type = "entering_minmax";
+                            }
+
+                        }
+
+                        else if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && fajr_summer_static_adj_bool    )
+                        {
+                            future_fajr_jamaat_cal = (Calendar)fajr_jamaat_cal.clone();
+                            long diff = fajr_jamaat_cal.getTime().getTime() - future_fajr_cal.getTime().getTime();
+                            long diffMinutes = diff / (60 * 1000);
+//                            System.out.println("future fajr prayer / jamaa difference:  " + diffMinutes);    
+
+                            while (diffMinutes<fajr_summer_static_rising_gap){
+                                future_fajr_jamaat_cal.add(Calendar.MINUTE, fajr_summer_static_adj);
+//                                System.out.println("adjusting up future fajr jamaat prayer by " + fajr_summer_static_adj);
+//                                System.out.format("new future fajr_jamaa: %s \n", future_fajr_jamaat_cal.getTime() );
+                                diff = future_fajr_jamaat_cal.getTime().getTime() - future_fajr_cal.getTime().getTime();
+                                diffMinutes = diff / (60 * 1000);
+//                                System.out.println("future fajr prayer / jamaa diff value:  " + diffMinutes);
+                                if(!fajr_static_adj_flagged && !fajr_static_max_adj_flagged){fajr_notification_type = "standard";}
+
+                            }
+                            while (diffMinutes>fajr_summer_static_falling_gap){
+                                future_fajr_jamaat_cal.add(Calendar.MINUTE, -fajr_summer_static_adj);
+//                                System.out.println("adjusting down future fajr jamaat prayer by " + fajr_summer_static_adj);
+//                                System.out.format("new future fajr_jamaa: %s \n", future_fajr_jamaat_cal.getTime() );
+                                diff = future_fajr_jamaat_cal.getTime().getTime() - future_fajr_cal.getTime().getTime();
+                                diffMinutes = diff / (60 * 1000);
+//                                System.out.println("future fajr prayer / jamaa value:  " + diffMinutes); 
+                                if(!fajr_static_adj_flagged && !fajr_static_max_adj_flagged){fajr_notification_type = "standard";}
+
+                            }
+
+                    ////////////////////min and max
+                            Date fajr_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_min);
+                            cal.setTime(fajr_jamaat_min_temp);
+                            Date fajr_jamaat_min_Date = cal.getTime();
+                            Calendar fajr_jamaat_min_cal = Calendar.getInstance();
+                            fajr_jamaat_min_cal.setTime(fajr_jamaat_min_Date);
+                            fajr_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+                            fajr_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+                            long diff_min = future_fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_min_cal.getTime().getTime();
+                            long diffMinutes_min = diff_min / (60 * 1000);
+                    //            System.out.println("fajr gap from min value");    
+                    //            System.out.println(diffMinutes_min); 
+
+
+                            Date fajr_jamaat_max1_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_max1);
+                            cal.setTime(fajr_jamaat_max1_temp);
+                            Date fajr_jamaat_max1_Date = cal.getTime();
+                            Calendar fajr_jamaat_max1_cal = Calendar.getInstance();
+                            fajr_jamaat_max1_cal.setTime(fajr_jamaat_max1_Date);
+                            fajr_jamaat_max1_cal.set(Calendar.MILLISECOND, 0);
+                            fajr_jamaat_max1_cal.set(Calendar.SECOND, 0);
+
+                            long diff_max = future_fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max1_cal.getTime().getTime();
+                            long diffMinutes_max = diff_max / (60 * 1000);
+                    //            System.out.println("fajr gap from max value");    
+                    //            System.out.println(diffMinutes_max); 
+
+
+
+                            if (fajr_summer_static_max1_bool &&  diffMinutes_max>=0)
+                            { 
+                                future_fajr_jamaat_cal = (Calendar)fajr_jamaat_max1_cal.clone(); 
+//                                System.out.println("future fajr jamaa max1 applied "); 
+                                if (!fajr_static_max1_bool_flagged && !fajr_static_max_adj_flagged){fajr_notification_type = "standard";}
+
+                                diff_max = fajr_jamaat_max1_cal.getTime().getTime() - future_fajr_cal.getTime().getTime();
+                                diffMinutes_max = diff_max / (60 * 1000);
+                                if (fajr_static_max_adj_flagged && fajr_winter_static_max2_bool &&  diffMinutes_max>fajr_winter_static_max_gap){fajr_notification_type = "entering_minmax";}
+//                                System.out.println("future fajr gap from max1 value: "+diffMinutes_max);
+                                if (fajr_summer_static_max2_bool &&  diffMinutes_max<=fajr_summer_static_max_gap)
+                                {
+                                    future_fajr_jamaat_cal = (Calendar)future_fajr_cal.clone();
+                                    future_fajr_jamaat_cal.add(Calendar.MINUTE, fajr_summer_static_max_adj);
+                                    if (fajr_static_max2_bool_flagged){fajr_notification_type = "exiting_static_max_dynamic_mode";}
+                                    if (!fajr_static_max_adj_flagged) {fajr_notification_type = "entering_static_max_dynamic_mode";}
+                                    Date fajr_jamaat_max2_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_summer_max2);
+                                    cal.setTime(fajr_jamaat_max2_temp);
+                                    Date fajr_jamaat_max2_Date = cal.getTime();
+                                    Calendar fajr_jamaat_max2_cal = Calendar.getInstance();
+                                    fajr_jamaat_max2_cal.setTime(fajr_jamaat_max2_Date);
+                                    fajr_jamaat_max2_cal.set(Calendar.MILLISECOND, 0);
+                                    fajr_jamaat_max2_cal.set(Calendar.SECOND, 0);
+
+                                    diff_max = future_fajr_jamaat_cal.getTime().getTime() - fajr_jamaat_max2_cal.getTime().getTime();
+                                    diffMinutes_max = diff_max / (60 * 1000);
+//                                    System.out.println("future fajr gap from max2 value: "+diffMinutes_max);
+
+                                    if (diff_max>=0)
+                                    {
+                                        future_fajr_jamaat_cal = (Calendar)fajr_jamaat_max2_cal.clone(); 
+//                                        System.out.println("future fajr jamaa max2 applied "); 
+                                        fajr_notification_type = "entering_minmax";
+                                    }
+
+                                }
+
+
+
+                            }
+
+                            if (fajr_summer_static_min_bool &&  diffMinutes_min<=0)
+                            { 
+                                future_fajr_jamaat_cal = (Calendar)fajr_jamaat_min_cal.clone(); 
+//                                System.out.println("Future fajr jamaa min applied "); 
+//                                fajr_notification_type = "entering_minmax";
+                            }
+
+                        }
+                    
+                        future_fajr_jamaat_cal.set(future_prayer_cal.get(Calendar.YEAR), future_prayer_cal.get(Calendar.MONTH), future_prayer_cal.get(Calendar.DAY_OF_MONTH));
+                        System.out.println("Current fajr iqama:  " + fajr_jamaat_cal.getTime()); 
+                        System.out.println("future fajr iqama:  " + future_fajr_jamaat_cal.getTime());  
+                        long diff1 = fajr_jamaat_cal.getTime().getTime() - future_fajr_jamaat_cal.getTime().getTime();
+//                        System.out.println("Gap between current and futur iqama:  " + diff1);  
+
+                        if(diff1 != 0 && fajr_notification_type!= null )
+                        {                  
+                            System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"   Fajr jaamaa prayer will be " +   future_fajr_jamaat_cal.getTime()  );
+                            
+                                if(!notification)
+                                {
+//                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+//                                    c = DBConnect.connect();
+//                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+//                                    ps.setDate(1, sqlDate);
+//                                    ps.executeUpdate();
+//                                    c.close();
+                                }
+                                notification = true;
+                                fajr_jamma_time_change =true;
+                                System.out.println("fajr jamaa notification type: " + fajr_notification_type); 
+                                
+                                if(i == 3)
+                                {
+                                    fajr_jamma_time_change_lock =true;
+                                    //insert in locked database table time and date
+                                }
+                        } 
+                        System.out.println("======================================= ");
+                    }
+                    
+                    
+                    if (!zuhr_jamma_time_change )
+                    {
+                        System.out.println("");
+                        System.out.println("Future Zuh Calculation================== ");
+                        Date future_zuhr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(2)).getTime()));         
+                        cal.setTime(future_zuhr_temp);
+                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date )){cal.add(Calendar.MINUTE, 60); }
+                        Date future_zuhr = cal.getTime();
+                        Calendar future_zuhr_cal = Calendar.getInstance();
+                        future_zuhr_cal.setTime(future_zuhr);
+                        future_zuhr_cal.add(Calendar.MINUTE, zuhr_athan_inc);
+                        System.out.println("Current zuhr athan:  " + zuhr_cal.getTime());
+                        System.out.println("future zuhr athan:  " + future_zuhr_cal.getTime());
+                        if (zuhr_adj_enable)
+                        {
+                            future_zuhr_jamaat_cal = (Calendar)future_zuhr_cal.clone();
+                            future_zuhr_jamaat_cal.add(Calendar.MINUTE, zuhr_adj);  
+                            //System.out.println("future Zuhr jamaat:  "+future_zuhr_jamaat_cal.getTime()); 
+                        }
+
+                        else
+                        {    
+                            if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ))
+                            {       
+                                future_zuhr_jamaat = zuhr_summer.toString();   
+                                if (zuhr_custom)
+                                {
+                                    Date future_zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + future_zuhr_jamaat);
+                                    Calendar future_zuhr_jamaat_temp_cal =  Calendar.getInstance();
+                                    future_zuhr_jamaat_temp_cal.setTime(future_zuhr_jamaat_temp);      
+                            //        zuhr_jamaat_temp_cal.set(Calendar.HOUR, 13);
+                                    future_zuhr_jamaat_temp_cal.set(Calendar.AM_PM, Calendar.PM );
+                                    future_zuhr_jamaat_temp = future_zuhr_jamaat_temp_cal.getTime();       
+
+                                    long diff = future_zuhr_jamaat_temp.getTime() - future_zuhr_cal.getTime().getTime();
+                                    long diffMinutes = diff / (60 * 1000) % 60; 
+//                                    System.out.print("future Zuhr gap:  ");    
+//                                    System.out.println(diffMinutes);  
+                                    if (diffMinutes<=5)
+                                    { future_zuhr_jamaat = "01:20:00"; if(!zuhr_custom_max_flagged){zuhr_notification_type = "standard";}}
+                                    else if(diffMinutes>5 && zuhr_custom_max_flagged){zuhr_notification_type = "standard";}
+                                }      
+
+                            } 
+
+                            else
+                            {
+                                future_zuhr_jamaat = zuhr_winter.toString();
+                            }
+
+                            Date future_zuhr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + future_zuhr_jamaat);
+                            cal.setTime(future_zuhr_jamaat_temp);
+                            Date future_zuhr_jamaat_Date = cal.getTime();
+                            future_zuhr_jamaat_cal = Calendar.getInstance();
+                            future_zuhr_jamaat_cal.setTime(future_zuhr_jamaat_Date);
+                            future_zuhr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                            future_zuhr_jamaat_cal.set(Calendar.SECOND, 0);
+                        //                            System.out.println("=============Zuhr Jamaat at:" + future_zuhr_jamaat_cal.getTime() + "day int is" + dayofweek_int);
+                        }
+                        
+                        if (Calendar_now.compareTo(nextTransitionCal_min_2)==0)
+                        {
+                                zuhr_notification_type = "standard";
+                        }
+                        future_zuhr_jamaat_cal.set(future_prayer_cal.get(Calendar.YEAR), future_prayer_cal.get(Calendar.MONTH), future_prayer_cal.get(Calendar.DAY_OF_MONTH));
+                        System.out.println("Current zuhr iqama:  " + zuhr_jamaat_cal.getTime()); 
+                        System.out.println("future zuhr iqama:  " + future_zuhr_jamaat_cal.getTime());  
+                        long diff1 = zuhr_jamaat_cal.getTime().getTime() - future_zuhr_jamaat_cal.getTime().getTime();
+//                        System.out.println("Gap between current and futur zuhr iqama:  " + diff1);  
+                        
+                        if(diff1 != 0 && zuhr_notification_type!= null )
+                        {                  
+                            System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"   zuhr jaamaa prayer will be " +   future_zuhr_jamaat_cal.getTime()  );
+                            
+                                if(!notification)
+                                {
+//                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+//                                    c = DBConnect.connect();
+//                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+//                                    ps.setDate(1, sqlDate);
+//                                    ps.executeUpdate();
+//                                    c.close();
+                                }
+                                notification = true;
+                                zuhr_jamma_time_change =true;
+                                System.out.println("Zuhr jamaa notification type: " + zuhr_notification_type); 
+                                
+                                if(i == 3)
+                                {
+                                    zuhr_jamma_time_change_lock =true;
+                                    //insert in locked database table time and date
+                                }
+                        }
+                        System.out.println("======================================= ");
+                    }
+                    
+                    
+                    
+                    
+                    if (!asr_jamma_time_change )
+                    {
+                        System.out.println("");
+                        System.out.println("Future asr Calculation================== ");
+                        Date future_asr_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(3)).getTime()));         
+                        cal.setTime(future_asr_temp);
+                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date )){cal.add(Calendar.MINUTE, 60); }
+                        Date future_asr = cal.getTime();
+                        Calendar future_asr_cal = Calendar.getInstance();
+                        future_asr_cal.setTime(future_asr);
+                        future_asr_cal.add(Calendar.MINUTE, asr_athan_inc);
+                        System.out.println("Current asr athan:  " + asr_cal.getTime());
+                        System.out.println("future asr athan:  " + future_asr_cal.getTime());
+                    
+                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && asr_summer_dynamic_adj_bool   )
+                        {
+                            future_asr_jamaat_cal = (Calendar)future_asr_cal.clone();
+                            future_asr_jamaat_cal.add(Calendar.MINUTE, asr_summer_dynamic_adj);
+//                            System.out.println("future asr iqama:  "+ future_asr_jamaat_cal.getTime()); 
+                        }        
+
+                        else if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && asr_winter_dynamic_adj_bool    )
+                        {
+//                            System.out.println("future asr athan:  "+future_asr_cal.getTime()); 
+                            future_asr_jamaat_cal = (Calendar)future_asr_cal.clone();
+                            future_asr_jamaat_cal.add(Calendar.MINUTE, asr_winter_dynamic_adj);
+//                            System.out.println("future asr iqama:  "+future_asr_jamaat_cal.getTime()); 
+                        }
+
+                        else if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && asr_winter_static_adj_bool    )
+                        {
+                            future_asr_jamaat_cal = (Calendar)asr_jamaat_cal.clone();
+                            long diff = asr_jamaat_cal.getTime().getTime() - future_asr_cal.getTime().getTime();
+                            long diffMinutes = diff / (60 * 1000);
+                            //System.out.println("future asr prayer / jamaa difference:  " + diffMinutes);    
+
+                            while (diffMinutes<asr_winter_static_rising_gap){
+                                future_asr_jamaat_cal.add(Calendar.MINUTE, asr_winter_static_adj);
+                                //System.out.println("adjusting up future asr jamaat prayer by " + asr_winter_static_adj);
+                                //System.out.format("new future asr_jamaa: %s \n", future_asr_jamaat_cal.getTime() );
+                                diff = future_asr_jamaat_cal.getTime().getTime() - future_asr_cal.getTime().getTime();
+                                diffMinutes = diff / (60 * 1000);
+                                //System.out.println("future asr prayer / jamaa diff value:  " + diffMinutes); 
+                                //System.out.println("asr_static_adj_flagged:  " + asr_static_adj_flagged); 
+                                if(!asr_static_adj_flagged){asr_notification_type = "standard";}
+
+                            }
+                            while (diffMinutes>asr_winter_static_falling_gap){
+                                future_asr_jamaat_cal.add(Calendar.MINUTE, -asr_winter_static_adj);
+                                //System.out.println("adjusting down future asr jamaat prayer by " + asr_winter_static_adj);
+                                //System.out.format("new future asr_jamaa: %s \n", future_asr_jamaat_cal.getTime() );
+                                diff = future_asr_jamaat_cal.getTime().getTime() - future_asr_cal.getTime().getTime();
+                                diffMinutes = diff / (60 * 1000);
+                                //System.out.println("future asr prayer / jamaa value:  " + diffMinutes); 
+                                asr_notification_type = "standard";
+
+                            }
+
+                    ////////////////////min and max
+                            Date asr_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + asr_winter_min);
+                            cal.setTime(asr_jamaat_min_temp);
+                            Date asr_jamaat_min_Date = cal.getTime();
+                            Calendar asr_jamaat_min_cal = Calendar.getInstance();
+                            asr_jamaat_min_cal.setTime(asr_jamaat_min_Date);
+                            asr_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+                            asr_jamaat_min_cal.set(Calendar.SECOND, 0);
+//                            System.out.format("min asr_jamaa: %s \n", asr_jamaat_min_cal.getTime() );
+//                            if (asr_static_min_bool_flagged){asr_notification_type = "exiting_minmax";}
+
+                            long diff_min = future_asr_jamaat_cal.getTime().getTime() - asr_jamaat_min_cal.getTime().getTime();
+                            long diffMinutes_min = diff_min / (60 * 1000);
+//                            System.out.println("asr gap from min value: "+diffMinutes_min); 
+
+                            if (asr_winter_static_min_bool &&  diffMinutes_min<=0)
+                            { 
+                                future_asr_jamaat_cal = (Calendar)asr_jamaat_min_cal.clone(); 
+                                System.out.println("Future asr jamaa min applied "); 
+//                                if (!asr_static_min_bool_flagged){asr_notification_type = "entering_minmax";}
+                                
+                            }
+
+                        }
+
+                        else if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && asr_summer_static_adj_bool    )
+                        {
+                            future_asr_jamaat_cal = (Calendar)asr_jamaat_cal.clone();
+                            long diff = asr_jamaat_cal.getTime().getTime() - future_asr_cal.getTime().getTime();
+                            long diffMinutes = diff / (60 * 1000);
+                            //System.out.println("future asr prayer / jamaa difference:  " + diffMinutes);    
+
+                            while (diffMinutes<asr_summer_static_rising_gap){
+                                future_asr_jamaat_cal.add(Calendar.MINUTE, asr_summer_static_adj);
+                                //System.out.println("adjusting up future asr jamaat prayer by " + asr_summer_static_adj);
+                                //System.out.format("new future asr_jamaa: %s \n", future_asr_jamaat_cal.getTime() );
+                                diff = future_asr_jamaat_cal.getTime().getTime() - future_asr_cal.getTime().getTime();
+                                diffMinutes = diff / (60 * 1000);
+                                //System.out.println("future asr prayer / jamaa diff value:  " + diffMinutes);
+                                if(!asr_static_adj_flagged){asr_notification_type = "standard";}
+
+                            }
+                            while (diffMinutes>asr_summer_static_falling_gap){
+                                future_asr_jamaat_cal.add(Calendar.MINUTE, -asr_summer_static_adj);
+                                //System.out.println("adjusting down future asr jamaat prayer by " + asr_summer_static_adj);
+                                //System.out.format("new future asr_jamaa: %s \n", future_asr_jamaat_cal.getTime() );
+                                diff = future_asr_jamaat_cal.getTime().getTime() - future_asr_cal.getTime().getTime();
+                                diffMinutes = diff / (60 * 1000);
+                                //System.out.println("future asr prayer / jamaa value:  " + diffMinutes); 
+                                asr_notification_type = "standard";
+                            }
+                        }
+
+                        else if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && asr_summer_settime)
+                        {       
+                            future_asr_jamaat = asr_summer.toString();
+                            Date future_asr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + future_asr_jamaat);
+                            cal.setTime(future_asr_jamaat_temp);
+                            Date future_asr_jamaat_Date = cal.getTime();
+                            future_asr_jamaat_cal = Calendar.getInstance();
+                            future_asr_jamaat_cal.setTime(future_asr_jamaat_Date);
+                            future_asr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                            future_asr_jamaat_cal.set(Calendar.SECOND, 0);
+                        //                            System.out.println("=============asr Jamaat at:" + future_asr_jamaat_cal.getTime() + "day int is" + dayofweek_int);
+                        } 
+
+                        else if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && asr_winter_settime)
+                        {
+                            future_asr_jamaat = asr_winter.toString();
+                            Date future_asr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + future_asr_jamaat);
+                            cal.setTime(future_asr_jamaat_temp);
+                            Date future_asr_jamaat_Date = cal.getTime();
+                            future_asr_jamaat_cal = Calendar.getInstance();
+                            future_asr_jamaat_cal.setTime(future_asr_jamaat_Date);
+                            future_asr_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                            future_asr_jamaat_cal.set(Calendar.SECOND, 0);
+                        //                            System.out.println("=============asr Jamaat at:" + future_asr_jamaat_cal.getTime() + "day int is" + dayofweek_int);
+                        }
+
+                        if (Calendar_now.compareTo(nextTransitionCal_min_2)==0)
+                        {
+                                asr_notification_type = "standard";
+                        }
+                        
+                        future_asr_jamaat_cal.set(future_prayer_cal.get(Calendar.YEAR), future_prayer_cal.get(Calendar.MONTH), future_prayer_cal.get(Calendar.DAY_OF_MONTH));
+                        System.out.println("Current asr iqama:  " + asr_jamaat_cal.getTime());
+                        System.out.println("future asr iqama:  " + future_asr_jamaat_cal.getTime());  
+                        long diff1 = asr_jamaat_cal.getTime().getTime() - future_asr_jamaat_cal.getTime().getTime();
+//                        System.out.println("Gap between current and futur iqama:  " + diff1);  
+
+                        if(diff1 != 0 && asr_notification_type!= null )
+                        {                  
+                            System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"   asr jaamaa prayer will be " +   future_asr_jamaat_cal.getTime()  );
+                            
+                                if(!notification)
+                                {
+//                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+//                                    c = DBConnect.connect();
+//                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+//                                    ps.setDate(1, sqlDate);
+//                                    ps.executeUpdate();
+//                                    c.close();
+                                }
+                                notification = true;
+                                asr_jamma_time_change =true;
+                                System.out.println("asr jamaa notification type: " + asr_notification_type); 
+                                
+                                if(i == 3)
+                                {
+                                    asr_jamma_time_change_lock =true;
+                                    //insert in locked database table time and date
+                                }
+                        }
+                        System.out.println("======================================= ");
+                    }
+                    
+                    
+                    
+                    if (!maghrib_jamma_time_change )
+                    {
+                        System.out.println("");
+                        System.out.println("Future maghrib Calculation================== ");
+                        Date future_maghrib_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(5)).getTime()));         
+                        cal.setTime(future_maghrib_temp);
+                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date )){cal.add(Calendar.MINUTE, 60);  }
+                        Date future_maghrib = cal.getTime();
+                        Calendar future_maghrib_cal = Calendar.getInstance();
+                        future_maghrib_cal.setTime(future_maghrib);
+                        future_maghrib_cal.add(Calendar.MINUTE, maghrib_athan_inc);
+                        System.out.println("Current maghrib athan:  " + maghrib_cal.getTime());
+                        System.out.println("future maghrib athan:  " + future_maghrib_cal.getTime());
+                    
+                        if (maghrib_dynamic_adj_bool   )
+                        {
+                            future_maghrib_jamaat_cal = (Calendar)future_maghrib_cal.clone();
+                            future_maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_dynamic_adj);
+//                            System.out.println("future maghrib iqama:  "+ future_maghrib_jamaat_cal.getTime()); 
+                        }        
+
+                        else if (maghrib_static_adj_bool    )
+                        {
+                            future_maghrib_jamaat_cal = (Calendar)maghrib_jamaat_cal.clone();
+                            long diff = maghrib_jamaat_cal.getTime().getTime() - future_maghrib_cal.getTime().getTime();
+                            long diffMinutes = diff / (60 * 1000);
+                            //System.out.println("future maghrib prayer / jamaa difference:  " + diffMinutes);    
+
+                            while (diffMinutes<maghrib_static_rising_gap){
+                                future_maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_static_adj);
+                                System.out.println("adjusting up future maghrib jamaat prayer by " + maghrib_static_adj);
+                                System.out.format("new future maghrib_jamaa: %s \n", future_maghrib_jamaat_cal.getTime() );
+                                diff = future_maghrib_jamaat_cal.getTime().getTime() - future_maghrib_cal.getTime().getTime();
+                                diffMinutes = diff / (60 * 1000);
+                                //System.out.println("future maghrib prayer / jamaa diff value:  " + diffMinutes);
+                                if(!maghrib_static_adj_flagged){maghrib_notification_type = "standard";}
+
+                            }
+                            while (diffMinutes>maghrib_static_falling_gap){
+                                future_maghrib_jamaat_cal.add(Calendar.MINUTE, -maghrib_static_adj);
+                                System.out.println("adjusting down future maghrib jamaat prayer by " + maghrib_static_adj);
+                                System.out.format("new future maghrib_jamaa: %s \n", future_maghrib_jamaat_cal.getTime() );
+                                diff = future_maghrib_jamaat_cal.getTime().getTime() - future_maghrib_cal.getTime().getTime();
+                                diffMinutes = diff / (60 * 1000);
+                                //System.out.println("future maghrib prayer / jamaa value:  " + diffMinutes); 
+                                maghrib_notification_type = "standard";
+                            }
+                        }
+
+                        if (Calendar_now.compareTo(nextTransitionCal_min_2)==0)
+                        {
+                                maghrib_notification_type = "standard";
+                        }
+                        future_maghrib_jamaat_cal.set(future_prayer_cal.get(Calendar.YEAR), future_prayer_cal.get(Calendar.MONTH), future_prayer_cal.get(Calendar.DAY_OF_MONTH));
+                        System.out.println("Current maghrib iqama:  " + maghrib_jamaat_cal.getTime());
+                        System.out.println("future maghrib iqama:  " + future_maghrib_jamaat_cal.getTime());  
+                        long diff1 = maghrib_jamaat_cal.getTime().getTime() - future_maghrib_jamaat_cal.getTime().getTime();
+//                        System.out.println("Gap between current and futur iqama:  " + diff1);  
+
+                        if(diff1 != 0 && maghrib_notification_type!= null )
+                        {                  
+                            System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"   maghrib jaamaa prayer will be " +   future_maghrib_jamaat_cal.getTime()  );
+                            
+                                if(!notification)
+                                {
+//                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+//                                    c = DBConnect.connect();
+//                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+//                                    ps.setDate(1, sqlDate);
+//                                    ps.executeUpdate();
+//                                    c.close();
+                                }
+                                notification = true;
+                                maghrib_jamma_time_change =true;
+                                System.out.println("maghrib jamaa notification type: " + maghrib_notification_type); 
+                                
+                                if(i == 3)
+                                {
+                                    maghrib_jamma_time_change_lock =true;
+                                    //insert in locked database table time and date
+                                }
+                        }
+                        System.out.println("======================================= ");
+                    }
+                    
+/////////////////////////////////////////////////
+                    
+                    
                     
 
+                    //System.out.println("future prayer cal:  " + future_prayer_cal.getTime());
+                    if (!isha_jamma_time_change )
+                    {
+                        System.out.println("");
+                        System.out.println("Future isha Calculation================== ");
+                        //System.out.println("ramadan _cal_minus_one:  " + dtIso_cal_minus_one.getTime());
+///////////////////////////revise isha jamaat before starting here
+                        Date future_isha_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + new Time(formatter.parse(prayerTimes.get(6)).getTime()));         
+                        cal.setTime(future_isha_temp);
+                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date )){cal.add(Calendar.MINUTE, 60); }
+                        Date future_isha = cal.getTime();
+                        Calendar future_isha_cal = Calendar.getInstance();
+                        future_isha_cal.setTime(future_isha);
+                        future_isha_cal.add(Calendar.MINUTE, isha_athan_inc);
+                        System.out.println("Current isha athan:  " + isha_cal.getTime());
+                        System.out.println("future isha athan:  " + future_isha_cal.getTime());
+                   
+                        LocalDate gregorianDate = LocalDate.of(future_prayer_cal.get(Calendar.YEAR), future_prayer_cal.get(Calendar.MONTH)+1, future_prayer_cal.get(Calendar.DAY_OF_MONTH));
+                        HijrahDate hijradate1 = HijrahDate.from(gregorianDate);
+                        //System.out.println(hijradate1);
+                        
+                        if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) &&  isha_ramadan_winter_bool && (hijradate1.get(ChronoField.MONTH_OF_YEAR) == 9 ||  future_prayer_cal.compareTo(dtIso_cal_minus_one)==0))
+                        {    
+                                //in and out of ramadan
+                            //System.out.println(" future isha jamaa summer static");
+                            future_isha_jamaat = isha_ramadan_winter.toString();
+                            Date future_isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + future_isha_jamaat);
+                            cal.setTime(future_isha_jamaat_temp);
+                            Date future_isha_jamaat_Date = cal.getTime();
+                            future_isha_jamaat_cal = Calendar.getInstance();
+                            future_isha_jamaat_cal.setTime(future_isha_jamaat_Date);
+                            future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                            future_isha_jamaat_cal.set(Calendar.SECOND, 0);
+
+                            if (Calendar_now.compareTo(nextTransitionCal_min_2)==0|| !isha_ramadan_flag)
+                            {
+                                    isha_notification_type = "standard";
+                            }
+                        
+                        }
+                        
+                        else if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) &&  isha_ramadan_summer_bool && (hijradate1.get(ChronoField.MONTH_OF_YEAR) == 9 ||  future_prayer_cal.compareTo(dtIso_cal_minus_one)==0))
+                        {    
+                                //in and out of ramadan
+                            //System.out.println(" future isha jamaa summer ramadan");
+                            future_isha_jamaat = isha_ramadan_summer.toString();
+                            Date future_isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + future_isha_jamaat);
+                            cal.setTime(future_isha_jamaat_temp);
+                            Date future_isha_jamaat_Date = cal.getTime();
+                            future_isha_jamaat_cal = Calendar.getInstance();
+                            future_isha_jamaat_cal.setTime(future_isha_jamaat_Date);
+                            future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                            future_isha_jamaat_cal.set(Calendar.SECOND, 0);
+
+                            if (Calendar_now.compareTo(nextTransitionCal_min_2)==0 || !isha_ramadan_flag)
+                            {
+                                    isha_notification_type = "standard";
+                            }
+                        
+                        }
+                        
+                        else 
+                        {
+                            
+                            if (isha_ramadan_flag){isha_notification_type = "standard"; System.out.println("future out of ramadan"); }
+                            
+                            if(isha_winter_settime && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ))
+                            {
+                                
+                                //System.out.println(" future isha jamaa winter setime");
+                                future_isha_jamaat = isha_winter.toString();
+                                Date future_isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + future_isha_jamaat);
+                                cal.setTime(future_isha_jamaat_temp);
+                                Date future_isha_jamaat_Date = cal.getTime();
+                                future_isha_jamaat_cal = Calendar.getInstance();
+                                future_isha_jamaat_cal.setTime(future_isha_jamaat_Date);
+                                future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                future_isha_jamaat_cal.set(Calendar.SECOND, 0);
+                                
+                                if (Calendar_now.compareTo(nextTransitionCal_min_2)==0){isha_notification_type = "standard";}
+
+                            }
+                                
+                            else if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && isha_summer_dynamic_adj_bool   )
+                            {
+                                //System.out.println(" future isha jamaa summer dynamic");
+                                future_isha_jamaat_cal = (Calendar)future_isha_cal.clone();
+                                future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_dynamic_adj);
+                            //                            System.out.println("future isha iqama:  "+ future_isha_jamaat_cal.getTime()); 
+
+                                Date isha_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_min);
+                                cal.setTime(isha_jamaat_min_temp);
+                                Date isha_jamaat_min_Date = cal.getTime();
+                                Calendar isha_jamaat_min_cal = Calendar.getInstance();
+                                isha_jamaat_min_cal.setTime(isha_jamaat_min_Date);
+                                isha_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+                                isha_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+                                long diff_min = future_isha_jamaat_cal.getTime().getTime() - isha_jamaat_min_cal.getTime().getTime();
+                                long diffMinutes_min = diff_min / (60 * 1000);
+                                    System.out.println("future isha gap from min value: " + diffMinutes_min); 
+
+
+                                Date isha_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_max1);
+                                cal.setTime(isha_jamaat_max_temp);
+                                Date isha_jamaat_max_Date = cal.getTime();
+                                Calendar isha_jamaat_max_cal = Calendar.getInstance();
+                                isha_jamaat_max_cal.setTime(isha_jamaat_max_Date);
+                                isha_jamaat_max_cal.set(Calendar.MILLISECOND, 0);
+                                isha_jamaat_max_cal.set(Calendar.SECOND, 0);
+
+                                long diff_max = future_isha_jamaat_cal.getTime().getTime() - isha_jamaat_max_cal.getTime().getTime();
+                                long diffMinutes_max = diff_max / (60 * 1000);
+                                    System.out.println("future isha gap from max value: " +diffMinutes_max); 
+
+
+                                if(isha_summer_dynamic_min_bool && !isha_summer_dynamic_min_bool_flagged && diffMinutes_min<0)
+                                {
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"   isha prayer is fixed at " +   isha_summer_min  +" this time of the year;");
+                                    future_isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone();
+                                    isha_notification_type = "dynamic_entering_minmax";
+                                }
+
+                                else if (isha_summer_dynamic_min_bool && isha_summer_dynamic_min_bool_flagged && diffMinutes_min>0)
+                                {
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"    isha prayer will no longer be fixed at " + isha_summer_min  +"  ");
+                                    isha_notification_type = "dynamic_leaving_minmax";
+                                }
+
+
+
+                                if(isha_summer_dynamic_max_bool && !isha_summer_dynamic_max_bool_flagged && diffMinutes_max>0)
+                                {
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date) +"   isha prayer is fixed at " +   isha_summer_max1  +" this time of the year;");
+                                    future_isha_jamaat_cal = (Calendar)isha_jamaat_max_cal.clone();
+                                    isha_notification_type = "dynamic_entering_minmax";
+                                }
+
+                                else if (isha_summer_dynamic_max_bool && isha_summer_dynamic_max_bool_flagged && diffMinutes_max<0)
+                                {
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date) +"    isha prayer will no longer be fixed at " + isha_summer_max1  +"  ");
+                                    isha_notification_type = "dynamic_leaving_minmax";
+                                }
+
+                                if (Calendar_now.compareTo(nextTransitionCal_min_2)==0)
+                                {
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date) +"    isha prayer will be at " + future_isha_jamaat_cal.getTime()  +"  ");
+                                    isha_notification_type = "standard";
+
+                                }
+
+                            }        
+
+                            else if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && isha_winter_dynamic_adj_bool    )
+                            {
+                            //                            System.out.println("future isha athan:  "+future_isha_cal.getTime()); 
+                                //System.out.println(" future isha jamaa winter dynamic");
+                                future_isha_jamaat_cal = (Calendar)future_isha_cal.clone();
+                                future_isha_jamaat_cal.add(Calendar.MINUTE, isha_winter_dynamic_adj);
+                            //                            System.out.println("future isha iqama:  "+future_isha_jamaat_cal.getTime()); 
+
+                                Date isha_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_min);
+                                cal.setTime(isha_jamaat_min_temp);
+                                Date isha_jamaat_min_Date = cal.getTime();
+                                Calendar isha_jamaat_min_cal = Calendar.getInstance();
+                                isha_jamaat_min_cal.setTime(isha_jamaat_min_Date);
+                                isha_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+                                isha_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+                                long diff_min = future_isha_jamaat_cal.getTime().getTime() - isha_jamaat_min_cal.getTime().getTime();
+                                long diffMinutes_min = diff_min / (60 * 1000);
+                                    System.out.println("future isha gap from min value: "+diffMinutes_min); 
+
+
+                                Date isha_jamaat_max_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_max1);
+                                cal.setTime(isha_jamaat_max_temp);
+                                Date isha_jamaat_max_Date = cal.getTime();
+                                Calendar isha_jamaat_max_cal = Calendar.getInstance();
+                                isha_jamaat_max_cal.setTime(isha_jamaat_max_Date);
+                                isha_jamaat_max_cal.set(Calendar.MILLISECOND, 0);
+                                isha_jamaat_max_cal.set(Calendar.SECOND, 0);
+
+                                long diff_max = future_isha_jamaat_cal.getTime().getTime() - isha_jamaat_max_cal.getTime().getTime();
+                                long diffMinutes_max = diff_max / (60 * 1000);
+                                    System.out.println("future isha gap from max value: "+diffMinutes_max); 
+
+
+                                if(isha_winter_dynamic_min_bool && !isha_winter_dynamic_min_bool_flagged && diffMinutes_min<0)
+                                {
+                                    future_isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone();
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date) +"   isha prayer is fixed at " +   isha_winter_min  +" this time of the year;");
+                                    isha_notification_type = "dynamic_entering_minmax";
+                                }
+
+                                else if (isha_winter_dynamic_min_bool && isha_winter_dynamic_min_bool_flagged && diffMinutes_min>0)
+                                {
+                                    isha_notification_type = "dynamic_leaving_minmax";
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"  isha prayer will no longer be fixed at " + isha_winter_min  +"  ");
+                                }
+
+
+
+                                if(isha_winter_dynamic_max_bool && !isha_winter_dynamic_max_bool_flagged && diffMinutes_max>0)
+                                {
+                                    future_isha_jamaat_cal = (Calendar)isha_jamaat_max_cal.clone();
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"   isha prayer is fixed at " +   isha_winter_max1  +" this time of the year;");
+                                    isha_notification_type = "dynamic_entering_minmax";
+                                }
+
+                                else if (isha_winter_dynamic_max_bool && isha_winter_dynamic_max_bool_flagged && diffMinutes_max<0)
+                                {
+                                    isha_notification_type = "dynamic_leaving_minmax";
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"    isha prayer will no longer be fixed at " + isha_winter_max1  +"  ");
+                                }
+
+                                if (Calendar_now.compareTo(nextTransitionCal_min_2)==0)
+                                {
+                                    System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date) +"    isha prayer will be at " + future_isha_jamaat_cal.getTime()  +"  ");
+                                    isha_notification_type = "standard";
+
+                                }
+
+                            } 
+
+
+
+
+
+                            else if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && isha_winter_static_adj_bool    )
+                            {
+                                //System.out.println(" future isha jamaa winter static");
+                                future_isha_jamaat_cal = (Calendar)isha_jamaat_cal.clone();
+                                long diff = isha_jamaat_cal.getTime().getTime() - future_isha_cal.getTime().getTime();
+                                long diffMinutes = diff / (60 * 1000);
+                            //                            System.out.println("future isha prayer / jamaa difference:  " + diffMinutes);    
+
+                                while (diffMinutes<isha_winter_static_rising_gap){
+                                    future_isha_jamaat_cal.add(Calendar.MINUTE, isha_winter_static_adj);
+                            //                                System.out.println("adjusting up future isha jamaat prayer by " + isha_winter_static_adj);
+                            //                                System.out.format("new future isha_jamaa: %s \n", future_isha_jamaat_cal.getTime() );
+                                    diff = future_isha_jamaat_cal.getTime().getTime() - future_isha_cal.getTime().getTime();
+                                    diffMinutes = diff / (60 * 1000);
+                            //                                System.out.println("future isha prayer / jamaa diff value:  " + diffMinutes); 
+                                    if(!isha_static_adj_flagged && !isha_static_max_adj_flagged){isha_notification_type = "standard";}
+
+                                }
+                                while (diffMinutes>isha_winter_static_falling_gap){
+                                    future_isha_jamaat_cal.add(Calendar.MINUTE, -isha_winter_static_adj);
+                            //                                System.out.println("adjusting down future isha jamaat prayer by " + isha_winter_static_adj);
+                            //                                System.out.format("new future isha_jamaa: %s \n", future_isha_jamaat_cal.getTime() );
+                                    diff = future_isha_jamaat_cal.getTime().getTime() - future_isha_cal.getTime().getTime();
+                                    diffMinutes = diff / (60 * 1000);
+                            //                                System.out.println("future isha prayer / jamaa value:  " + diffMinutes); 
+                                    if(!isha_static_adj_flagged && !isha_static_max_adj_flagged){isha_notification_type = "standard";}
+
+                                }
+
+                            ////////////////////min and max
+                                Date isha_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_min);
+                                cal.setTime(isha_jamaat_min_temp);
+                                Date isha_jamaat_min_Date = cal.getTime();
+                                Calendar isha_jamaat_min_cal = Calendar.getInstance();
+                                isha_jamaat_min_cal.setTime(isha_jamaat_min_Date);
+                                isha_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+                                isha_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+                                long diff_min = future_isha_jamaat_cal.getTime().getTime() - isha_jamaat_min_cal.getTime().getTime();
+                                long diffMinutes_min = diff_min / (60 * 1000);
+                            //            System.out.println("isha gap from min value");    
+                            //            System.out.println(diffMinutes_min); 
+
+
+                                Date isha_jamaat_max1_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_max1);
+                                cal.setTime(isha_jamaat_max1_temp);
+                                Date isha_jamaat_max1_Date = cal.getTime();
+                                Calendar isha_jamaat_max1_cal = Calendar.getInstance();
+                                isha_jamaat_max1_cal.setTime(isha_jamaat_max1_Date);
+                                isha_jamaat_max1_cal.set(Calendar.MILLISECOND, 0);
+                                isha_jamaat_max1_cal.set(Calendar.SECOND, 0);
+
+                                long diff_max = future_isha_jamaat_cal.getTime().getTime() - isha_jamaat_max1_cal.getTime().getTime();
+                                long diffMinutes_max = diff_max / (60 * 1000);
+                            //            System.out.println("isha gap from max value");    
+                            //            System.out.println(diffMinutes_max); 
+
+
+
+                                if (isha_winter_static_max1_bool &&  diffMinutes_max>=0)
+                                { 
+                                    future_isha_jamaat_cal = (Calendar)isha_jamaat_max1_cal.clone(); 
+                            //                                System.out.println("future isha jamaa max1 applied "); 
+                                    if (!isha_static_max1_bool_flagged && !isha_static_max_adj_flagged){isha_notification_type = "standard";}
+
+                                    diff_max = isha_jamaat_max1_cal.getTime().getTime() - future_isha_cal.getTime().getTime();
+                                    diffMinutes_max = diff_max / (60 * 1000);
+                                    if (isha_static_max_adj_flagged && isha_winter_static_max2_bool &&  diffMinutes_max>isha_winter_static_max_gap){isha_notification_type = "entering_minmax";}
+                            //                                System.out.println("future isha gap from max1 value: "+diffMinutes_max);
+                                    if (isha_winter_static_max2_bool &&  diffMinutes_max<=isha_winter_static_max_gap)
+                                    {
+                                        future_isha_jamaat_cal = (Calendar)future_isha_cal.clone();
+                                        future_isha_jamaat_cal.add(Calendar.MINUTE, isha_winter_static_max_adj);
+                                        if (isha_static_max2_bool_flagged){isha_notification_type = "exiting_static_max_dynamic_mode";}
+                                        if (!isha_static_max_adj_flagged) {isha_notification_type = "entering_static_max_dynamic_mode";}
+                                        Date isha_jamaat_max2_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_winter_max2);
+                                        cal.setTime(isha_jamaat_max2_temp);
+                                        Date isha_jamaat_max2_Date = cal.getTime();
+                                        Calendar isha_jamaat_max2_cal = Calendar.getInstance();
+                                        isha_jamaat_max2_cal.setTime(isha_jamaat_max2_Date);
+                                        isha_jamaat_max2_cal.set(Calendar.MILLISECOND, 0);
+                                        isha_jamaat_max2_cal.set(Calendar.SECOND, 0);
+
+                                        diff_max = future_isha_jamaat_cal.getTime().getTime() - isha_jamaat_max2_cal.getTime().getTime();
+                                        diffMinutes_max = diff_max / (60 * 1000);
+                            //                                    System.out.println("future isha gap from max2 value: "+diffMinutes_max);
+
+                                        if (diff_max>=0)
+                                        {
+                                            future_isha_jamaat_cal = (Calendar)isha_jamaat_max2_cal.clone(); 
+                            //                                        System.out.println("future isha jamaa max2 applied "); 
+                                            isha_notification_type = "entering_minmax";
+                                        }
+
+                                    }
+
+
+
+                                }
+
+                                if (isha_winter_static_min_bool &&  diffMinutes_min<=0)
+                                { 
+                                    future_isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); 
+                            //                                System.out.println("Future isha jamaa min applied "); 
+                            //                                isha_notification_type = "entering_minmax";
+                                }
+
+                            }
+
+                            else if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && isha_summer_static_adj_bool    )
+                            {
+                                //System.out.println(" future isha jamaa summer static");
+                                future_isha_jamaat_cal = (Calendar)isha_jamaat_cal.clone();
+                                long diff = isha_jamaat_cal.getTime().getTime() - future_isha_cal.getTime().getTime();
+                                long diffMinutes = diff / (60 * 1000);
+                            //                            System.out.println("future isha prayer / jamaa difference:  " + diffMinutes);    
+
+                                while (diffMinutes<isha_summer_static_rising_gap){
+                                    future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_static_adj);
+                            //                                System.out.println("adjusting up future isha jamaat prayer by " + isha_summer_static_adj);
+                            //                                System.out.format("new future isha_jamaa: %s \n", future_isha_jamaat_cal.getTime() );
+                                    diff = future_isha_jamaat_cal.getTime().getTime() - future_isha_cal.getTime().getTime();
+                                    diffMinutes = diff / (60 * 1000);
+                            //                                System.out.println("future isha prayer / jamaa diff value:  " + diffMinutes);
+                                    if(!isha_static_adj_flagged && !isha_static_max_adj_flagged){isha_notification_type = "standard";}
+
+                                }
+                                while (diffMinutes>isha_summer_static_falling_gap){
+                                    future_isha_jamaat_cal.add(Calendar.MINUTE, -isha_summer_static_adj);
+                            //                                System.out.println("adjusting down future isha jamaat prayer by " + isha_summer_static_adj);
+                            //                                System.out.format("new future isha_jamaa: %s \n", future_isha_jamaat_cal.getTime() );
+                                    diff = future_isha_jamaat_cal.getTime().getTime() - future_isha_cal.getTime().getTime();
+                                    diffMinutes = diff / (60 * 1000);
+                            //                                System.out.println("future isha prayer / jamaa value:  " + diffMinutes); 
+                                    if(!isha_static_adj_flagged && !isha_static_max_adj_flagged){isha_notification_type = "standard";}
+
+                                }
+
+                            ////////////////////min and max
+                                Date isha_jamaat_min_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_min);
+                                cal.setTime(isha_jamaat_min_temp);
+                                Date isha_jamaat_min_Date = cal.getTime();
+                                Calendar isha_jamaat_min_cal = Calendar.getInstance();
+                                isha_jamaat_min_cal.setTime(isha_jamaat_min_Date);
+                                isha_jamaat_min_cal.set(Calendar.MILLISECOND, 0);
+                                isha_jamaat_min_cal.set(Calendar.SECOND, 0);
+
+                                long diff_min = future_isha_jamaat_cal.getTime().getTime() - isha_jamaat_min_cal.getTime().getTime();
+                                long diffMinutes_min = diff_min / (60 * 1000);
+                            //            System.out.println("isha gap from min value");    
+                            //            System.out.println(diffMinutes_min); 
+
+
+                                Date isha_jamaat_max1_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_max1);
+                                cal.setTime(isha_jamaat_max1_temp);
+                                Date isha_jamaat_max1_Date = cal.getTime();
+                                Calendar isha_jamaat_max1_cal = Calendar.getInstance();
+                                isha_jamaat_max1_cal.setTime(isha_jamaat_max1_Date);
+                                isha_jamaat_max1_cal.set(Calendar.MILLISECOND, 0);
+                                isha_jamaat_max1_cal.set(Calendar.SECOND, 0);
+
+                                long diff_max = future_isha_jamaat_cal.getTime().getTime() - isha_jamaat_max1_cal.getTime().getTime();
+                                long diffMinutes_max = diff_max / (60 * 1000);
+                            //            System.out.println("isha gap from max value");    
+                            //            System.out.println(diffMinutes_max); 
+
+
+
+                                if (isha_summer_static_max1_bool &&  diffMinutes_max>=0)
+                                { 
+                                    future_isha_jamaat_cal = (Calendar)isha_jamaat_max1_cal.clone(); 
+                            //                                System.out.println("future isha jamaa max1 applied "); 
+                                    if (!isha_static_max1_bool_flagged && !isha_static_max_adj_flagged){isha_notification_type = "standard";}
+
+                                    diff_max = isha_jamaat_max1_cal.getTime().getTime() - future_isha_cal.getTime().getTime();
+                                    diffMinutes_max = diff_max / (60 * 1000);
+                                    if (isha_static_max_adj_flagged && isha_winter_static_max2_bool &&  diffMinutes_max>isha_winter_static_max_gap){isha_notification_type = "entering_minmax";}
+                            //                                System.out.println("future isha gap from max1 value: "+diffMinutes_max);
+                                    if (isha_summer_static_max2_bool &&  diffMinutes_max<=isha_summer_static_max_gap)
+                                    {
+                                        future_isha_jamaat_cal = (Calendar)future_isha_cal.clone();
+                                        future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_static_max_adj);
+                                        if (isha_static_max2_bool_flagged){isha_notification_type = "exiting_static_max_dynamic_mode";}
+                                        if (!isha_static_max_adj_flagged) {isha_notification_type = "entering_static_max_dynamic_mode";}
+                                        Date isha_jamaat_max2_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_summer_max2);
+                                        cal.setTime(isha_jamaat_max2_temp);
+                                        Date isha_jamaat_max2_Date = cal.getTime();
+                                        Calendar isha_jamaat_max2_cal = Calendar.getInstance();
+                                        isha_jamaat_max2_cal.setTime(isha_jamaat_max2_Date);
+                                        isha_jamaat_max2_cal.set(Calendar.MILLISECOND, 0);
+                                        isha_jamaat_max2_cal.set(Calendar.SECOND, 0);
+
+                                        diff_max = future_isha_jamaat_cal.getTime().getTime() - isha_jamaat_max2_cal.getTime().getTime();
+                                        diffMinutes_max = diff_max / (60 * 1000);
+                            //                                    System.out.println("future isha gap from max2 value: "+diffMinutes_max);
+
+                                        if (diff_max>=0)
+                                        {
+                                            future_isha_jamaat_cal = (Calendar)isha_jamaat_max2_cal.clone(); 
+                            //                                        System.out.println("future isha jamaa max2 applied "); 
+                                            isha_notification_type = "entering_minmax";
+                                        }
+
+                                    }
+
+
+
+                                }
+
+                                if (isha_summer_static_min_bool &&  diffMinutes_min<=0)
+                                { 
+                                    future_isha_jamaat_cal = (Calendar)isha_jamaat_min_cal.clone(); 
+                            //                                System.out.println("Future isha jamaa min applied "); 
+                            //                                isha_notification_type = "entering_minmax";
+                                }
+
+                            }
+                            
+                            else if (isha_custom && TimeZone.getTimeZone( timeZone_ID).inDaylightTime( future_prayer_date ) && i==2)
+                            {
+
+                                //System.out.println(" future isha jamaa custom");
+                                Date future_isha_time = future_isha_cal.getTime();
+                                isha_jamaat_current = isha_summer_start_time.toString();
+
+                                Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat_current);
+
+                                Calendar isha_jamaat_temp_cal = Calendar.getInstance();
+                                 isha_jamaat_temp_cal.setTime(isha_jamaat_temp);
+                                isha_jamaat_temp_cal.set(Calendar.AM_PM, Calendar.PM );
+                                isha_jamaat_temp = isha_jamaat_temp_cal.getTime();
+
+                                future_isha_jamaat_cal = future_prayer_cal.getInstance();
+                                future_isha_jamaat_cal.setTime(isha_jamaat_temp);
+                                future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                future_isha_jamaat_cal.set(Calendar.SECOND, 0);
+
+                                //System.out.println("  isha jamaa temp  " + isha_jamaat_temp);
+
+                                diff = isha_jamaat_temp.getTime() - future_isha_time.getTime();
+                                long diffMinutes = diff / (60 * 1000) % 60;
+                                long diffHours = diff / (60 * 60 * 1000);
+                                //System.out.println(diffHours); 
+                                //System.out.print("future isha gap from initial: ");    
+                                //System.out.println(diffMinutes);  
+
+                                if (diffMinutes<=isha_summer_min_gap && diffMinutes>=0)
+                                {
+                                    System.out.print("option 2: diffMinutes<=isha_summer_min_gap && diffMinutes>=0"); 
+                                    future_isha_jamaat_cal = future_prayer_cal.getInstance();
+                                    future_isha_jamaat_cal.setTime(isha_jamaat_temp);
+                                    future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment );
+                                    future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                    future_isha_jamaat_cal.set(Calendar.SECOND, 0);
+                                    future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
+                                    
+                                    if (!isha_custom_option2_flag){isha_notification_type = "standard";}
+                                }
+
+                                else if ( diffMinutes<=-1 && diffMinutes>=-10)
+                                {                        
+                                    future_isha_jamaat_cal = future_prayer_cal.getInstance();
+                                    future_isha_jamaat_cal.setTime(isha_jamaat_temp);
+                                    future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment*2 );
+                                    future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                    future_isha_jamaat_cal.set(Calendar.SECOND, 0);
+                                    future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
+
+                                    if (!isha_custom_option3_flag){isha_notification_type = "standard";}
+                                }
+
+                                else if ( diffMinutes<=-10 && diffMinutes>=-20)
+                                {
+                                    future_isha_jamaat_cal = future_prayer_cal.getInstance();
+                                    future_isha_jamaat_cal.setTime(isha_jamaat_temp);
+                                    future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment*3);
+                                    future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                    future_isha_jamaat_cal.set(Calendar.SECOND, 0);
+                                    future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
+
+                                    if (!isha_custom_option4_flag){isha_notification_type = "standard";}
+                                }
+
+                                else if ( diffMinutes<=-20 && diffMinutes>=-40)
+                                {
+                                    future_isha_jamaat_cal = future_prayer_cal.getInstance();
+                                    future_isha_jamaat_cal.setTime(isha_jamaat_temp);
+                                    future_isha_jamaat_cal.add(Calendar.MINUTE, isha_summer_increment*4+5);
+                                    future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+                                    future_isha_jamaat_cal.set(Calendar.SECOND, 0);
+                                    future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
+
+                                    if (!isha_custom_option5_flag){isha_notification_type = "standard";}
+                                }
+
+                                if (Calendar_now.compareTo(nextTransitionCal_min_2)==0)
+                                {
+                                    //System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date) +"    isha prayer will be at " + future_isha_jamaat_cal.getTime()  +"  ");
+                                    isha_notification_type = "standard";
+
+                                }
+                            }
+
+
+
+                        }
+                    
+
+                    
+                    
+                        if(isha_notification_type!= null )
+                        {
+                            future_isha_jamaat_cal.set(future_prayer_cal.get(Calendar.YEAR), future_prayer_cal.get(Calendar.MONTH), future_prayer_cal.get(Calendar.DAY_OF_MONTH));
+                            System.out.println("Current isha iqama:  " + isha_jamaat_cal.getTime());
+                            System.out.println("future isha iqama:  " + future_isha_jamaat_cal.getTime());
+                            long diff1 = isha_jamaat_cal.getTime().getTime() - future_isha_jamaat_cal.getTime().getTime();
+    //                        System.out.println("Gap between current and futur iqama:  " + diff1);  
+                            if(diff1 != 0 )
+                            {                  
+                                //System.out.println("future isha iqama:  " + future_isha_jamaat_cal.getTime()); 
+                                 
+                                System.out.println("starting from " +  new SimpleDateFormat("EEEE").format(future_prayer_date)  +"   isha jaamaa prayer will be " +   future_isha_jamaat_cal.getTime()  );
+                                System.out.println("isha jamaa notification type: " + isha_notification_type);
+                                    if(!notification)
+                                    {
+        //                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+        //                                    c = DBConnect.connect();
+        //                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+        //                                    ps.setDate(1, sqlDate);
+        //                                    ps.executeUpdate();
+        //                                    c.close();
+                                    }
+                                    notification = true;
+                                    isha_jamma_time_change =true;
+
+
+                                    if(i == 3)
+                                    {
+                                        isha_jamma_time_change_lock =true;
+                                        //insert in locked database table time and date
+                                    }
+                            }
+                        }
+                        System.out.println("======================================= ");
+                        System.out.println("");
+                        
+                    }   
+                        
+                
+                    
+                        
+
+    //                if (isha_ramadan_winter_bool || isha_ramadan_summer_bool)
+    //                {
+    //                    
+    //                    Chronology iso = ISOChronology.getInstanceUTC();
+    //                    Chronology hijri = IslamicChronology.getInstanceUTC();
+    //                    DateTime dtHijri = new DateTime(dtIslamic.getYear(),9,01,22,22,hijri);
+    //
+    //                    DateTime dtIso = new DateTime(dtHijri, iso);
+    //                    System.out.println(dtIso);
+    //                    Date dtIso_date = dtIso.toDate();
+    //                    Calendar dtIso_cal = Calendar.getInstance();;
+    //                    dtIso_cal.setTime(dtIso_date);
+    //                    
+    //                    Date dtIso_date_minus_four = dtIso.toDate();
+    //                    Calendar dtIso_cal_minus_four = Calendar.getInstance();;
+    //                    dtIso_cal_minus_four.setTime(dtIso_date_minus_four);
+    //                    dtIso_cal_minus_four.add(Calendar.DAY_OF_MONTH, -4);
+    //                    
+    //                    dtIso_cal_minus_four.set(Calendar.MILLISECOND, 0);
+    //                    dtIso_cal_minus_four.set(Calendar.SECOND, 0);
+    //                    dtIso_cal_minus_four.set(Calendar.MINUTE, 0);
+    //                    dtIso_cal_minus_four.set(Calendar.HOUR_OF_DAY, 0);
+    //                    System.out.println(dtIso_cal_minus_four.getTime()); 
+    //                    System.out.print("Ramadan -4 day: "); 
+    //                    System.out.println(dtIso_cal_minus_four.getTime());
+    //                    
+    //                    Date dtIso_date_minus_one = dtIso.toDate();
+    //                    Calendar dtIso_cal_minus_one = Calendar.getInstance();
+    //                    dtIso_cal_minus_one.setTime(dtIso_date_minus_one);
+    //
+    //
+    //                    dtIso_cal_minus_one.set(Calendar.MILLISECOND, 0);
+    //                    dtIso_cal_minus_one.set(Calendar.SECOND, 0);
+    //                    dtIso_cal_minus_one.set(Calendar.MINUTE, 0);
+    //                    dtIso_cal_minus_one.set(Calendar.HOUR_OF_DAY, 0);
+    //                    dtIso_cal_minus_one.add(Calendar.DAY_OF_MONTH, -1);
+    //                    
+    //                    //.......
+    //                    
+    //                    DateTime dtHijri_end = new DateTime(dtIslamic.getYear(),10,01,00,00,hijri);
+    //
+    //                    DateTime dtIso_end = new DateTime(dtHijri_end, iso);
+    //                    System.out.println("1st day of Shawal");
+    //                    System.out.println(dtIso_end);
+    //                    Date dtIso_end_date = dtIso_end.toDate();
+    //                    Calendar dtIso_end_cal = Calendar.getInstance();;
+    //                    dtIso_end_cal.setTime(dtIso_end_date);
+    //                    System.out.println("1st day of Shawal");
+    //                    System.out.println(dtIso_end_cal.getTime());
+    //                    
+    //                    Date dtIso_end_date_minus_four = dtIso_end.toDate();
+    //                    Calendar dtIso_end_cal_minus_four = Calendar.getInstance();;
+    //                    dtIso_end_cal_minus_four.setTime(dtIso_end_date_minus_four);
+    //                    dtIso_end_cal_minus_four.add(Calendar.DAY_OF_MONTH, -3);
+    //                    
+    //                    dtIso_end_cal_minus_four.set(Calendar.MILLISECOND, 0);
+    //                    dtIso_end_cal_minus_four.set(Calendar.SECOND, 0);
+    //                    dtIso_end_cal_minus_four.set(Calendar.MINUTE, 0);
+    //                    dtIso_end_cal_minus_four.set(Calendar.HOUR_OF_DAY, 0);
+    //                    System.out.println(dtIso_end_cal_minus_four.getTime()); 
+    //                    System.out.print("Ramadan end -3 day: "); 
+    //                    System.out.println(dtIso_end_cal_minus_four.getTime());
+    //                    
+    //
+    //                                        
+    //                    if (Calendar_now.compareTo(dtIso_end_cal_minus_four)==0  && !TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) && isha_winter_settime) 
+    //                    {
+    //                        System.out.println("Ramadan end -3"); 
+    //                        future_prayer_date = dtIso_end_cal.getTime();
+    //                         
+    //                        isha_jamaat = isha_winter.toString();
+    //                        Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
+    //                        cal.setTime(isha_jamaat_temp);
+    //                        future_isha_jamaat_time = cal.getTime();
+    //                        Calendar isha_ramadan_cal;
+    //                        isha_ramadan_cal = Calendar.getInstance();
+    //                        isha_ramadan_cal.setTime(future_isha_jamaat_time);
+    //                        
+    //                        System.out.println(isha_ramadan_cal.getTime());
+    //                        System.out.println(isha_jamaat_cal.getTime());
+    //                        
+    //                        
+    //                        if(isha_ramadan_cal.compareTo(isha_jamaat_cal)<0 || isha_ramadan_cal.compareTo(isha_jamaat_cal)>0)
+    //                        {   
+    //                            System.out.println("Ramadan Isha notification");
+    //                        
+    //                            isha_jamma_time_change =true;
+    //                            if(!notification)
+    //                            {
+    //                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+    //                                c = DBConnect.connect();
+    //                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+    //                                ps.setDate(1, sqlDate);
+    //                                ps.executeUpdate();
+    //                                c.close();
+    //                            }
+    //                            notification = true;
+    //                        }
+    //                        
+    //                        
+    //                    }
+    //                       
+    //                    if (Calendar_now.compareTo(dtIso_cal_minus_four)==0  ) 
+    //                    {
+    //                        
+    ////                        DateTime future_prayer_date_dateTime  = dtIslamic.withChronology(ISOChronology.getInstance()) ;
+    ////                        future_prayer_date = future_prayer_date_dateTime.toDate();
+    //                        
+    //                        future_prayer_date = dtIso_cal_minus_one.getTime();
+    //                        if (!TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) ){isha_jamaat = isha_ramadan_winter.toString();}
+    //                        else {isha_jamaat = isha_ramadan_summer.toString();}
+    //                        Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
+    //                        cal.setTime(isha_jamaat_temp);
+    //                        future_isha_jamaat_time = cal.getTime();
+    //                        Calendar isha_ramadan_cal;
+    //                        isha_ramadan_cal = Calendar.getInstance();
+    //                        isha_ramadan_cal.setTime(future_isha_jamaat_time);
+    //                        
+    //                        
+    //                        if(isha_ramadan_cal.compareTo(isha_jamaat_cal)<0 || isha_ramadan_cal.compareTo(isha_jamaat_cal)>0)
+    //                        {   
+    //                            System.out.println("Ramadan Isha notification");
+    //                        
+    //                            isha_jamma_time_change =true;
+    //                            if(!notification)
+    //                            {
+    //                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+    //                                c = DBConnect.connect();
+    //                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+    //                                ps.setDate(1, sqlDate);
+    //                                ps.executeUpdate();
+    //                                c.close();
+    //                            }
+    //                            notification = true;
+    //                        }
+    //                        
+    //                    }
+    //                }
+
+
+
+
+
+
+    //                    else if (diffMinutes<-35 && diffMinutes>=-50)
+    //                    {
+    //                        isha_jamma_time_change =true;
+    //                        future_isha_jamaat_cal = future_prayer_cal.getInstance();
+    //                        future_isha_jamaat_cal.setTime(isha_jamaat_temp);
+    //                        int add = isha_summer_increment_initial + isha_summer_increment + isha_summer_increment;
+    //                        future_isha_jamaat_cal.add(Calendar.MINUTE, add);
+    //                        future_isha_jamaat_cal.set(Calendar.MILLISECOND, 0);
+    //                        future_isha_jamaat_cal.set(Calendar.SECOND, 0);
+    //                        future_isha_jamaat_time = future_isha_jamaat_cal.getTime();
+    //                        
+    //                        isha_jamaat_time = isha_jamaat_cal.getTime();
+    //                        long diff1 = isha_jamaat_time.getTime() - future_isha_jamaat_time.getTime();
+    //                        System.out.println(diff1);
+    //                        
+    //                        if(diff1 != 0)
+    //                        {
+    //                            System.out.println("future isha change detected in 3 days");
+    //                            isha_jamma_time_change =true;
+    //                            if(!notification)
+    //                            {
+    //                                java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+    //                                c = DBConnect.connect();
+    //                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+    //                                ps.setDate(1, sqlDate);
+    //                                ps.executeUpdate();
+    //                                c.close();
+    //                            }
+    //                            notification = true;
+    //                        }
+    //                        
+    //                    }
+
+
+                    
                 }
 
                 
@@ -3382,170 +5183,170 @@ else
 
 if (notification)
 {
-ar_notification_Msg_Lines = null;
-//                            Calendar_now.setTime(future_prayer_date);
-Calendar prayertime_Change_Due_Date = null;
-prayertime_Change_Due_Date = Calendar.getInstance();
-prayertime_Change_Due_Date.setTime(future_prayer_date);
+    ar_notification_Msg_Lines = null;
+    //                            Calendar_now.setTime(future_prayer_date);
+    Calendar prayertime_Change_Due_Date = null;
+    prayertime_Change_Due_Date = Calendar.getInstance();
+    prayertime_Change_Due_Date.setTime(future_prayer_date);
 
-//                            System.out.println ("Calendar_now: " + Calendar_now.getTime());
-int day = prayertime_Change_Due_Date.get(Calendar.DAY_OF_MONTH);
-String dayStr = day + suffixes[day];
-String en_notification_date = new SimpleDateFormat("EEEE").format(future_prayer_date);
-String en_notification_date1 = new SimpleDateFormat("' of ' MMMM").format(future_prayer_date);
+    //                            System.out.println ("Calendar_now: " + Calendar_now.getTime());
+    int day = prayertime_Change_Due_Date.get(Calendar.DAY_OF_MONTH);
+    String dayStr = day + suffixes[day];
+    String en_notification_date = new SimpleDateFormat("EEEE").format(future_prayer_date);
+    String en_notification_date1 = new SimpleDateFormat("' of ' MMMM").format(future_prayer_date);
 
-String ar_notification_date = new SimpleDateFormat(" EEEE d MMMM ", new Locale("ar")).format(future_prayer_date);
-labeconv = "إبتداءا من يوم " + ar_notification_date + "ستتغير اوقات الصلاة   \n";
-StringBuilder builder = new StringBuilder();
-for(int i =0;i<labeconv.length();i++)
-{
-    if(Character.isDigit(labeconv.charAt(i)))
+    String ar_notification_date = new SimpleDateFormat(" EEEE d MMMM ", new Locale("ar")).format(future_prayer_date);
+    labeconv = "إبتداءا من يوم " + ar_notification_date + "ستتغير اوقات الصلاة   \n";
+    StringBuilder builder = new StringBuilder();
+    for(int i =0;i<labeconv.length();i++)
     {
-        builder.append(arabicChars[(int)(labeconv.charAt(i))-48]);
+        if(Character.isDigit(labeconv.charAt(i)))
+        {
+            builder.append(arabicChars[(int)(labeconv.charAt(i))-48]);
+        }
+        else
+        {
+            builder.append(labeconv.charAt(i));
+        }
     }
-    else
+    ar_notification_Msg = builder.toString();
+
+    en_notification_Msg = "Starting from " + en_notification_date + ", "  + dayStr  + en_notification_date1 + " the following prayer time(s) will change\n";
+
+    SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm");
+    //                            en_notification_Msg = "Time change\nTime saving will be in effect as of *Sunday, November 03, 2013*\nAll prayer times will move back by one hour.\nJummah prayer will be at 1:00 PM";
+    if (fajr_jamma_time_change )
     {
-        builder.append(labeconv.charAt(i));
+        String future_fajr_jamaat_time_mod = DATE_FORMAT.format(future_fajr_jamaat_time);
+    //                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
+    en_notification_Msg = en_notification_Msg + "Fajr: " + future_fajr_jamaat_time_mod +"    ";
+    ar_notification_Msg = ar_notification_Msg + "الفجر: " + future_fajr_jamaat_time_mod +"    ";
+    fajr_jamma_time_change = false;
     }
-}
-ar_notification_Msg = builder.toString();
-
-en_notification_Msg = "Starting from " + en_notification_date + ", "  + dayStr  + en_notification_date1 + " the following prayer time(s) will change\n";
-
-SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm");
-//                            en_notification_Msg = "Time change\nTime saving will be in effect as of *Sunday, November 03, 2013*\nAll prayer times will move back by one hour.\nJummah prayer will be at 1:00 PM";
-if (fajr_jamma_time_change )
-{
-    String future_fajr_jamaat_time_mod = DATE_FORMAT.format(future_fajr_jamaat_time);
-//                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
-en_notification_Msg = en_notification_Msg + "Fajr: " + future_fajr_jamaat_time_mod +"    ";
-ar_notification_Msg = ar_notification_Msg + "الفجر: " + future_fajr_jamaat_time_mod +"    ";
-fajr_jamma_time_change = false;
-}
 
 
-if(Calendar_now.compareTo(nextTransitionCal_min_3)==0 )
-{
-    String future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_winter);
-    if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_winter); }  
-    else{future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_summer);}
-    en_notification_Msg = en_notification_Msg + "Duhr: " + future_zuhr_jamaat_time_mod +"    ";
-    ar_notification_Msg = ar_notification_Msg + "الظهر: " + future_zuhr_jamaat_time_mod +"    ";
-    zuhr_jamma_time_change = false;
-}
+    if(Calendar_now.compareTo(nextTransitionCal_min_3)==0 )
+    {
+        String future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_winter);
+        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_winter); }  
+        else{future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_summer);}
+        en_notification_Msg = en_notification_Msg + "Duhr: " + future_zuhr_jamaat_time_mod +"    ";
+        ar_notification_Msg = ar_notification_Msg + "الظهر: " + future_zuhr_jamaat_time_mod +"    ";
+        zuhr_jamma_time_change = false;
+    }
 
-if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) && zuhr_custom_notification_set)
-        {
-//            String future_zuhr_jamaat_time_mod = DATE_FORMAT.format(future_zuhr_jamaat);
-            en_notification_Msg = en_notification_Msg + "Duhr: " + future_zuhr_jamaat +"    ";
-            ar_notification_Msg = ar_notification_Msg + "الظهر: " + future_zuhr_jamaat +"    ";
-            zuhr_jamma_time_change = false;
-            
-        }
+    if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) && zuhr_custom_notification_set)
+            {
+    //            String future_zuhr_jamaat_time_mod = DATE_FORMAT.format(future_zuhr_jamaat);
+                en_notification_Msg = en_notification_Msg + "Duhr: " + future_zuhr_jamaat +"    ";
+                ar_notification_Msg = ar_notification_Msg + "الظهر: " + future_zuhr_jamaat +"    ";
+                zuhr_jamma_time_change = false;
 
-if (asr_jamma_time_change )
-{
-    String future_asr_jamaat_time_mod = DATE_FORMAT.format(future_asr_jamaat_time);
-//                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
-en_notification_Msg = en_notification_Msg + "Asr: " + future_asr_jamaat_time_mod +"    ";
-ar_notification_Msg = ar_notification_Msg + "العصر: " + future_asr_jamaat_time_mod +"    ";
-asr_jamma_time_change = false;
-}
+            }
+
+    if (asr_jamma_time_change )
+    {
+        String future_asr_jamaat_time_mod = DATE_FORMAT.format(future_asr_jamaat_time);
+    //                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
+    en_notification_Msg = en_notification_Msg + "Asr: " + future_asr_jamaat_time_mod +"    ";
+    ar_notification_Msg = ar_notification_Msg + "العصر: " + future_asr_jamaat_time_mod +"    ";
+    asr_jamma_time_change = false;
+    }
 
 
-if (maghrib_jamma_time_change )
-{
-    String future_maghrib_jamaat_time_mod = DATE_FORMAT.format(future_maghrib_jamaat_time);
-//                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
-en_notification_Msg = en_notification_Msg + "Maghrib: " + future_maghrib_jamaat_time_mod +"    ";
-ar_notification_Msg = ar_notification_Msg + "المغرب: " + future_maghrib_jamaat_time_mod +"    ";
-maghrib_jamma_time_change = false;
-}
+    if (maghrib_jamma_time_change )
+    {
+        String future_maghrib_jamaat_time_mod = DATE_FORMAT.format(future_maghrib_jamaat_time);
+    //                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
+    en_notification_Msg = en_notification_Msg + "Maghrib: " + future_maghrib_jamaat_time_mod +"    ";
+    ar_notification_Msg = ar_notification_Msg + "المغرب: " + future_maghrib_jamaat_time_mod +"    ";
+    maghrib_jamma_time_change = false;
+    }
 
 
 
-if (isha_jamma_time_change )
-{
-    String future_isha_jamaat_time_mod = DATE_FORMAT.format(future_isha_jamaat_time);
-//                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
-en_notification_Msg = en_notification_Msg + "Isha: " + future_isha_jamaat_time_mod;
-ar_notification_Msg = ar_notification_Msg + "العشاء: " + future_isha_jamaat_time_mod;
-isha_jamma_time_change = false;
+    if (isha_jamma_time_change )
+    {
+        String future_isha_jamaat_time_mod = DATE_FORMAT.format(future_isha_jamaat_time);
+    //                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
+    en_notification_Msg = en_notification_Msg + "Isha: " + future_isha_jamaat_time_mod;
+    ar_notification_Msg = ar_notification_Msg + "العشاء: " + future_isha_jamaat_time_mod;
+    isha_jamma_time_change = false;
 
 
-}
+    }
 
 
-try
-{
-    c = DBConnect.connect();
-    Statement st = (Statement) c.createStatement();
-    st.executeUpdate("UPDATE prayertime.notification SET en_message_String='" + en_notification_Msg + "' ORDER BY id DESC LIMIT 1");
-    st.executeUpdate("UPDATE prayertime.notification SET ar_message_String= '" + ar_notification_Msg + "' ORDER BY id DESC LIMIT 1");
-    c.close();
-    ar_notification_Msg_Lines = ar_notification_Msg.split("\\r?\\n");
-    en_notification_Msg_Lines = en_notification_Msg.split("\\r?\\n");
-}
-catch (Exception e){e.printStackTrace();}
-
-System.out.format(ar_notification_Msg);
-System.out.format(en_notification_Msg);
-
-notification = false;
-//                            athan_Change_Label_visible = true;
-notification_Marquee_visible = true;
-//                            getFacebook = false;
-
-notification_Msg = ar_notification_Msg_Lines[0] + "\n" + ar_notification_Msg_Lines[1] + "\n\n" + en_notification_Msg_Lines[0] + "\n" + en_notification_Msg_Lines[1];
-//                            System.out.println(notification_Msg );
-
-
-        en_Marquee_Notification_string = "Prayer Time Change on " + new SimpleDateFormat("EEEE").format(future_prayer_date) +":   " + en_notification_Msg_Lines[1];
-
-        if (orientation.equals("vertical") )
-        {
-            en_Marquee_Notification_string = "Prayer Time Change on " + new SimpleDateFormat("EEEE").format(future_prayer_date) + "\n" + en_notification_Msg_Lines[1];
-        }
-        
-        
-        ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(future_prayer_date) + "ستتغير اوقات الصلاة   " + ar_notification_Msg_Lines[1];
- 
-        if (orientation.equals("vertical") )
-        {
-            ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(future_prayer_date) + "ستتغير اوقات الصلاة  \n " + ar_notification_Msg_Lines[1];
-        }
-
-en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);
-ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
-
-//                                System.out.format(en_Marquee_Notification_string);
-//                                System.out.format(ar_Marquee_Notification_string);
-
-
-
-//                            Twitter twitter = TwitterFactory.getSingleton();
-//                            Status status = null;
-//                            try {status = twitter.updateStatus(notification_Msg);} 
-//                            catch (TwitterException ex) {logger.warn("Unexpected error", e);}
-//                            System.out.println("Successfully updated the status to [" + status.getText() + "].");
-System.out.println("Notification Sent to Facebook" );
-if (facebook_notification_enable)
-{
     try
     {
-        String pageID = page_ID +"/feed";
-        facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", notification_Msg));
+        c = DBConnect.connect();
+        Statement st = (Statement) c.createStatement();
+        st.executeUpdate("UPDATE prayertime.notification SET en_message_String='" + en_notification_Msg + "' ORDER BY id DESC LIMIT 1");
+        st.executeUpdate("UPDATE prayertime.notification SET ar_message_String= '" + ar_notification_Msg + "' ORDER BY id DESC LIMIT 1");
+        c.close();
+        ar_notification_Msg_Lines = ar_notification_Msg.split("\\r?\\n");
+        en_notification_Msg_Lines = en_notification_Msg.split("\\r?\\n");
     }
     catch (Exception e){e.printStackTrace();}
-}
 
-try {push.sendMessage(device_name + " at "+ device_location + ": \n" + en_notification_Msg);}
-catch (Exception e){{e.printStackTrace();}}
+    System.out.format(ar_notification_Msg);
+    System.out.format(en_notification_Msg);
 
-if (device_location.equals("Parramatta") )
-{
-    try {push1.sendMessage(device_name + " at "+ device_location + ": \n" + en_notification_Msg);} catch (IOException e){e.printStackTrace();}
-}
+    notification = false;
+    //                            athan_Change_Label_visible = true;
+    notification_Marquee_visible = true;
+    //                            getFacebook = false;
+
+    notification_Msg = ar_notification_Msg_Lines[0] + "\n" + ar_notification_Msg_Lines[1] + "\n\n" + en_notification_Msg_Lines[0] + "\n" + en_notification_Msg_Lines[1];
+    //                            System.out.println(notification_Msg );
+
+
+            en_Marquee_Notification_string = "Prayer Time Change on " + new SimpleDateFormat("EEEE").format(future_prayer_date) +":   " + en_notification_Msg_Lines[1];
+
+            if (orientation.equals("vertical") )
+            {
+                en_Marquee_Notification_string = "Prayer Time Change on " + new SimpleDateFormat("EEEE").format(future_prayer_date) + "\n" + en_notification_Msg_Lines[1];
+            }
+
+
+            ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(future_prayer_date) + "ستتغير اوقات الصلاة   " + ar_notification_Msg_Lines[1];
+
+            if (orientation.equals("vertical") )
+            {
+                ar_Marquee_Notification_string = "إبتداءا من يوم " + new SimpleDateFormat(" EEEE  ", new Locale("ar")).format(future_prayer_date) + "ستتغير اوقات الصلاة  \n " + ar_notification_Msg_Lines[1];
+            }
+
+    en_Marquee_Notification_Text = new Text(en_Marquee_Notification_string);
+    ar_Marquee_Notification_Text = new Text(ar_Marquee_Notification_string);
+
+    //                                System.out.format(en_Marquee_Notification_string);
+    //                                System.out.format(ar_Marquee_Notification_string);
+
+
+
+    //                            Twitter twitter = TwitterFactory.getSingleton();
+    //                            Status status = null;
+    //                            try {status = twitter.updateStatus(notification_Msg);} 
+    //                            catch (TwitterException ex) {logger.warn("Unexpected error", e);}
+    //                            System.out.println("Successfully updated the status to [" + status.getText() + "].");
+    System.out.println("Notification Sent to Facebook" );
+    if (facebook_notification_enable)
+    {
+        try
+        {
+            String pageID = page_ID +"/feed";
+            facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", notification_Msg));
+        }
+        catch (Exception e){e.printStackTrace();}
+    }
+
+    try {push.sendMessage(device_name + " at "+ device_location + ": \n" + en_notification_Msg);}
+    catch (Exception e){{e.printStackTrace();}}
+
+    if (device_location.equals("Parramatta") )
+    {
+        try {push1.sendMessage(device_name + " at "+ device_location + ": \n" + en_notification_Msg);} catch (IOException e){e.printStackTrace();}
+    }
 
 }
 
@@ -3575,16 +5376,16 @@ DateTimeComparator comparator = DateTimeComparator.getTimeOnlyInstance();
 //                                System.out.println(days_Between_Now_Fullmoon);
 
 boolean test = false; //used to test ashura display
-System.out.println("islamic month:  " + dtIslamic.getMonthOfYear() );
-System.out.println("days_Between_Now_Fullmoon: " + days_Between_Now_Fullmoon );
-System.out.println("comparator.compare(fullMoon, maghrib_cal: ) " + comparator.compare(fullMoon, maghrib_cal) );
+//System.out.println("islamic month:  " + dtIslamic.getMonthOfYear() );
+//System.out.println("days_Between_Now_Fullmoon: " + days_Between_Now_Fullmoon );
+//System.out.println("comparator.compare(fullMoon, maghrib_cal: ) " + comparator.compare(fullMoon, maghrib_cal) );
 
 
 
 
 if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fullmoon <=9 && days_Between_Now_Fullmoon >=6 && comparator.compare(fullMoon, maghrib_cal)>0 || test)
 {
-    System.out.println("Ashura nearby condition 1" );
+//    System.out.println("Ashura nearby condition 1" );
     //hide hadith label boolean
     getHadith = false;
     //                                getFacebook = false;
@@ -3649,7 +5450,7 @@ if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fu
 }
 else if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_Now_Fullmoon <=9 && days_Between_Now_Fullmoon >=6 && comparator.compare(fullMoon, maghrib_cal)<0 || test)
 {
-    System.out.println("Ashura nearby condition 2" );
+//    System.out.println("Ashura nearby condition 2" );
     //hide hadith label boolean
     getHadith = false;
     //                                getFacebook = false;
@@ -3716,8 +5517,8 @@ else if (moon_calcs_display &&  dtIslamic.getMonthOfYear()==1 &&  days_Between_N
 else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now_Fullmoon <= 5 && days_Between_Now_Fullmoon >= 2 )
 {
     //hide hadith label boolean
-    System.out.println("full moon " );
-    System.out.println("days_Between_Now_Fullmoon: " + days_Between_Now_Fullmoon);
+//    System.out.println("full moon " );
+//    System.out.println("days_Between_Now_Fullmoon: " + days_Between_Now_Fullmoon);
     getHadith = false;
     //                                getFacebook = false;
     hadith_Label_visible = false;
@@ -3855,7 +5656,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
     if ( days_Between_Now_Fullmoon == 5 && comparator.compare(fullMoon, maghrib_cal)<0 )
     {
         
-        System.out.print("condition 1 mate" );
+//        System.out.print("condition 1 mate" );
         fullMoon_plus1.setTime(fullMoon.getTime() - 2 * 24 * 60 * 60 * 1000);
         String FullMoon_dow_ar = new SimpleDateFormat("' 'EEEE' '", new Locale("ar")).format(fullMoon_plus1);
         String FullMoon_dow_en = new SimpleDateFormat("EEEE").format(fullMoon_plus1);
@@ -3876,7 +5677,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
 
     else if ( days_Between_Now_Fullmoon == 5 )
     {
-        System.out.print("condition 2" );
+//        System.out.print("condition 2" );
         if (comparator.compare(fullMoon, maghrib_cal)>0)
         {
             fullMoon_plus1.setTime(fullMoon.getTime() - 1 * 24 * 60 * 60 * 1000);
@@ -3919,7 +5720,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
     
     else if ( days_Between_Now_Fullmoon == 4 )
     {
-        System.out.print("condition 3" );
+//        System.out.print("condition 3" );
         if (comparator.compare(fullMoon, maghrib_cal)>0)
         {
             fullMoon_plus1.setTime(fullMoon.getTime() - 1 * 24 * 60 * 60 * 1000);
@@ -3962,7 +5763,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
 
     else if ( days_Between_Now_Fullmoon == 3 )
     {
-        System.out.print("condition 4" );
+//        System.out.print("condition 4" );
         if (comparator.compare(fullMoon, maghrib_cal)>0)
         {
             fullMoon_plus1.setTime(fullMoon.getTime() - 1 * 24 * 60 * 60 * 1000);
@@ -3999,7 +5800,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
 
     else if ( days_Between_Now_Fullmoon == 2 && comparator.compare(fullMoon, maghrib_cal)>0 || debug)
     {
-        System.out.print("condition 5" );
+//        System.out.print("condition 5" );
         String temp_ar_text1 = "نذكركم و أنفسنا بفضل صيام الايام البيض من كل شهر التي تبدأ غدا ";
         String temp_ar_text2 = "إن استطعت الصيام فصم و ذكر أحبابك";
         ar_moon_notification = temp_ar_text1 +  temp_ar_text2;
@@ -4023,7 +5824,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
     
     else
     {
-        System.out.println("**********************" );
+//        System.out.println("**********************" );
         getHadith = true;
         moon_hadith_Label_visible = false;
         hadith_Label_visible = true;
@@ -4033,7 +5834,7 @@ else if (moon_calcs_display && dtIslamic.getMonthOfYear()!=9 && days_Between_Now
 else
 {
 
-    System.out.println("===========================" );
+//    System.out.println("===========================" );
     getHadith = true;
     moon_hadith_Label_visible = false;
     hadith_Label_visible = true;
@@ -4300,16 +6101,16 @@ while (rs.next())
     
 }
 c.close();
-                                System.out.println("arabic hadith length" + hadith.length());
-                                System.out.println(" english hadith length" + translated_hadith.length());
-                                System.out.println("mysql arabic hadith length" + ara_length);
-                                System.out.println("mysql english hadith length" + en_length);
+//                                System.out.println("arabic hadith length" + hadith.length());
+//                                System.out.println(" english hadith length" + translated_hadith.length());
+//                                System.out.println("mysql arabic hadith length" + ara_length);
+//                                System.out.println("mysql english hadith length" + en_length);
                                 
-                                System.out.println("narated before" + narated);
+//                                System.out.println("narated before" + narated);
                                 narated = narated.replaceAll("ﷺ", "PBUH");
-                                System.out.println("narated after" + narated);
+//                                System.out.println("narated after" + narated);
                                 
-                                System.out.println("short_translated_hadith before" + short_translated_hadith);
+//                                System.out.println("short_translated_hadith before" + short_translated_hadith);
                                 short_translated_hadith = short_translated_hadith.replaceAll("ﷺ", "PBUH");
                                 System.out.println("short_translated_hadith after" + short_translated_hadith);
                                 
@@ -4507,8 +6308,6 @@ if(weather_enabled)
         {
             try 
             {
-                
-                
                         if ( startup)
                         {
                            
@@ -4521,11 +6320,11 @@ if(weather_enabled)
                             String jsonText2 = readAll(rd2);
                             JsonElement je2 = new JsonParser().parse(jsonText2);
 
-                            System.out.println("Current Temperature:" + getAtPath(je, "current_observation/temp_c").getAsString() );
+//                            System.out.println("Current Temperature:" + getAtPath(je, "current_observation/temp_c").getAsString() );
 //                            weather_icon_url = getAtPath(je, "current_observation/icon_url").getAsString();
-                            System.out.println("startup is true");
+//                            System.out.println("startup is true");
                             Weather_icon = getAtPath(je, "current_observation/icon").getAsString();
-                            System.out.println("Weather Icon:" + Weather_icon );
+//                            System.out.println("Weather Icon:" + Weather_icon );
 //                            System.out.println("max Temperature:" + getAtPath(je2, "forecast/simpleforecast/forecastday/high/celsius").getAsString() );
 //                            System.out.println("min Temperature:" + getAtPath(je2, "forecast/simpleforecast/forecastday/low/celsius").getAsString() );
 
@@ -8199,7 +9998,7 @@ public void update_labels() throws Exception{
         
         
         
-            if (maghrib_adj ==60 && maghrib_jamaat_update_cal.equals(Calendar_now) && maghrib_jamaat_update_enable )         
+            if (maghrib_from_database_bool && maghrib_jamaat_update_cal.equals(Calendar_now) && maghrib_jamaat_update_enable )         
             {       
 
                 maghrib_jamaat_update_enable = false;
@@ -8431,15 +10230,22 @@ public void update_labels() throws Exception{
             isha_jamma_minLeft.setText(formattedDateTime.substring(3, 4));
             isha_jamma_minRight.setText(formattedDateTime.substring(4, 5));
             
-            friday_hourLeft.setText(friday_jamaat.substring(0, 1));
-            friday_hourRight.setText(friday_jamaat.substring(1, 2));
-            friday_minLeft.setText(friday_jamaat.substring(3, 4));
-            friday_minRight.setText(friday_jamaat.substring(4, 5));
-            friday2_hourLeft.setText(friday2_jamaat.substring(0, 1));
-            friday2_hourRight.setText(friday2_jamaat.substring(1, 2));
-            friday2_minLeft.setText(friday2_jamaat.substring(3, 4));
-            friday2_minRight.setText(friday2_jamaat.substring(4, 5));
-
+            fridayjamaatdate = friday_jamaat_cal.getTime();
+            formattedDateTime = dateFormat.format(fridayjamaatdate);
+            
+            friday_hourLeft.setText(formattedDateTime.substring(0, 1));
+            friday_hourRight.setText(formattedDateTime.substring(1, 2));
+            friday_minLeft.setText(formattedDateTime.substring(3, 4));
+            friday_minRight.setText(formattedDateTime.substring(4, 5));
+            
+            if(double_friday)
+            
+            {
+                friday2_hourLeft.setText(friday2_jamaat.substring(0, 1));
+                friday2_hourRight.setText(friday2_jamaat.substring(1, 2));
+                friday2_minLeft.setText(friday2_jamaat.substring(3, 4));
+                friday2_minRight.setText(friday2_jamaat.substring(4, 5));
+            }
             
              
             time_jamma_Separator1.setText(":");
