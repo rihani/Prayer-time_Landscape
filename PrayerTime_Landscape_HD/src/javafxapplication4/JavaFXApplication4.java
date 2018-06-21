@@ -3681,6 +3681,10 @@ if(jammat_from_database && prayer_change_notification){
                 ps.setDate(1, sqlDate);
                 ps.executeUpdate();
                 c.close();
+                future_fajr_jamaat_cal = future_prayer_cal.getInstance();
+                future_fajr_jamaat_cal.setTime(future_fajr_jamaat_time);
+                //System.out.println ("future_fajr_jamaat_cal : " + future_fajr_jamaat_cal.getTime());
+                
             }
 
 
@@ -3696,6 +3700,9 @@ if(jammat_from_database && prayer_change_notification){
                     ps.setDate(1, sqlDate);
                     ps.executeUpdate();
                     c.close();
+                    future_asr_jamaat_cal = future_prayer_cal.getInstance();
+                    future_asr_jamaat_cal.setTime(future_asr_jamaat_time);
+                    //System.out.println ("future_asr_jamaat_cal : " + future_asr_jamaat_cal.getTime());
                 }
                 notification = true;
             }
@@ -3712,6 +3719,9 @@ if(jammat_from_database && prayer_change_notification){
                     ps.setDate(1, sqlDate);
                     ps.executeUpdate();
                     c.close();
+                    future_maghrib_jamaat_cal = future_prayer_cal.getInstance();
+                    future_maghrib_jamaat_cal.setTime(future_maghrib_jamaat_time);
+                    //System.out.println ("future_maghrib_jamaat_cal : " + future_maghrib_jamaat_cal.getTime());
                 }
                 notification = true;
                 }
@@ -3729,6 +3739,9 @@ if(jammat_from_database && prayer_change_notification){
                         ps.setDate(1, sqlDate);
                         ps.executeUpdate();
                         c.close();
+                        future_isha_jamaat_cal = future_prayer_cal.getInstance();
+                        future_isha_jamaat_cal.setTime(future_isha_jamaat_time);
+                        //System.out.println ("future_isha_jamaat_cal : " + future_isha_jamaat_cal.getTime());
                     }
                     notification = true;
                 }
@@ -4236,12 +4249,12 @@ else
                             
                                 if(!notification)
                                 {
-//                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-//                                    c = DBConnect.connect();
-//                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-//                                    ps.setDate(1, sqlDate);
-//                                    ps.executeUpdate();
-//                                    c.close();
+                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                    c = DBConnect.connect();
+                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                    ps.setDate(1, sqlDate);
+                                    ps.executeUpdate();
+                                    c.close();
                                 }
                                 notification = true;
                                 fajr_jamma_time_change =true;
@@ -4382,12 +4395,12 @@ else
                             
                                 if(!notification)
                                 {
-//                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-//                                    c = DBConnect.connect();
-//                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-//                                    ps.setDate(1, sqlDate);
-//                                    ps.executeUpdate();
-//                                    c.close();
+                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                    c = DBConnect.connect();
+                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                    ps.setDate(1, sqlDate);
+                                    ps.executeUpdate();
+                                    c.close();
                                 }
                                 notification = true;
                                 zuhr_jamma_time_change =true;
@@ -4606,12 +4619,12 @@ else
                             
                                 if(!notification)
                                 {
-//                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-//                                    c = DBConnect.connect();
-//                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-//                                    ps.setDate(1, sqlDate);
-//                                    ps.executeUpdate();
-//                                    c.close();
+                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                    c = DBConnect.connect();
+                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                    ps.setDate(1, sqlDate);
+                                    ps.executeUpdate();
+                                    c.close();
                                 }
                                 notification = true;
                                 asr_jamma_time_change =true;
@@ -4740,12 +4753,12 @@ else
                             
                                 if(!notification)
                                 {
-//                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-//                                    c = DBConnect.connect();
-//                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-//                                    ps.setDate(1, sqlDate);
-//                                    ps.executeUpdate();
-//                                    c.close();
+                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                    c = DBConnect.connect();
+                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                    ps.setDate(1, sqlDate);
+                                    ps.executeUpdate();
+                                    c.close();
                                 }
                                 notification = true;
                                 maghrib_jamma_time_change =true;
@@ -5367,12 +5380,12 @@ else
                                 System.out.println("isha jamaa notification type: " + isha_notification_type);
                                     if(!notification)
                                     {
-        //                                    java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
-        //                                    c = DBConnect.connect();
-        //                                    PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
-        //                                    ps.setDate(1, sqlDate);
-        //                                    ps.executeUpdate();
-        //                                    c.close();
+                                            java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                            c = DBConnect.connect();
+                                            PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");
+                                            ps.setDate(1, sqlDate);
+                                            ps.executeUpdate();
+                                            c.close();
                                     }
                                     notification = true;
                                     isha_jamma_time_change =true;
@@ -5678,36 +5691,49 @@ if (notification)
     //                            en_notification_Msg = "Time change\nTime saving will be in effect as of *Sunday, November 03, 2013*\nAll prayer times will move back by one hour.\nJummah prayer will be at 1:00 PM";
     if (fajr_jamma_time_change )
     {
-        String future_fajr_jamaat_time_mod = DATE_FORMAT.format(future_fajr_jamaat_time);
+        String future_fajr_jamaat_time_mod = DATE_FORMAT.format(future_fajr_jamaat_cal.getTime().getTime());
     //                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
     en_notification_Msg = en_notification_Msg + "Fajr: " + future_fajr_jamaat_time_mod +"    ";
     ar_notification_Msg = ar_notification_Msg + "الفجر: " + future_fajr_jamaat_time_mod +"    ";
     fajr_jamma_time_change = false;
     }
 
-
-    if(Calendar_now.compareTo(nextTransitionCal_min_3)==0 )
+    if(jammat_from_database && prayer_change_notification)
     {
-        String future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_winter);
-        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_winter); }  
-        else{future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_summer);}
-        en_notification_Msg = en_notification_Msg + "Duhr: " + future_zuhr_jamaat_time_mod +"    ";
-        ar_notification_Msg = ar_notification_Msg + "الظهر: " + future_zuhr_jamaat_time_mod +"    ";
-        zuhr_jamma_time_change = false;
+	    if(Calendar_now.compareTo(nextTransitionCal_min_3)==0 )
+	    {
+	        String future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_winter);
+	        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_winter); }  
+	        else{future_zuhr_jamaat_time_mod = DATE_FORMAT.format(zuhr_summer);}
+	        en_notification_Msg = en_notification_Msg + "Duhr: " + future_zuhr_jamaat_time_mod +"    ";
+	        ar_notification_Msg = ar_notification_Msg + "الظهر: " + future_zuhr_jamaat_time_mod +"    ";
+	        zuhr_jamma_time_change = false;
+	    }
+	
+	    if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) && zuhr_custom_notification_set)
+	            {
+	    //            String future_zuhr_jamaat_time_mod = DATE_FORMAT.format(future_zuhr_jamaat);
+	                en_notification_Msg = en_notification_Msg + "Duhr: " + future_zuhr_jamaat +"    ";
+	                ar_notification_Msg = ar_notification_Msg + "الظهر: " + future_zuhr_jamaat +"    ";
+	                zuhr_jamma_time_change = false;
+	
+	            }
     }
 
-    if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time ) && zuhr_custom_notification_set)
-            {
-    //            String future_zuhr_jamaat_time_mod = DATE_FORMAT.format(future_zuhr_jamaat);
-                en_notification_Msg = en_notification_Msg + "Duhr: " + future_zuhr_jamaat +"    ";
-                ar_notification_Msg = ar_notification_Msg + "الظهر: " + future_zuhr_jamaat +"    ";
-                zuhr_jamma_time_change = false;
-
-            }
-
+    else if (zuhr_jamma_time_change )
+    {
+        String future_zuhr_jamaat_time_mod = DATE_FORMAT.format(future_zuhr_jamaat_cal.getTime().getTime());
+    //                                Date future_zuhr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("zuhr time: " + future_zuhr_jamaat_time);
+    en_notification_Msg = en_notification_Msg + "zuhr: " + future_zuhr_jamaat_time_mod +"    ";
+    ar_notification_Msg = ar_notification_Msg + "الفجر: " + future_zuhr_jamaat_time_mod +"    ";
+    zuhr_jamma_time_change = false;
+    }
+    
+    
+    
     if (asr_jamma_time_change )
     {
-        String future_asr_jamaat_time_mod = DATE_FORMAT.format(future_asr_jamaat_time);
+    	String future_asr_jamaat_time_mod = DATE_FORMAT.format(future_asr_jamaat_cal.getTime().getTime());
     //                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
     en_notification_Msg = en_notification_Msg + "Asr: " + future_asr_jamaat_time_mod +"    ";
     ar_notification_Msg = ar_notification_Msg + "العصر: " + future_asr_jamaat_time_mod +"    ";
@@ -5717,7 +5743,7 @@ if (notification)
 
     if (maghrib_jamma_time_change )
     {
-        String future_maghrib_jamaat_time_mod = DATE_FORMAT.format(future_maghrib_jamaat_time);
+    	String future_maghrib_jamaat_time_mod = DATE_FORMAT.format(future_maghrib_jamaat_cal.getTime().getTime());
     //                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
     en_notification_Msg = en_notification_Msg + "Maghrib: " + future_maghrib_jamaat_time_mod +"    ";
     ar_notification_Msg = ar_notification_Msg + "المغرب: " + future_maghrib_jamaat_time_mod +"    ";
@@ -5728,7 +5754,7 @@ if (notification)
 
     if (isha_jamma_time_change )
     {
-        String future_isha_jamaat_time_mod = DATE_FORMAT.format(future_isha_jamaat_time);
+    	String future_isha_jamaat_time_mod = DATE_FORMAT.format(future_isha_jamaat_cal.getTime().getTime());
     //                                Date future_fajr_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_fajr_jamaat_time);
     en_notification_Msg = en_notification_Msg + "Isha: " + future_isha_jamaat_time_mod;
     ar_notification_Msg = ar_notification_Msg + "العشاء: " + future_isha_jamaat_time_mod;
